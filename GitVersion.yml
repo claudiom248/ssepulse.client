@@ -8,7 +8,7 @@ tag-prefix: '[vV]?'
 major-version-bump-message: 'BREAKING CHANGE|!:'
 minor-version-bump-message: '^feat(\(.+\))?:'
 patch-version-bump-message: '^fix(\(.+\))?:'
-no-bump-message: \+semver:\s?(none|skip)
+no-bump-message: '^semver:\s?(none|skip)'
 legacy-semver-padding: 4
 build-metadata-padding: 4
 commits-since-version-source-padding: 4
@@ -33,7 +33,7 @@ branches:
     regex: ^dev(elop)?(ment)?$
     mode: ContinuousDeployment
     tag: alpha
-    increment: Minor
+    increment: Inherit
     prevent-increment-of-merged-branch-version: false
     track-merge-target: true
     source-branches: [ ]
