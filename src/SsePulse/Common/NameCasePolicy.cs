@@ -4,5 +4,6 @@ public enum NameCasePolicy
 {
     PascalCase,
     CamelCase,
-    SnakeCase
+    SnakeCase,
+    KebabCase
 }

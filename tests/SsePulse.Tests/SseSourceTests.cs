@@ -447,22 +447,25 @@ public class SseSourceTests
         Assert.Same(source, result);
     }
 
-    [Fact]
-    public async Task StartConsumeAsync_Bind_MapsCamelToSnakeCaseAndDeserializes()
+    [Theory]
+    [InlineData("stock_updated", NameCasePolicy.SnakeCase)]
+    [InlineData("stock-updated", NameCasePolicy.KebabCase)]
+    [InlineData("stockUpdated", NameCasePolicy.CamelCase)]
+    public async Task StartConsumeAsync_Bind_MapsCamelToConfiguredNameCases(string eventType, NameCasePolicy policy)
     {
         // ARRANGE
         MockHandler handler = new MockHandler();
         StockData stock = new StockData("MSFT", 400.0m);
         string sse = MockSseHelpers.BuildSseStream(new SseEvent 
         { 
-            EventType = "stock_updated", 
+            EventType = eventType, 
             Data = JsonSerializer.Serialize(stock)
         });
         
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using SseSource source = CreateSource(client, new SseSourceOptions()
+        await using SseSource source = CreateSource(client, new SseSourceOptions
         {
-            DefaultEventNameCasePolicy = NameCasePolicy.SnakeCase
+            DefaultEventNameCasePolicy = policy
         });
         
         // ACT

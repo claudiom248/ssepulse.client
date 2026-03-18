@@ -8,7 +8,8 @@ public class NamingCasePolicyRegistry
     {
         { NameCasePolicy.PascalCase, new PascalCasePolicy() },
         { NameCasePolicy.CamelCase, new CamelCasePolicy() },
-        { NameCasePolicy.SnakeCase, new SnakeCasePolicy() }
+        { NameCasePolicy.SnakeCase, new SnakeCasePolicy() },
+        { NameCasePolicy.KebabCase, new KebabCasePolicy() }
     };
     
     public static INamingCasePolicy GetPolicy(NameCasePolicy policy) => Policies[policy];

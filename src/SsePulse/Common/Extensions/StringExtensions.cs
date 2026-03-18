@@ -15,6 +15,12 @@ public static class StringExtensions
         {
             return NamingCasePolicyRegistry.GetPolicy(NameCasePolicy.SnakeCase).Apply(@this);
         }
+        
+        public string ToKebabCase()
+        {
+            return NamingCasePolicyRegistry.GetPolicy(NameCasePolicy.KebabCase).Apply(@this);
+        }
+
 
         public string ApplyNamingCasePolicy(NameCasePolicy policy)
         {
