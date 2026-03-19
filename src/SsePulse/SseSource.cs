@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using SsePulse.Common.Models;
 using SsePulse.Utils;
 
 namespace SsePulse;
@@ -60,7 +61,7 @@ public partial class SseSource : IDisposable
                     _tcs.TrySetResult(true);
                     SetDisconnected();
                 },
-                _options.RetryOptions,
+                _options.RetryOptions ?? RetryOptions.None,
                 TryInvokeConnectionLostHandler,
                 cancellationToken: linkedCancellationToken);
         }

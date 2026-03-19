@@ -1,3 +1,5 @@
+using SsePulse.Common.Models;
+
 namespace SsePulse.Utils;
 
 public static class Execute
@@ -18,13 +20,13 @@ public static class Execute
     
 public static async Task WithRetryAsync(
         Func<CancellationToken, Task> action, 
-        RetryOptions? options = null,
+        RetryOptions options,
         Action<Exception>? onError = null,
         CancellationToken cancellationToken = default)
     {
         await WithRetryAsyncCore(
             action, 
-            options ?? RetryOptions.Default,
+            options,
             onError ?? (ex => { }),
             cancellationToken);
     }
@@ -33,10 +35,14 @@ public static async Task WithRetryAsync(
         Action<Exception> onError,
         CancellationToken cancellationToken)
     {
-        int retryCount = 0;
+        int attempts = -1;
         while (true)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            attempts++;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
             try
             {
                 await action.Invoke(cancellationToken);
@@ -45,20 +51,25 @@ public static async Task WithRetryAsync(
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 onError.Invoke(ex);
-                if (retryCount++ > options.RetryCount)
+                if (attempts >= options.MaxRetries)
                 {
                     throw;
                 }
-                
-#if UNIT_TEST
-                await Task.Delay(10, cancellationToken);
-#else
-                    TimeSpan delay = TimeSpan.FromSeconds(Math.Min(
-                        Math.Pow(options.Value.StartDelaySeconds, retryCount),
-                        options.Value.MaxDelaySeconds));
-                    @await Task.Delay(delay, cancellationToken);
-#endif
+                TimeSpan delay = CalculateDelay();
+                await Task.Delay(delay, cancellationToken);
             }
+        }
+
+        TimeSpan CalculateDelay()
+        {
+            return options.Strategy switch
+            {
+                RetryStrategy.Fixed => TimeSpan.FromMilliseconds(options.DelayInMilliseconds),
+                RetryStrategy.Exponential => TimeSpan.FromMilliseconds(Math.Min(
+                    Math.Pow(options.DelayInMilliseconds, attempts), 
+                    options.MaxDelayInMilliseconds)),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
     }
 }

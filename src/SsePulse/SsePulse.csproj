@@ -9,7 +9,6 @@
         <LangVersion>14</LangVersion>
         <Configurations>Debug;Release;Test</Configurations>
         <Platforms>AnyCPU</Platforms>
-        <DefineConstants>$(DefineConstants);UNIT_TEST</DefineConstants>
         <DebugType>embedded</DebugType>
         <EmbedAllSources>True</EmbedAllSources>
     </PropertyGroup>
