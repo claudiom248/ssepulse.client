@@ -482,3 +482,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 /src/SsePulse/Client.cs
+/.cursor/plans/Add async external HttpClient test-cef23c23.plan.md
+/.idea/.idea.SsePulse/.idea/indexLayout.xml
+/.idea/.idea.SsePulse/.idea/projectSettingsUpdater.xml
+/.idea/.idea.SsePulse/.idea/vcs.xml
