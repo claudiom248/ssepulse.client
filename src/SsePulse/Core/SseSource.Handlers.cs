@@ -2,9 +2,12 @@ using System.Net.ServerSentEvents;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using SsePulse.Common.Extensions;
+using SsePulse.Core.Abstractions;
+using SsePulse.Core.Attributes;
+using SsePulse.Core.Internal;
 using SsePulse.Utils;
 
-namespace SsePulse;
+namespace SsePulse.Core;
 
 public partial class SseSource
 {

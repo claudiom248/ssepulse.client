@@ -1,6 +1,6 @@
 namespace SsePulse.Common;
 
-public interface INamingCasePolicy
+internal interface INamingCasePolicy
 {
     string Apply(string pascalCaseName);
 }

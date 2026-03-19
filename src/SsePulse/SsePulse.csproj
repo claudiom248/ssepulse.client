@@ -25,9 +25,4 @@
         <InternalsVisibleTo Include="SsePulse.Tests" />
     </ItemGroup>
 
-    
-    <ItemGroup>
-      <Folder Include="Core\" />
-    </ItemGroup>
-
 </Project>

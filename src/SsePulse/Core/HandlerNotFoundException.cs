@@ -1,6 +1,6 @@
-namespace SsePulse;
+namespace SsePulse.Core;
 
-public class HandlerNotFoundException : Exception
+internal class HandlerNotFoundException : Exception
 {
     public HandlerNotFoundException(string eventName) : base($"Handler for event '{eventName}' not found.")
     {

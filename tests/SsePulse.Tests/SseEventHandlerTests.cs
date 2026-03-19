@@ -1,4 +1,5 @@
 using System.Net.ServerSentEvents;
+using SsePulse.EventHandlers;
 
 namespace SsePulse.Tests;
 

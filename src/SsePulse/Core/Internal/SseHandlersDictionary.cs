@@ -1,7 +1,8 @@
 using System.Net.ServerSentEvents;
 using System.Runtime.CompilerServices;
+using SsePulse.EventHandlers;
 
-namespace SsePulse;
+namespace SsePulse.Core.Internal;
 
 internal class SseHandlersDictionary : Dictionary<string, ISseEventHandler>
 {

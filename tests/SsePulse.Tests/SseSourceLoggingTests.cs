@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using SsePulse.Core;
+using SsePulse.Core.Configuration;
 
 namespace SsePulse.Tests;
 

@@ -2,7 +2,7 @@ using SsePulse.Utils;
 
 namespace SsePulse.Common.Extensions;
 
-public static class StringExtensions
+internal static class StringExtensions
 {
     extension(string @this)
     {

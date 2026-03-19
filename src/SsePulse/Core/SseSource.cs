@@ -5,9 +5,11 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Common.Models;
+using SsePulse.Core.Configuration;
+using SsePulse.EventHandlers;
 using SsePulse.Utils;
 
-namespace SsePulse;
+namespace SsePulse.Core;
 
 public partial class SseSource : IDisposable
 #if !NETSTANDARD2_0

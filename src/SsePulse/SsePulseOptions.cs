@@ -1,3 +1,5 @@
+using SsePulse.Core.Configuration;
+
 namespace SsePulse;
 
 public class SsePulseOptions

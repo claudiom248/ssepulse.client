@@ -2,7 +2,7 @@ using SsePulse.Common;
 
 namespace SsePulse.Utils;
 
-public class NamingCasePolicyRegistry
+internal class NamingCasePolicyRegistry
 {
     private static readonly Dictionary<NameCasePolicy, INamingCasePolicy> Policies = new()
     {

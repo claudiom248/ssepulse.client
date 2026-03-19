@@ -1,4 +1,4 @@
-namespace SsePulse;
+namespace SsePulse.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class MapEventNameAttribute : Attribute

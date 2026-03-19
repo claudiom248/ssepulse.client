@@ -1,4 +1,4 @@
-namespace SsePulse;
+namespace SsePulse.Core.Abstractions;
 
 public interface ISseEventsManager
 {

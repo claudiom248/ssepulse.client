@@ -1,8 +1,8 @@
 using System.Net.ServerSentEvents;
 
-namespace SsePulse;
+namespace SsePulse.EventHandlers;
 
-public interface ISseEventHandler
+internal interface ISseEventHandler
 {
     void Invoke(SseItem<string> item);
     Task InvokeAsync(SseItem<string> item, CancellationToken cancellationToken = default);

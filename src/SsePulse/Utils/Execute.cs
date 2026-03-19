@@ -2,7 +2,7 @@ using SsePulse.Common.Models;
 
 namespace SsePulse.Utils;
 
-public static class Execute
+internal static class Execute
 {
     public static async Task WithIgnoreExceptionAsync(
         Func<CancellationToken, Task> action, 

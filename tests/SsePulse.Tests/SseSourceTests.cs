@@ -1,5 +1,8 @@
 using System.Text.Json;
 using SsePulse.Common;
+using SsePulse.Core;
+using SsePulse.Core.Abstractions;
+using SsePulse.Core.Configuration;
 
 namespace SsePulse.Tests;
 
