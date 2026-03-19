@@ -10,7 +10,8 @@
         <Configurations>Debug;Release;Test</Configurations>
         <Platforms>AnyCPU</Platforms>
         <DefineConstants>$(DefineConstants);UNIT_TEST</DefineConstants>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DebugType>embedded</DebugType>
+        <EmbedAllSources>True</EmbedAllSources>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,7 +21,6 @@
         <PackageReference Include="System.Text.Json" Version="10.0.3" />
         <PackageReference Include="System.Threading.Tasks.DataFlow" Version="10.0.3" />
     </ItemGroup>
-
     
     <ItemGroup>
         <InternalsVisibleTo Include="SsePulse.Tests" />
