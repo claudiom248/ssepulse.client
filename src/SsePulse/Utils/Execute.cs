@@ -34,8 +34,9 @@ public static async Task WithRetryAsync(
         CancellationToken cancellationToken)
     {
         int retryCount = 0;
-        while (!cancellationToken.IsCancellationRequested)
+        while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 await action.Invoke(cancellationToken);

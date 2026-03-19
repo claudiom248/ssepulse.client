@@ -1,8 +1,9 @@
-using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.ServerSentEvents;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Utils;
 
 namespace SsePulse;
@@ -14,6 +15,7 @@ public partial class SseSource : IDisposable
 {
     private readonly HttpClient _client;
     private readonly SseSourceOptions _options;
+    private readonly ILogger<SseSource> _logger;
     private CancellationTokenSource _cts = new();
     private TaskCompletionSource<bool> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -27,10 +29,11 @@ public partial class SseSource : IDisposable
 
     public Task Completion => _tcs.Task;
 
-    public SseSource(HttpClient client, SseSourceOptions options)
+    public SseSource(HttpClient client, SseSourceOptions options, ILogger<SseSource>? logger = null)
     {
         _client = client;
         _options = options;
+        _logger = logger ?? NullLogger<SseSource>.Instance;
     }
 
     public async Task StartConsumeAsync(CancellationToken cancellationToken)
@@ -38,6 +41,8 @@ public partial class SseSource : IDisposable
         AssertNotDisposed();
         AssertNotStarted();
         _started = true;
+
+        _logger.LogInformation("Starting SSE consumption from {Path}", _options.Path);
 
         using CancellationTokenSource linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, cancellationToken);
         CancellationToken linkedCancellationToken =
@@ -49,6 +54,7 @@ public partial class SseSource : IDisposable
                 async _ =>
                 {
                     Stream sseStream = await OpenStream(linkedCancellationToken);
+                    _logger.LogDebug("SSE stream opened successfully");
                     SetConnected();
                     await ConsumeStream(sseStream);
                     _tcs.TrySetResult(true);
@@ -60,7 +66,7 @@ public partial class SseSource : IDisposable
         }
         catch (OperationCanceledException oce)
         {
-            Debug.WriteLine("Task canceled: ");
+            _logger.LogInformation("SSE consumption canceled");
             if (_cts.IsCancellationRequested)
             {
                 _tcs.TrySetResult(true);
@@ -73,7 +79,7 @@ public partial class SseSource : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine("Exception: " + ex.Message);
+            _logger.LogError(ex, "Exception occurred during SSE consumption");
             _tcs.TrySetException(ex);
             SetDisconnected(ex);
         }
@@ -114,6 +120,7 @@ public partial class SseSource : IDisposable
             int wasConnected = Interlocked.CompareExchange(ref _connected, 0, 1);
             if (wasConnected == 1)
             {
+                _logger.LogWarning(ex, "Connection lost, attempting to reconnect");
                 OnConnectionLost.Invoke(ex);
             }
         }
@@ -130,13 +137,25 @@ public partial class SseSource : IDisposable
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
         if (!string.IsNullOrEmpty(_lastEventId))
         {
+            _logger.LogDebug("Resuming SSE stream from Last-Event-ID: {LastEventId}", _lastEventId);
             request.Headers.TryAddWithoutValidation("Last-Event-ID", _lastEventId);
         }
-        HttpResponseMessage response = await _client.SendAsync(
-            request,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken);
-        response.EnsureSuccessStatusCode();
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await _client.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error occurred while opening SSE stream from {Path}", _options.Path);
+            throw;
+        }
+
 #if NET8_0_OR_GREATER
         Stream sseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 #else
@@ -148,19 +167,21 @@ public partial class SseSource : IDisposable
     private void SetConnected()
     {
         _connected = 1;
+        _logger.LogInformation("SSE connection established");
         OnConnectionEstablished.Invoke();
     }
 
     private void SetDisconnected(Exception? exception = null)
     {
-        Debug.WriteLine("disconnecting...");
         _connected = 0;
         if (exception is null)
         {
+            _logger.LogInformation("SSE connection closed gracefully");
             OnConnectionClosed.Invoke();
         }
         else
         {
+            _logger.LogError(exception, "SSE connection lost due to exception");
             OnConnectionLost.Invoke(exception);
         }
     }
@@ -196,15 +217,17 @@ public partial class SseSource : IDisposable
     {
         AssertNotDisposed();
         AssertStarted();
+        _logger.LogInformation("Stopping SSE consumption");
         _cts.Cancel();
         Completion.Wait(TimeSpan.FromSeconds(10));
     }
-    
+
 #if !NETSTANDARD2_0
     public async Task StopAsync()
     {
         AssertNotDisposed();
         AssertStarted();
+        _logger.LogInformation("Stopping SSE consumption");
         await _cts.CancelAsync();
     }
 #endif
@@ -230,12 +253,14 @@ public partial class SseSource : IDisposable
         {
             if (!_handlers.TryGetValue(eventType, out ISseEventHandler? handler))
             {
+                _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
                 throw new HandlerNotFoundException(eventType);
             }
             handler.Invoke(@event);
         }
         catch (Exception ex) when (ex is not HandlerNotFoundException)
         {
+            _logger.LogError(ex, "Error occurred while dispatching event '{EventType}'", eventType);
             OnError(ex);
         }
     }
