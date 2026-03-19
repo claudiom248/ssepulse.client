@@ -34,7 +34,7 @@ public class SseDataEventHandler<TEventData> : ISseEventHandler
 
     public void Invoke(SseItem<string> item)
     {
-        TEventData message = JsonSerializer.Deserialize<TEventData>(item.Data)!;
+        TEventData message = JsonSerializer.Deserialize<TEventData>(item.Data, Serialization.EventDataJsonSerializerOptions)!;
         _handler.Invoke(message);
     }
 
