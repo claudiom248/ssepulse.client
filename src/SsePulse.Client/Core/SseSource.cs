@@ -5,7 +5,7 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Common.Models;
-using SsePulse.Client.Core.Configuration;
+using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.EventHandlers;
 using SsePulse.Client.Utils;
 

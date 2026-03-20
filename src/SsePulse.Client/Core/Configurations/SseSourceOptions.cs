@@ -1,7 +1,7 @@
 using SsePulse.Client.Common;
 using SsePulse.Client.Common.Models;
 
-namespace SsePulse.Client.Core.Configuration;
+namespace SsePulse.Client.Core.Configurations;
 
 public class SseSourceOptions
 {

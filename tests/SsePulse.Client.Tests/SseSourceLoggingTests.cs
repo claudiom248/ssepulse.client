@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SsePulse.Client.Core;
-using SsePulse.Client.Core.Configuration;
+using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Tests.Mocks;
 
 namespace SsePulse.Client.Tests;

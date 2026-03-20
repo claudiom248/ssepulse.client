@@ -2,7 +2,7 @@ using System.Text.Json;
 using SsePulse.Client.Common;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configuration;
+using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Tests.Mocks;
 
 namespace SsePulse.Client.Tests;
