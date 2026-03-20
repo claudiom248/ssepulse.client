@@ -3,6 +3,7 @@ using SsePulse.Common;
 using SsePulse.Core;
 using SsePulse.Core.Abstractions;
 using SsePulse.Core.Configuration;
+using SsePulse.Tests.Mocks;
 
 namespace SsePulse.Tests;
 
