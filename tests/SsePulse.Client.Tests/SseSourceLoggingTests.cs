@@ -125,7 +125,7 @@ public class SseSourceLoggingTests
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
-        Assert.True(logger.HasLog(LogLevel.Error, "Error occurred while dispatching", typeof(InvalidOperationException)));
+        Assert.True(logger.HasLog(LogLevel.Error, "Error occurred while handling event", typeof(InvalidOperationException)));
     }
 
     [Fact]
@@ -143,20 +143,18 @@ public class SseSourceLoggingTests
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
-        Assert.True(logger.HasLog(LogLevel.Error, "HTTP error occurred", typeof(HttpRequestException)));
+        Assert.True(logger.HasLog(LogLevel.Error, "Error while establishing a connection with SSE endpoint", typeof(HttpRequestException)));
     }
 
     // --- Gruppo: Connection Lost Logging (2 tests) ---
 
     [Fact]
-    public async Task StartConsumeAsync_ConnectionLost_LogsWarning()
+    public async Task StartConsumeAsync_ConnectionLost_LogsError()
     {
         // ARRANGE
         MockLogger<SseSource> logger = new();
-        using HttpClient client = new(new SseCrashHandler(failImmediately: false))
-        {
-            BaseAddress = new Uri("https://example.com")
-        };
+        using HttpClient client = new(new SseCrashHandler(failImmediately: false));
+        client.BaseAddress = new Uri("https://example.com");
         await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
         source.On("message", _ => { });
 
@@ -164,7 +162,7 @@ public class SseSourceLoggingTests
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
-        Assert.True(logger.HasLog(LogLevel.Warning, "Connection lost", typeof(IOException)));
+        Assert.True(logger.HasLog(LogLevel.Error, "Connection lost", typeof(IOException)));
     }
 
     [Fact]

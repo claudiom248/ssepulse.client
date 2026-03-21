@@ -230,7 +230,8 @@ public class SseSourceTests
     public async Task StartConsumeAsync_Twice_ThrowsInvalidOperationException()
     {
         await using SseSource source = CreateSource();
-        Task task = source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+        _ = Task.Run(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
+        await Task.Delay(3000);
         await Assert.ThrowsAsync<InvalidOperationException>(() => source.StartConsumeAsync(default));
     }
 
