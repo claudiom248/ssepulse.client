@@ -66,6 +66,7 @@ public partial class SseSource : IDisposable
         catch (OperationCanceledException oce)
         {
             _logger.LogInformation("SSE consumption canceled");
+            _connection.SetDisconnected();
             if (_cts.IsCancellationRequested)
             {
                 _tcs.TrySetResult(true);
@@ -73,6 +74,7 @@ public partial class SseSource : IDisposable
             else
             {
                 _tcs.TrySetCanceled(oce.CancellationToken);
+                throw;
             }
         }
         catch (Exception ex)
@@ -80,6 +82,7 @@ public partial class SseSource : IDisposable
             _logger.LogError(ex, "Exception occurred during SSE consumption");
             _tcs.TrySetException(ex);
             _connection.SetDisconnected(ex);
+            throw;
         }
 
         return;
@@ -195,7 +198,11 @@ public partial class SseSource : IDisposable
         if (!_handlers.TryGetValue(eventType, out ISseEventHandler? handler))
         {
             _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
-            throw new HandlerNotFoundException(eventType);
+            if (_options.ThrowWhenEventHandlerNotFound)
+            {
+                throw new HandlerNotFoundException(eventType);
+            }
+            return;
         }
         try
         {

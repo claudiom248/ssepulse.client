@@ -9,4 +9,5 @@ public class SseSourceOptions
     public int MaxDegreeOfParallelism { get; set; }  = 4;
     public NameCasePolicy DefaultEventNameCasePolicy { get; set; } = NameCasePolicy.PascalCase;
     public RetryOptions? RetryOptions { get; set; }
+    public bool ThrowWhenEventHandlerNotFound { get; set; } = true;
 }

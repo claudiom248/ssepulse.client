@@ -14,7 +14,11 @@ public class SseSourceLoggingTests
         BaseAddress = new Uri("https://example.com")
     };
 
-    private static readonly SseSourceOptions DefaultOptions = new() { Path = "/sse", MaxDegreeOfParallelism = 1 };
+    private static readonly SseSourceOptions DefaultOptions = new()
+    {
+        Path = "/sse", 
+        MaxDegreeOfParallelism = 1
+    };
 
     // --- Gruppo: Logger Initialization (2 tests) ---
 
@@ -102,10 +106,8 @@ public class SseSourceLoggingTests
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = new(client, DefaultOptions, logger);
 
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<HandlerNotFoundException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));        
         Assert.True(logger.HasLog(LogLevel.Warning, "No handler found"));
         Assert.True(logger.HasLog(LogLevel.Warning, "unknown"));
     }
@@ -138,11 +140,9 @@ public class SseSourceLoggingTests
             BaseAddress = new Uri("https://example.com")
         };
         await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
-
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
+        
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<HttpRequestException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.True(logger.HasLog(LogLevel.Error, "Error while establishing a connection with SSE endpoint", typeof(HttpRequestException)));
     }
 
@@ -157,11 +157,9 @@ public class SseSourceLoggingTests
         client.BaseAddress = new Uri("https://example.com");
         await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
         source.On("message", _ => { });
-
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
+        
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<IOException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.True(logger.HasLog(LogLevel.Error, "Connection lost", typeof(IOException)));
     }
 
@@ -176,10 +174,8 @@ public class SseSourceLoggingTests
         };
         await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
 
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<HttpRequestException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.True(logger.HasLog(LogLevel.Error, "Exception occurred during SSE consumption"));
     }
 
@@ -219,11 +215,9 @@ public class SseSourceLoggingTests
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
-
-        // ACT
-        await source.StartConsumeAsync(new CancellationToken(true));
-
-        // ASSERT
+        
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<OperationCanceledException>(() => source.StartConsumeAsync(new CancellationToken(true)));
         Assert.True(logger.HasLog(LogLevel.Information, "SSE consumption canceled"));
     }
 

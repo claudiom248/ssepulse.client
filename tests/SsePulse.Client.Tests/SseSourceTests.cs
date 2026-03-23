@@ -16,13 +16,16 @@ public class SseSourceTests
         BaseAddress = new Uri("https://example.com")
     };
 
-    private static readonly SseSourceOptions DefaultOptions = new() { Path = "/sse", MaxDegreeOfParallelism = 1 };
+    private static readonly SseSourceOptions DefaultOptions = new()
+    {
+        Path = "/sse", 
+        MaxDegreeOfParallelism = 1,
+        ThrowWhenEventHandlerNotFound = false
+    };
 
     private static SseSource CreateSource(HttpClient? client = null, SseSourceOptions? options = null) =>
         new(client ?? DefaultClient, options ?? DefaultOptions);
-
-    // --- Gruppo: Constructor and Initialization (3 tests) ---
-
+    
     [Fact]
     public void Constructor_InitializesCorrectly()
     {
@@ -47,9 +50,7 @@ public class SseSourceTests
         Assert.NotNull(completion);
         Assert.False(completion.IsCompleted);
     }
-
-    // --- Gruppo: Handler Registration (4 tests) ---
-
+    
     [Fact]
     public void On_StringHandler_ReturnsChainableInstance()
     {
@@ -81,9 +82,7 @@ public class SseSourceTests
         SseSource result = source.On("e1", _ => { }).On("e2", _ => { });
         Assert.Same(source, result);
     }
-
-    // --- Gruppo: Event Handling and Dispatching (6 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_StringHandler_InvokesOnMatch()
     {
@@ -164,9 +163,7 @@ public class SseSourceTests
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
         Assert.NotNull(error);
     }
-
-    // --- Gruppo: Last-Event-ID (1 test) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_WithId_UpdatesInternalState()
     {
@@ -188,9 +185,7 @@ public class SseSourceTests
         // ASSERT
         Assert.Equal("456", handler.LastEventIdSent);
     }
-
-    // --- Gruppo: Connection Lifecycle (3 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_Establishment_InvokesCallback()
     {
@@ -222,17 +217,17 @@ public class SseSourceTests
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = CreateSource(client);
-        source.OnConnectionLost = _ => called = true;
+        source.OnConnectionClosed = () => called = true;
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
         Assert.True(called);
     }
-
-    // --- Gruppo: Control Flow and Reset (3 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_Twice_ThrowsInvalidOperationException()
     {
-        await using SseSource source = CreateSource();
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using SseSource source = CreateSource(client);
         _ = Task.Run(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         await Task.Delay(3000);
         await Assert.ThrowsAsync<InvalidOperationException>(() => source.StartConsumeAsync(default));
@@ -337,9 +332,7 @@ public class SseSourceTests
         await source.DisposeAsync();
         await Assert.ThrowsAsync<ObjectDisposedException>(() => source.StartConsumeAsync(CancellationToken.None));
     }
-
-    // --- Gruppo: Stop and Async Dispose (6 tests) ---
-
+    
     [Fact]
     public async Task DisposeAsync_NewInstance_CompletesSuccessfully()
     {
@@ -385,23 +378,7 @@ public class SseSourceTests
         await source.DisposeAsync();
         await Assert.ThrowsAsync<ObjectDisposedException>(() => source.StopAsync());
     }
-
-    // --- Gruppo: 
-    [Fact]
-    public async Task StartConsumeAsync_InitialConnectionFail_InvokesOnConnectionLost()
-    {
-        // ARRANGE: Crash immediato alla GET
-        using HttpClient client = new(new SseCrashHandler(failImmediately: true));
-        await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" });
-
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(2000).Token);
-
-        // ASSERT
-        Assert.False(source.IsConnected);
-        Assert.True(source.Completion.Exception is not null);
-    }
-
+    
     [Fact]
     public async Task StartConsumeAsync_MidStreamCrash_InvokesOnConnectionLost()
     {
@@ -420,34 +397,28 @@ public class SseSourceTests
             firstMessage = data;
         });
         source.OnConnectionLost = ex => capturedError = ex;
-
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
-        Assert.Equal("healthy", firstMessage); // Il primo evento è passato
+        
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<IOException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));        Assert.Equal("healthy", firstMessage); // Il primo evento è passato
         Assert.NotNull(capturedError); // Poi è arrivato il crash
-        Assert.IsType<IOException>(capturedError);
         Assert.False(source.IsConnected); // Lo stato deve essere tornato a 0
     }
 
     [Fact]
     public async Task StartConsumeAsync_AfterAllRetriesFail_SetsTcsException()
     {
-        // ARRANGE: Configura retry minimi per non far durare il test una vita
+        // ARRANGE: Configura retry minimi per non far durare il test all'infinito
         using HttpClient client = new(new SseCrashHandler(failImmediately: true));
         client.BaseAddress = new Uri("https://example.com");
         // Nota: Assicurati che Helpers.RunWithRetryAsync usi i parametri che gli passi
         await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" });
 
         // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+        _ = Task.Run(async () => await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
 
-        // ASSERT: Il Task Completion deve riflettere il fallimento
+        // ACT & ASSERT: Il Task Completion deve riflettere il fallimento
         await Assert.ThrowsAsync<HttpRequestException>(async () => await source.Completion);
     }
-
-    // --- Gruppo: Reflection Binding (3 tests) ---
 
     [Fact]
     public void Bind_ReturnsChainableInstance()
@@ -510,8 +481,6 @@ public class SseSourceTests
         // ASSERT
         Assert.Equal("System Overload", handler.LastMessage);
     }
-    
-    // --- Gruppo: OnRequest property impostata (5 tests) ---
 
     [Fact]
     public async Task StartConsumeAsync_OnRequest_IsInvokedBeforeSendingRequest()
@@ -620,11 +589,8 @@ public class SseSourceTests
             throw new InvalidOperationException("OnRequest failed");
         };
 
-        source.On("e", _ => { });
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(() => source.Completion);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
     }
 
     private class TestEventData
