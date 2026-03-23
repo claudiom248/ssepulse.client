@@ -33,7 +33,11 @@ internal class SseConnection
         try
         {
             cancellationToken.Register(() => SetDisconnected());
-            HttpRequestMessage request = PrepareRequest();
+            HttpRequestMessage request = PrepareRequest(cancellationToken);
+            if (_source.OnRequest is not null)
+            {
+                await _source.OnRequest?.Invoke(request, cancellationToken)!;
+            }
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
@@ -69,7 +73,7 @@ internal class SseConnection
             throw;
         }
 
-        HttpRequestMessage PrepareRequest()
+        HttpRequestMessage PrepareRequest(CancellationToken cancellationToken1)
         {
             HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, _options.Path);
             httpRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));

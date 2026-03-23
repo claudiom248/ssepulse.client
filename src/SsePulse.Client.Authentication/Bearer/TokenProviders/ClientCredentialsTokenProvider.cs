@@ -1,0 +1,41 @@
+using SsePulse.Client.Authentication.Bearer.TokenProviders.Configurations;
+
+namespace SsePulse.Client.Authentication.Bearer.TokenProviders;
+
+public class ClientCredentialsTokenProvider : ITokenProvider
+{
+    private readonly ClientCredentialsTokenProviderConfiguration _configuration;
+
+    public ClientCredentialsTokenProvider(ClientCredentialsTokenProviderConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+    public async ValueTask<string> GetAuthenticationTokenAsync(CancellationToken cancellationToken)
+    {
+        HttpClient httpClient = new()
+        {
+            BaseAddress = _configuration.TokenEndpoint
+        };
+
+        HttpRequestMessage request = new(HttpMethod.Post, httpClient.BaseAddress);
+        try
+        {
+            HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"HTTP error occurred: {response.StatusCode}");
+            }
+
+#if NET8_0_OR_GREATER
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+#else
+            return await response.Content.ReadAsStringAsync();
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+}

@@ -14,6 +14,8 @@ public partial class SseSource
     private readonly SseHandlersDictionary _handlers = new();
 
     internal Action? OnDisposed { get; set; }
+    
+    public Func<HttpRequestMessage, CancellationToken, Task>? OnRequest { get; set; }
 
     public Action OnConnectionEstablished
     {

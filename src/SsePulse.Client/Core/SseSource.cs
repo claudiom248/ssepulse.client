@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Core.Internal;
 using SsePulse.Client.EventHandlers;
@@ -32,6 +33,7 @@ public partial class SseSource : IDisposable
         _options = options;
         _logger = logger ?? NullLogger<SseSource>.Instance;
         _connection = new SseConnection(
+            
             this,
             client,
             options,
@@ -51,7 +53,11 @@ public partial class SseSource : IDisposable
 
         try
         {
+#if NET8_0_OR_GREATER
+            await using Stream sseStream = await _connection.EstablishAsync(linkedCancellationToken);
+#else 
             using Stream sseStream = await _connection.EstablishAsync(linkedCancellationToken);
+#endif
             _logger.LogDebug("SSE stream opened successfully");
             await ConsumeStream(sseStream);
             _tcs.TrySetResult(true);
@@ -94,18 +100,23 @@ public partial class SseSource : IDisposable
         {
             ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock();
             SseParser<string> parser = SseParser.Create(sseStream);
-            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(linkedCancellationToken))
+            try
             {
-                if (!string.IsNullOrWhiteSpace(sseItem.EventId))
+                await foreach (SseItem<string> sseItem in parser.EnumerateAsync(linkedCancellationToken))
                 {
-                    _lastEventId = sseItem.EventId!;
+                    if (!string.IsNullOrWhiteSpace(sseItem.EventId))
+                    {
+                        _lastEventId = sseItem.EventId!;
+                    }
+
+                    await dispatcherBlock.SendAsync(sseItem, linkedCancellationToken);
                 }
-
-                dispatcherBlock.Post(sseItem);
             }
-
-            dispatcherBlock.Complete();
-            await dispatcherBlock.Completion;
+            finally
+            {
+                dispatcherBlock.Complete();
+                await dispatcherBlock.Completion;
+            }
         }
 
         CancellationToken CreateLinkedCancellationToken()

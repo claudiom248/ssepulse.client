@@ -9,9 +9,15 @@
     <File Path="Gitversion.yml" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/SsePulse.Client.Authentication/SsePulse.Client.Authentication.csproj">
+      <BuildType Solution="Test|*" Project="Debug" />
+    </Project>
     <Project Path="src/SsePulse.Client/SsePulse.Client.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SsePulse.Client.Authentication.Tests/SsePulse.Client.Authentication.Tests.csproj">
+      <BuildType Solution="Test|*" Project="Debug" />
+    </Project>
     <Project Path="tests/SsePulse.Client.Tests/SsePulse.Client.Tests.csproj" />
   </Folder>
 </Solution>
