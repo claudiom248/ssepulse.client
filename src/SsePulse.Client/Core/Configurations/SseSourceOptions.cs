@@ -1,5 +1,6 @@
 using SsePulse.Client.Common;
 using SsePulse.Client.Common.Models;
+using SsePulse.Client.Common.NamingPolicies;
 
 namespace SsePulse.Client.Core.Configurations;
 

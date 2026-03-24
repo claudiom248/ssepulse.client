@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Common;
+namespace SsePulse.Client.Common.NamingPolicies;
 
 internal class CamelCasePolicy : INamingCasePolicy
 {

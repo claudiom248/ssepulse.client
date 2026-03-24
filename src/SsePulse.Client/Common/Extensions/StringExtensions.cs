@@ -1,3 +1,4 @@
+using SsePulse.Client.Common.NamingPolicies;
 using SsePulse.Client.Utils;
 
 namespace SsePulse.Client.Common.Extensions;
