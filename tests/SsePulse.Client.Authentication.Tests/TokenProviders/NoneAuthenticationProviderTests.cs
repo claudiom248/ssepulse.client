@@ -1,3 +1,5 @@
+using SsePulse.Client.Authentication.Providers;
+
 namespace SsePulse.Client.Authentication.Tests.TokenProviders;
 
 public class NoneAuthenticationProviderTests
