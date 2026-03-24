@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Authentication.Bearer.TokenProviders;
+namespace SsePulse.Client.Authentication.Providers.TokenProviders;
 
 public enum TokenProviderType
 {

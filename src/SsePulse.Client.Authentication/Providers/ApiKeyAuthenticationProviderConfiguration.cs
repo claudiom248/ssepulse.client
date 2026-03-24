@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Authentication.ApiKey;
+namespace SsePulse.Client.Authentication.Providers;
 
 public class ApiKeyAuthenticationProviderConfiguration(string Key, string HeaderKey = "X-Api-Key")
 {

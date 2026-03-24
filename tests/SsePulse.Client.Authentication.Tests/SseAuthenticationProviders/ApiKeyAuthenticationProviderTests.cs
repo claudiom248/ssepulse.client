@@ -1,6 +1,6 @@
-using SsePulse.Client.Authentication.ApiKey;
+using SsePulse.Client.Authentication.Providers;
 
-namespace SsePulse.Client.Authentication.Tests;
+namespace SsePulse.Client.Authentication.Tests.SseAuthenticationProviders;
 
 public class ApiKeyAuthenticationProviderTests
 {

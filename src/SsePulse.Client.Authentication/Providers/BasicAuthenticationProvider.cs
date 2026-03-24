@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text;
 using SsePulse.Client.Authentication.Abstractions;
-using SsePulse.Client.Authentication.Bearer.TokenProviders;
 using SsePulse.Client.Authentication.Common.Credentials;
+using SsePulse.Client.Authentication.Providers.TokenProviders;
 
-namespace SsePulse.Client.Authentication.Basic;
+namespace SsePulse.Client.Authentication.Providers;
 
 public class BasicAuthenticationProvider : ISseAuthenticationProvider
 {

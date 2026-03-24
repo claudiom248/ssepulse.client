@@ -1,6 +1,6 @@
-using SsePulse.Client.Authentication.Bearer.TokenProviders.Configurations;
+using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
 
-namespace SsePulse.Client.Authentication.Bearer.TokenProviders;
+namespace SsePulse.Client.Authentication.Providers.TokenProviders;
 
 public class ClientCredentialsTokenProvider : ITokenProvider
 {

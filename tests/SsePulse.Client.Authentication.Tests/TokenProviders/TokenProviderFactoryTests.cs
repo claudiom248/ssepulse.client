@@ -1,8 +1,8 @@
-using SsePulse.Client.Authentication.Bearer.TokenProviders;
-using SsePulse.Client.Authentication.Bearer.TokenProviders.Configurations;
 using SsePulse.Client.Authentication.Common.Credentials;
+using SsePulse.Client.Authentication.Providers.TokenProviders;
+using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
 
-namespace SsePulse.Client.Authentication.Tests;
+namespace SsePulse.Client.Authentication.Tests.TokenProviders;
 
 public class TokenProviderFactoryTests
 {

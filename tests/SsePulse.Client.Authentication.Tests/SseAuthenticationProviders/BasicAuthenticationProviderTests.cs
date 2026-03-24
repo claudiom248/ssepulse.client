@@ -1,9 +1,8 @@
-using System.Net.Http.Headers;
 using System.Text;
-using SsePulse.Client.Authentication.Basic;
 using SsePulse.Client.Authentication.Common.Credentials;
+using SsePulse.Client.Authentication.Providers;
 
-namespace SsePulse.Client.Authentication.Tests;
+namespace SsePulse.Client.Authentication.Tests.SseAuthenticationProviders;
 
 public class BasicAuthenticationProviderTests
 {

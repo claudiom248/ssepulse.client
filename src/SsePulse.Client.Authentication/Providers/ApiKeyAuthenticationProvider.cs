@@ -1,6 +1,6 @@
 using SsePulse.Client.Authentication.Abstractions;
 
-namespace SsePulse.Client.Authentication.ApiKey;
+namespace SsePulse.Client.Authentication.Providers;
 
 public class ApiKeyAuthenticationProvider : ISseAuthenticationProvider
 {

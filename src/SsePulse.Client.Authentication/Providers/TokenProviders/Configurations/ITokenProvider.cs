@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Authentication.Bearer.TokenProviders.Configurations;
+namespace SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
 
 public interface ITokenProvider
 {
