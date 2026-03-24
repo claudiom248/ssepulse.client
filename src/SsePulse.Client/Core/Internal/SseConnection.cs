@@ -14,19 +14,16 @@ internal class SseConnection
     private readonly ILogger<SseSource> _logger;
     private readonly HttpClient _client;
     private readonly SseSourceOptions _options;
-    private readonly Func<string?> _lastEventIdProvider;
     private volatile int _connected;
 
     public bool IsConnected => Convert.ToBoolean(_connected);
 
-    public SseConnection(SseSource source, HttpClient client, SseSourceOptions options, ILogger<SseSource> logger,
-        Func<string?> lastEventIdProvider)
+    public SseConnection(SseSource source, HttpClient client, SseSourceOptions options, ILogger<SseSource> logger)
     {
         _source = source;
         _logger = logger;
         _client = client;
         _options = options;
-        _lastEventIdProvider = lastEventIdProvider;
     }
 
     public async Task<Stream> EstablishAsync(CancellationToken cancellationToken)
@@ -76,18 +73,13 @@ internal class SseConnection
         {
             HttpRequestMessage request = new(HttpMethod.Get, _options.Path);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-            if (!string.IsNullOrEmpty(_lastEventIdProvider()))
-            {
-                _logger.LogDebug("Resuming SSE stream from Last-Event-ID: {LastEventId}", _lastEventIdProvider());
-                request.Headers.TryAddWithoutValidation("Last-Event-ID", _lastEventIdProvider());
-            }
             await TryApplyMutators(request);
             return request;
         }
 
         async Task TryApplyMutators(HttpRequestMessage request)
         {
-            foreach (IRequestMutator requestMutator in _options.RequestMutators)
+            foreach (IRequestMutator requestMutator in _source._requestMutators)
             {
                 try
                 {

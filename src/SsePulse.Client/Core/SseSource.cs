@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Core.Internal;
 using SsePulse.Client.EventHandlers;
@@ -22,22 +23,29 @@ public partial class SseSource : IDisposable
 
     private volatile bool _started;
     private volatile bool _disposed;
-    private string? _lastEventId;
 
     public bool IsConnected => _connection.IsConnected;
     public Task Completion => _tcs.Task;
+
+    internal readonly IEnumerable<IRequestMutator> _requestMutators = [];
+    private readonly ILastEventIdStore? _lastEventIdStore;
 
     public SseSource(HttpClient client, SseSourceOptions options, ILogger<SseSource>? logger = null)
     {
         _options = options;
         _logger = logger ?? NullLogger<SseSource>.Instance;
         _connection = new SseConnection(
-            
             this,
             client,
             options,
-            _logger,
-            () => _lastEventId);
+            _logger);
+    }
+    
+    internal SseSource(HttpClient client, SseSourceOptions options, ILogger<SseSource> logger,
+        IEnumerable<IRequestMutator> requestMutators, ILastEventIdStore? lastEventIdStore = null) : this(client, options, logger)
+    {
+        _requestMutators = requestMutators;
+        _lastEventIdStore = lastEventIdStore;
     }
 
     public async Task StartConsumeAsync(CancellationToken cancellationToken)
@@ -106,11 +114,10 @@ public partial class SseSource : IDisposable
             {
                 await foreach (SseItem<string> sseItem in parser.EnumerateAsync(linkedCancellationToken))
                 {
-                    if (!string.IsNullOrWhiteSpace(sseItem.EventId))
+                    if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
                     {
-                        _lastEventId = sseItem.EventId!;
+                        _lastEventIdStore.Set(sseItem.EventId!);
                     }
-
                     await dispatcherBlock.SendAsync(sseItem, linkedCancellationToken);
                 }
             }

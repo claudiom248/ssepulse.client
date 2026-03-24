@@ -1,8 +1,10 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Common;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
+using SsePulse.Client.Core.Internal;
 using SsePulse.Client.Tests.Mocks;
 
 namespace SsePulse.Client.Tests;
@@ -23,8 +25,8 @@ public class SseSourceTests
         ThrowWhenEventHandlerNotFound = false
     };
 
-    private static SseSource CreateSource(HttpClient? client = null, SseSourceOptions? options = null) =>
-        new(client ?? DefaultClient, options ?? DefaultOptions);
+    private static SseSource CreateSource(HttpClient? client = null, SseSourceOptions? options = null, IEnumerable<IRequestMutator>? mutators = null, ILastEventIdStore? lastEventIdStore = null) =>
+        new(client ?? DefaultClient, options ?? DefaultOptions, NullLogger<SseSource>.Instance, mutators ?? [], lastEventIdStore);
     
     [Fact]
     public void Constructor_InitializesCorrectly()
@@ -165,7 +167,7 @@ public class SseSourceTests
     }
     
     [Fact]
-    public async Task StartConsumeAsync_WithId_UpdatesInternalState()
+    public async Task StartConsumeAsync_WithLastEventIdMutator_UpdatesInternalState()
     {
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(
@@ -173,14 +175,19 @@ public class SseSourceTests
             new SseEvent { Id = "456", EventType = "e", Data = "2" });
         MockHttpMessageHandler handler = new(sse);
         using HttpClient client = MockSseHelpers.CreateHttpClientWithHandler(handler);
-        await using SseSource source = CreateSource(client);
+        
+        LastEventIdStore lastEventIdStore = new();
+        await using SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse"
+        }, [new LastEventIdRequestMutator(lastEventIdStore, NullLogger<SseSource>.Instance)], lastEventIdStore);
         source.On("e", _ => { });
 
         // ACT
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
         await source.StopAsync();
         source.Reset();
-        await source.StartConsumeAsync(new CancellationTokenSource(10000).Token);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
         Assert.Equal("456", handler.LastEventIdSent);
@@ -490,8 +497,7 @@ public class SseSourceTests
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = CreateSource(client, new SseSourceOptions 
         { 
-            Path = "/sse",
-            RequestMutators = []
+            Path = "/sse"
         });
         source.On("e", _ => { });
 
@@ -517,9 +523,8 @@ public class SseSourceTests
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = CreateSource(client, new SseSourceOptions 
         { 
-            Path = "/sse",
-            RequestMutators = [mutator]
-        });
+            Path = "/sse"
+        }, [mutator]);
         source.On("e", _ => { });
 
         // ACT
@@ -557,9 +562,8 @@ public class SseSourceTests
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = CreateSource(client, new SseSourceOptions 
         { 
-            Path = "/sse",
-            RequestMutators = [mutator1, mutator2, mutator3]
-        });
+            Path = "/sse"
+        },  [mutator1, mutator2, mutator3]);
         source.On("e", _ => { });
 
         // ACT
@@ -583,9 +587,8 @@ public class SseSourceTests
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using SseSource source = CreateSource(client, new SseSourceOptions 
         { 
-            Path = "/sse",
-            RequestMutators = [failingMutator1, failingMutator2]
-        });
+            Path = "/sse"
+        }, [failingMutator1, failingMutator2]);
         source.On("e", _ => { });
 
         // ACT & ASSERT

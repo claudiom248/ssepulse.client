@@ -30,6 +30,7 @@ internal class SseHandlersDictionary : Dictionary<string, ISseEventHandler>
         AddHandlerCore(eventName, new SseDataEventHandler<TEventData>(handler));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddHandlerCore(string eventName, ISseEventHandler handler)
     {
 #if NET8_0_OR_GREATER

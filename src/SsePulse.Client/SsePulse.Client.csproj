@@ -23,6 +23,7 @@
     
     <ItemGroup>
         <InternalsVisibleTo Include="SsePulse.Client.Tests" />
+        <InternalsVisibleTo Include="SsePulse.Client.Authentication" />
     </ItemGroup>
 
 </Project>
