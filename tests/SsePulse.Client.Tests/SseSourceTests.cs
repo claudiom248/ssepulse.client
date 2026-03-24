@@ -481,116 +481,116 @@ public class SseSourceTests
         // ASSERT
         Assert.Equal("System Overload", handler.LastMessage);
     }
-
+    
     [Fact]
-    public async Task StartConsumeAsync_OnRequest_IsInvokedBeforeSendingRequest()
+    public async Task StartConsumeAsync_WithNoMutators_StreamWorksNormally()
     {
         // ARRANGE
-        bool onRequestInvoked = false;
-        HttpRequestMessage? capturedRequest = null;
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using SseSource source = CreateSource(client);
-
-        source.OnRequest = async (request, ct) =>
-        {
-            onRequestInvoked = true;
-            capturedRequest = request;
-            await Task.CompletedTask;
-        };
-
+        await using SseSource source = CreateSource(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = []
+        });
         source.On("e", _ => { });
 
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
-        Assert.True(onRequestInvoked);
-        Assert.NotNull(capturedRequest);
-        Assert.Equal(HttpMethod.Get, capturedRequest.Method);
-    }
-
-    [Fact]
-    public async Task StartConsumeAsync_OnRequest_ReceivesCancellationToken()
-    {
-        // ARRANGE
-        CancellationToken? capturedToken = null;
-        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
-        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using SseSource source = CreateSource(client);
-
-        source.OnRequest = async (request, ct) =>
-        {
-            capturedToken = ct;
-            await Task.CompletedTask;
-        };
-
-        source.On("e", _ => { });
-
-        // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-
-        // ASSERT
-        Assert.NotNull(capturedToken);
-        Assert.False(capturedToken.Value.IsCancellationRequested);
-    }
-
-    [Fact]
-    public async Task StartConsumeAsync_OnRequest_Null_DoesNotThrow()
-    {
-        // ARRANGE: OnRequest is null by default
-        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
-        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using SseSource source = CreateSource(client);
-        source.On("e", _ => { });
-
-        // ACT & ASSERT: Should complete without exception
+        // ACT & ASSERT
         Exception? ex = await Record.ExceptionAsync(() =>
             source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.Null(ex);
     }
 
     [Fact]
-    public async Task StartConsumeAsync_OnRequest_CanModifyRequestHeaders()
+    public async Task StartConsumeAsync_WithSingleMutator_AppliesMutations()
     {
         // ARRANGE
-        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
-        MockHttpMessageHandler handler = new(sse);
-        using HttpClient client = MockSseHelpers.CreateHttpClientWithHandler(handler);
-        await using SseSource source = CreateSource(client);
-
-        source.OnRequest = async (request, ct) =>
+        bool mutatorApplied = false;
+        MockRequestMutator mutator = new(req =>
         {
-            request.Headers.Add("X-Custom-Header", "test-value");
-            await Task.CompletedTask;
-        };
+            mutatorApplied = true;
+            req.Headers.Add("X-Custom-Header", "mutator-value");
+            return Task.CompletedTask;
+        });
 
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using SseSource source = CreateSource(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = [mutator]
+        });
         source.On("e", _ => { });
 
         // ACT
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
-        // ASSERT: Verify the request was sent with the custom header
-        // (You may need to enhance MockHttpMessageHandler to capture all headers)
-        Assert.True(true); // Test passes if no exception thrown
+        // ASSERT
+        Assert.True(mutatorApplied);
     }
 
     [Fact]
-    public async Task StartConsumeAsync_OnRequest_ExceptionPropagates()
+    public async Task StartConsumeAsync_WithMultipleMutators_AppliesInSequence()
     {
         // ARRANGE
+        List<int> callOrder = [];
+        
+        MockRequestMutator mutator1 = new(_ =>
+        {
+            callOrder.Add(1);
+            return Task.CompletedTask;
+        });
+
+        MockRequestMutator mutator2 = new(_ =>
+        {
+            callOrder.Add(2);
+            return Task.CompletedTask;
+        });
+
+        MockRequestMutator mutator3 = new(_ =>
+        {
+            callOrder.Add(3);
+            return Task.CompletedTask;
+        });
+
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = [mutator1, mutator2, mutator3]
+        });
+        source.On("e", _ => { });
 
-        source.OnRequest = async (_, _) =>
-        {
-            await Task.CompletedTask;
-            throw new InvalidOperationException("OnRequest failed");
-        };
+        // ACT
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT
+        Assert.Equal([1, 2, 3], callOrder);
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenFirstMutatorThrows_ThrowsImmediately()
+    {
+        // ARRANGE
+        MockRequestMutator failingMutator1 = new(_ =>
+            throw new InvalidOperationException("Mutator 1 failed"));
+
+        MockRequestMutator failingMutator2 = new(_ =>
+            throw new ArgumentException("Mutator 2 failed"));
+
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using SseSource source = CreateSource(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = [failingMutator1, failingMutator2]
+        });
+        source.On("e", _ => { });
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
     }
 
     private class TestEventData

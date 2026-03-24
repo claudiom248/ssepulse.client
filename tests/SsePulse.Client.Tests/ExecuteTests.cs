@@ -341,7 +341,7 @@ public class ExecuteTests
 
         // ACT
         Exception? caughtException = await Record.ExceptionAsync(
-            () => Execute.WithIgnoreExceptionAsync(Action, cts.Token));
+            () => Execute.WithIgnoreExceptionAsync(Action, cancellationToken: cts.Token));
 
         // ASSERT
         Assert.Null(caughtException);

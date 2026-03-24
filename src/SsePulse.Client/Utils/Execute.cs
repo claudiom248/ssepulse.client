@@ -2,19 +2,20 @@ using SsePulse.Client.Common.Models;
 
 namespace SsePulse.Client.Utils;
 
-internal static class Execute
+public static class Execute
 {
     public static async Task WithIgnoreExceptionAsync(
         Func<CancellationToken, Task> function,
+        Action<Exception>? onError = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
             await function.Invoke(cancellationToken);
         }
-        catch
+        catch(Exception ex)
         {
-            // ignored
+            onError?.Invoke(ex);
         }
     }
 

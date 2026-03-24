@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Core.Internal;
 using SsePulse.Client.EventHandlers;

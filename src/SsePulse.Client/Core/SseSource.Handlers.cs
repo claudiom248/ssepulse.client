@@ -15,8 +15,6 @@ public partial class SseSource
 
     internal Action? OnDisposed { get; set; }
     
-    public Func<HttpRequestMessage, CancellationToken, Task>? OnRequest { get; set; }
-
     public Action OnConnectionEstablished
     {
         get;

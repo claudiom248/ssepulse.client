@@ -19,9 +19,7 @@ public class SseSourceLoggingTests
         Path = "/sse", 
         MaxDegreeOfParallelism = 1
     };
-
-    // --- Gruppo: Logger Initialization (2 tests) ---
-
+    
     [Fact]
     public void Constructor_WithoutLogger_DoesNotThrow()
     {
@@ -41,9 +39,7 @@ public class SseSourceLoggingTests
         Assert.False(source.IsConnected);
         Assert.Empty(logger.Logs);
     }
-
-    // --- Gruppo: Connection Lifecycle Logging (3 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_LogsStartInformation()
     {
@@ -94,9 +90,7 @@ public class SseSourceLoggingTests
         // ASSERT
         Assert.True(logger.HasLog(LogLevel.Information, "SSE connection closed gracefully"));
     }
-
-    // --- Gruppo: Error Logging (3 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_NoHandler_LogsWarning()
     {
@@ -145,9 +139,7 @@ public class SseSourceLoggingTests
         await Assert.ThrowsAsync<HttpRequestException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.True(logger.HasLog(LogLevel.Error, "Error while establishing a connection with SSE endpoint", typeof(HttpRequestException)));
     }
-
-    // --- Gruppo: Connection Lost Logging (2 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_ConnectionLost_LogsError()
     {
@@ -178,9 +170,7 @@ public class SseSourceLoggingTests
         await Assert.ThrowsAsync<HttpRequestException>(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.True(logger.HasLog(LogLevel.Error, "Exception occurred during SSE consumption"));
     }
-
-    // --- Gruppo: Stop Logging (1 test) ---
-
+    
     [Fact]
     public async Task StopAsync_LogsInformation()
     {
@@ -264,9 +254,7 @@ public class SseSourceLoggingTests
         Assert.True(logger.HasLog(LogLevel.Debug, "Resuming SSE stream from Last-Event-ID"));
         Assert.True(logger.HasLog(LogLevel.Debug, "456"));
     }
-
-    // --- Gruppo: Multiple Events Logging (1 test) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_MultipleEvents_LogsCorrectCount()
     {
@@ -284,8 +272,95 @@ public class SseSourceLoggingTests
         await source.StartConsumeAsync(new CancellationTokenSource(10).Token);
 
         // ASSERT
-        // Dovrebbe loggare: Starting, StreamOpened, ConnectionEstablished, ConnectionClosed, Canceled
         Assert.True(logger.CountLogs(LogLevel.Information) >= 3);
         Assert.Equal(1, logger.CountLogs(LogLevel.Debug)); // Stream opened
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenMutatorThrows_LogsErrorCorrectly()
+    {
+        // ARRANGE
+        MockRequestMutator failingMutator = new(_ =>
+            throw new InvalidOperationException("Mutator error"));
+
+        MockLogger<SseSource> logger = new();
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using SseSource source = new(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = [failingMutator]
+        }, logger);
+        source.On("e", _ => { });
+
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
+        Assert.True(logger.HasLog(LogLevel.Error, "Error while applying request mutator"));
+        Assert.True(logger.HasLog(LogLevel.Error, "Mutator error", typeof(InvalidOperationException)));
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_WhenFirstMutatorThrows_DoesNotApplySubsequentMutators()
+    {
+        // ARRANGE
+        List<int> callOrder = [];
+        
+        MockRequestMutator mutator1 = new(_ =>
+        {
+            callOrder.Add(1);
+            throw new InvalidOperationException("Error 1");
+        });
+
+        MockRequestMutator mutator2 = new(_ =>
+        {
+            callOrder.Add(2);
+            return Task.CompletedTask;
+        });
+
+        MockLogger<SseSource> logger = new();
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using SseSource source = new(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = [mutator1, mutator2]
+        }, logger);
+        source.On("e", _ => { });
+
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
+        Assert.Equal([1], callOrder);
+        Assert.True(logger.HasLog(LogLevel.Error, "Error while applying request mutator"));
+        Assert.True(logger.HasLog(LogLevel.Error, "Error 1", typeof(InvalidOperationException)));
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_WithSuccessfulMutators_DoesNotLogErrors()
+    {
+        // ARRANGE
+        MockRequestMutator successMutator = new(req =>
+        {
+            req.Headers.Add("X-Custom", "value");
+            return Task.CompletedTask;
+        });
+
+        MockLogger<SseSource> logger = new();
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using SseSource source = new(client, new SseSourceOptions 
+        { 
+            Path = "/sse",
+            RequestMutators = [successMutator]
+        }, logger);
+        source.On("e", _ => { });
+
+        // ACT
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT:
+        int errorLogCount = logger.CountLogs(LogLevel.Error);
+        Assert.Equal(0, errorLogCount);
     }
 }

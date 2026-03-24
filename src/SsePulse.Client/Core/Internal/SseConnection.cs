@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using SsePulse.Client.Common.Models;
+using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Utils;
 
@@ -33,18 +34,16 @@ internal class SseConnection
         try
         {
             cancellationToken.Register(() => SetDisconnected());
-            HttpRequestMessage request = PrepareRequest(cancellationToken);
-            if (_source.OnRequest is not null)
-            {
-                await _source.OnRequest?.Invoke(request, cancellationToken)!;
-            }
+            HttpRequestMessage request = await PrepareRequestAsync();
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
                     HttpResponseMessage response = await SendRequestAsync(request);
                     if (!response.IsSuccessStatusCode && !IsTransientError(response.StatusCode))
                     {
-                        _logger.LogError("Error while establishing a connection with SSE endpoint. Response StatusCode does not indicate success: {StatusCode}", response.StatusCode);
+                        _logger.LogError(
+                            "Error while establishing a connection with SSE endpoint. Response StatusCode does not indicate success: {StatusCode}",
+                            response.StatusCode);
                         throw new HttpRequestException($"HTTP error occurred: {response.StatusCode}")
                         {
                             Data =
@@ -73,16 +72,37 @@ internal class SseConnection
             throw;
         }
 
-        HttpRequestMessage PrepareRequest(CancellationToken cancellationToken1)
+        async Task<HttpRequestMessage> PrepareRequestAsync()
         {
-            HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, _options.Path);
-            httpRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-            if (string.IsNullOrEmpty(_lastEventIdProvider())) return httpRequestMessage;
-            _logger.LogDebug("Resuming SSE stream from Last-Event-ID: {LastEventId}", _lastEventIdProvider());
-            httpRequestMessage.Headers.TryAddWithoutValidation("Last-Event-ID", _lastEventIdProvider());
-            return httpRequestMessage;
+            HttpRequestMessage request = new(HttpMethod.Get, _options.Path);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+            if (!string.IsNullOrEmpty(_lastEventIdProvider()))
+            {
+                _logger.LogDebug("Resuming SSE stream from Last-Event-ID: {LastEventId}", _lastEventIdProvider());
+                request.Headers.TryAddWithoutValidation("Last-Event-ID", _lastEventIdProvider());
+            }
+            await TryApplyMutators(request);
+            return request;
         }
 
+        async Task TryApplyMutators(HttpRequestMessage request)
+        {
+            foreach (IRequestMutator requestMutator in _options.RequestMutators)
+            {
+                try
+                {
+                    await requestMutator.ApplyAsync(request, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Error while applying request mutator `{MutatorType}`. Exception message: {Message}",
+                        requestMutator.GetType(), ex.Message);
+                    throw;
+                }
+            }
+        }
+        
         async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request)
         {
             try
@@ -95,7 +115,9 @@ internal class SseConnection
             }
             catch (HttpRequestException hre)
             {
-                _logger.LogError(hre, "Error while establishing a connection with SSE endpoint. Unexpected exception thrown {Message}", hre.Message);
+                _logger.LogError(hre,
+                    "Error while establishing a connection with SSE endpoint. Unexpected exception thrown {Message}",
+                    hre.Message);
                 throw;
             }
         }
@@ -107,7 +129,7 @@ internal class SseConnection
         return statusCode is not (
             HttpStatusCode.NotFound
             or HttpStatusCode.InternalServerError
-            or HttpStatusCode.BadGateway 
+            or HttpStatusCode.BadGateway
             or HttpStatusCode.ServiceUnavailable
             or HttpStatusCode.GatewayTimeout);
     }
@@ -115,11 +137,13 @@ internal class SseConnection
 
     private void SetConnected()
     {
+        int wasConnected = Interlocked.CompareExchange(ref _connected, 0, 1);
+        if (wasConnected != 0) return;
         _connected = 1;
         _logger.LogInformation("SSE connection established");
         _source.OnConnectionEstablished.Invoke();
     }
-    
+
     public void SetDisconnected(Exception? exception = null)
     {
         int wasConnected = Interlocked.CompareExchange(ref _connected, 0, 1);
@@ -142,13 +166,13 @@ internal class SseConnection
         private readonly SseConnection _connection;
         private readonly Stream _innerStream;
 
-        private SseStream( SseConnection connection, Stream innerStream)
+        private SseStream(SseConnection connection, Stream innerStream)
         {
             _innerStream = innerStream;
             _connection = connection;
         }
 
-        public static SseStream Wrap(SseConnection connection,Stream innerStream) => new(connection, innerStream);
+        public static SseStream Wrap(SseConnection connection, Stream innerStream) => new(connection, innerStream);
 
         public override void Flush()
         {
