@@ -1,12 +1,9 @@
-using System.Net.ServerSentEvents;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Core.Internal;
-using SsePulse.Client.EventHandlers;
 
 namespace SsePulse.Client.Core;
 
@@ -20,6 +17,7 @@ public partial class SseSource : IDisposable
     private CancellationTokenSource _cts = new();
     private TaskCompletionSource<bool> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly SseConnection _connection;
+    private readonly ConnectionHandlers _connectionHandlers;
 
     private volatile bool _started;
     private volatile bool _disposed;
@@ -27,25 +25,32 @@ public partial class SseSource : IDisposable
     public bool IsConnected => _connection.IsConnected;
     public Task Completion => _tcs.Task;
 
-    internal readonly IEnumerable<IRequestMutator> _requestMutators = [];
     private readonly ILastEventIdStore? _lastEventIdStore;
 
     public SseSource(HttpClient client, SseSourceOptions options, ILogger<SseSource>? logger = null)
+        : this(client, options, [], null, logger ?? NullLogger<SseSource>.Instance)
+    {
+    }
+
+    internal SseSource(HttpClient client, SseSourceOptions options,
+        List<IRequestMutator> requestMutators, ILastEventIdStore? lastEventIdStore = null,
+        ILogger<SseSource>? logger = null)
     {
         _options = options;
         _logger = logger ?? NullLogger<SseSource>.Instance;
+        _lastEventIdStore = lastEventIdStore;
+        _connectionHandlers = new ConnectionHandlers
+        {
+            OnConnectionEstablished = OnConnectionEstablished,
+            OnConnectionClosed = OnConnectionClosed,
+            OnConnectionLost = OnConnectionLost
+        };
         _connection = new SseConnection(
-            this,
+            requestMutators,
+            _connectionHandlers,
             client,
             options,
             _logger);
-    }
-    
-    internal SseSource(HttpClient client, SseSourceOptions options, ILogger<SseSource> logger,
-        IEnumerable<IRequestMutator> requestMutators, ILastEventIdStore? lastEventIdStore = null) : this(client, options, logger)
-    {
-        _requestMutators = requestMutators;
-        _lastEventIdStore = lastEventIdStore;
     }
 
     public async Task StartConsumeAsync(CancellationToken cancellationToken)
@@ -62,11 +67,12 @@ public partial class SseSource : IDisposable
         {
 #if NET8_0_OR_GREATER
             await using Stream sseStream = await _connection.EstablishAsync(linkedCancellationToken);
-#else 
+#else
             using Stream sseStream = await _connection.EstablishAsync(linkedCancellationToken);
 #endif
             _logger.LogDebug("SSE stream opened successfully");
-            await ConsumeStream(sseStream);
+            StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+            await consumer.ConsumeAsync(sseStream, linkedCancellationToken);
             _tcs.TrySetResult(true);
             _connection.SetDisconnected();
         }
@@ -93,40 +99,6 @@ public partial class SseSource : IDisposable
         }
 
         return;
-
-        ActionBlock<SseItem<string>> CreateDispatcherBlock()
-        {
-            ActionBlock<SseItem<string>> dispatcherBlock = new(
-                Dispatch,
-                new ExecutionDataflowBlockOptions
-                {
-                    MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism,
-                    CancellationToken = linkedCancellationToken
-                });
-            return dispatcherBlock;
-        }
-
-        async Task ConsumeStream(Stream sseStream)
-        {
-            ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock();
-            SseParser<string> parser = SseParser.Create(sseStream);
-            try
-            {
-                await foreach (SseItem<string> sseItem in parser.EnumerateAsync(linkedCancellationToken))
-                {
-                    if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
-                    {
-                        _lastEventIdStore.Set(sseItem.EventId!);
-                    }
-                    await dispatcherBlock.SendAsync(sseItem, linkedCancellationToken);
-                }
-            }
-            finally
-            {
-                dispatcherBlock.Complete();
-                await dispatcherBlock.Completion;
-            }
-        }
 
         CancellationToken CreateLinkedCancellationToken()
         {
@@ -183,7 +155,6 @@ public partial class SseSource : IDisposable
     }
 #endif
 
-
     public void Reset()
     {
         AssertNotDisposed();
@@ -196,29 +167,6 @@ public partial class SseSource : IDisposable
         _cts = new CancellationTokenSource();
         _tcs = new TaskCompletionSource<bool>();
         _started = false;
-    }
-
-    private void Dispatch(SseItem<string> @event)
-    {
-        string eventType = @event.EventType;
-        if (!_handlers.TryGetValue(eventType, out ISseEventHandler? handler))
-        {
-            _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
-            if (_options.ThrowWhenEventHandlerNotFound)
-            {
-                throw new HandlerNotFoundException(eventType);
-            }
-            return;
-        }
-        try
-        {
-            handler.Invoke(@event);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while handling event '{EventType}'", eventType);
-            OnError(ex);
-        }
     }
 
     public void Dispose()

@@ -22,6 +22,7 @@ public partial class SseSource
         {
             AssertNotDisposed();
             field = WrapDefaultHandler(value);
+            _connectionHandlers.OnConnectionEstablished = field;
         }
     } = () => { Console.WriteLine("Connection established"); };
 
@@ -32,6 +33,7 @@ public partial class SseSource
         {
             AssertNotDisposed();
             field = WrapDefaultHandler(value);   
+            _connectionHandlers.OnConnectionClosed = field;
         }
     } = () => { Console.WriteLine("Connection gracefully closed"); };
 
@@ -42,6 +44,7 @@ public partial class SseSource
         {
             AssertNotDisposed();
             field = WrapDefaultHandler(value);        
+            _connectionHandlers.OnConnectionLost = field;
         }
     } = ex => { Console.WriteLine("Connection lost due to: " + ex.Message + ""); };
     

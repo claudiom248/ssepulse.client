@@ -10,7 +10,8 @@ namespace SsePulse.Client.Core.Internal;
 
 internal class SseConnection
 {
-    private readonly SseSource _source;
+    private readonly List<IRequestMutator> _requestMutators;
+    private readonly ConnectionHandlers _handlers;
     private readonly ILogger<SseSource> _logger;
     private readonly HttpClient _client;
     private readonly SseSourceOptions _options;
@@ -18,9 +19,15 @@ internal class SseConnection
 
     public bool IsConnected => Convert.ToBoolean(_connected);
 
-    public SseConnection(SseSource source, HttpClient client, SseSourceOptions options, ILogger<SseSource> logger)
+    public SseConnection(
+        List<IRequestMutator> requestMutators,
+        ConnectionHandlers handlers,
+        HttpClient client,
+        SseSourceOptions options,
+        ILogger<SseSource> logger)
     {
-        _source = source;
+        _requestMutators = requestMutators;
+        _handlers = handlers;
         _logger = logger;
         _client = client;
         _options = options;
@@ -79,7 +86,7 @@ internal class SseConnection
 
         async Task TryApplyMutators(HttpRequestMessage request)
         {
-            foreach (IRequestMutator requestMutator in _source._requestMutators)
+            foreach (IRequestMutator requestMutator in _requestMutators)
             {
                 try
                 {
@@ -133,7 +140,7 @@ internal class SseConnection
         if (wasConnected != 0) return;
         _connected = 1;
         _logger.LogInformation("SSE connection established");
-        _source.OnConnectionEstablished.Invoke();
+        _handlers.OnConnectionEstablished.Invoke();
     }
 
     public void SetDisconnected(Exception? exception = null)
@@ -144,12 +151,12 @@ internal class SseConnection
         if (exception is null)
         {
             _logger.LogInformation("SSE connection closed gracefully");
-            _source.OnConnectionClosed.Invoke();
+            _handlers.OnConnectionClosed.Invoke();
         }
         else
         {
             _logger.LogError(exception, "SSE connection lost due to exception");
-            _source.OnConnectionLost.Invoke(exception);
+            _handlers.OnConnectionLost.Invoke(exception);
         }
     }
 
