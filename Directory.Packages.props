@@ -6,11 +6,11 @@
 
   <ItemGroup>
     <!-- Core Dependencies -->
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.3" />
-    <PackageVersion Include="System.Net.ServerSentEvents" Version="10.0.3" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.3" />
-    <PackageVersion Include="System.Threading.Tasks.DataFlow" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.5" />
+    <PackageVersion Include="System.Net.ServerSentEvents" Version="10.0.5" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.5" />
+    <PackageVersion Include="System.Threading.Tasks.DataFlow" Version="10.0.5" />
 
     <!-- Configuration Dependencies -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
