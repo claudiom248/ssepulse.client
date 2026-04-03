@@ -487,3 +487,7 @@ FodyWeavers.xsd
 /.idea/.idea.SsePulse/.idea/indexLayout.xml
 /.idea/.idea.SsePulse/.idea/projectSettingsUpdater.xml
 /.idea/.idea.SsePulse/.idea/vcs.xml
+/.github/copilot-instructions.md
+/.github/git-commit-instructions.md
+/NuGet.Config
+/AGENTS.md
