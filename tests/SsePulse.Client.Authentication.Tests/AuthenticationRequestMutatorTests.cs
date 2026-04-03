@@ -103,4 +103,3 @@ public class AuthenticationRequestMutatorTests
         await provider.Received(3).ApplyAsync(Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>());
     }
 }
-

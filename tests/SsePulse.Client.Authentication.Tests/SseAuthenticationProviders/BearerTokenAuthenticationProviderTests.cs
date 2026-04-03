@@ -7,49 +7,19 @@ namespace SsePulse.Client.Authentication.Tests.SseAuthenticationProviders;
 public class BearerTokenAuthenticationProviderTests
 {
     private const string TestToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
-
-    // --- Gruppo: Initialization (2 tests) ---
-
-    [Fact]
-    public void Constructor_WithTokenProvider_CreatesInstance()
-    {
-        // Arrange
-        ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>("test-token"));
-
-        // Act
-        BearerTokenAuthenticationProvider provider = new(tokenProvider);
-
-        // Assert
-        Assert.NotNull(provider);
-    }
-
-    [Fact]
-    public void Constructor_WithStaticTokenProvider_CreatesInstance()
-    {
-        // Arrange
-        ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(TestToken));
-
-        // Act
-        BearerTokenAuthenticationProvider provider = new(tokenProvider);
-
-        // Assert
-        Assert.NotNull(provider);
-    }
-
-    // --- Gruppo: ApplyAsync - Basic Token Application (3 tests) ---
-
+    
     [Fact]
     public async Task ApplyAsync_SetsAuthorizationHeader_WithBearerScheme()
     {
-        // Arrange
+        // ARRANGE
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(TestToken));
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.NotNull(request.Headers.Authorization);
         Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
     }
@@ -57,48 +27,46 @@ public class BearerTokenAuthenticationProviderTests
     [Fact]
     public async Task ApplyAsync_SetsTokenAsParameter()
     {
-        // Arrange
+        // ARRANGE
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(TestToken));
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Equal(TestToken, request.Headers.Authorization?.Parameter);
     }
 
     [Fact]
     public async Task ApplyAsync_WithSimpleToken_SetsCorrectly()
     {
-        // Arrange
+        // ARRANGE
         const string simpleToken = "simple-token-123";
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(simpleToken));
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Equal(simpleToken, request.Headers.Authorization?.Parameter);
     }
-
-    // --- Gruppo: ApplyAsync - Various Tokens (3 tests) ---
-
+    
     [Fact]
     public async Task ApplyAsync_WithEmptyToken_SetsEmptyParameter()
     {
-        // Arrange
+        // ARRANGE
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(""));
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.NotNull(request.Headers.Authorization);
         Assert.Equal("", request.Headers.Authorization.Parameter);
     }
@@ -106,41 +74,40 @@ public class BearerTokenAuthenticationProviderTests
     [Fact]
     public async Task ApplyAsync_WithLongToken_SetsCorrectly()
     {
-        // Arrange
+        // ARRANGE
         const string longToken = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0";
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(longToken));
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Equal(longToken, request.Headers.Authorization?.Parameter);
     }
 
     [Fact]
     public async Task ApplyAsync_WithSpecialCharactersInToken_SetsCorrectly()
     {
-        // Arrange
+        // ARRANGE
         const string tokenWithSpecialChars = "token-with_special.chars@123!+=";
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(tokenWithSpecialChars));
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Equal(tokenWithSpecialChars, request.Headers.Authorization?.Parameter);
     }
 
-    // --- Gruppo: ApplyAsync - Token Provider Invocation (3 tests) ---
 
     [Fact]
     public async Task ApplyAsync_InvokesTokenProvider()
     {
-        // Arrange
+        // ARRANGE
         bool providerInvoked = false;
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ =>
         {
@@ -150,17 +117,17 @@ public class BearerTokenAuthenticationProviderTests
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.True(providerInvoked);
     }
 
     [Fact]
     public async Task ApplyAsync_InvokesTokenProviderForEachRequest()
     {
-        // Arrange
+        // ARRANGE
         int invocationCount = 0;
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ =>
         {
@@ -171,11 +138,11 @@ public class BearerTokenAuthenticationProviderTests
         HttpRequestMessage request1 = new(HttpMethod.Get, "https://example.com/sse");
         HttpRequestMessage request2 = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request1, CancellationToken.None);
         await provider.ApplyAsync(request2, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Equal(2, invocationCount);
         Assert.Equal("token-1", request1.Headers.Authorization?.Parameter);
         Assert.Equal("token-2", request2.Headers.Authorization?.Parameter);
@@ -184,30 +151,42 @@ public class BearerTokenAuthenticationProviderTests
     [Fact]
     public async Task ApplyAsync_PassesCancellationTokenToProvider()
     {
-        // Arrange
+        // ARRANGE
         CancellationToken receivedToken = CancellationToken.None;
         ITokenProvider tokenProvider = new MockTokenProvider(async ct =>
         {
             receivedToken = ct;
-            return "test-token";
+            return await Task.FromResult("test-token");
         });
         BearerTokenAuthenticationProvider provider = new(tokenProvider);
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
         CancellationTokenSource cts = new();
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request, cts.Token);
 
-        // Assert
+        // ASSERT
         Assert.Equal(cts.Token, receivedToken);
     }
 
-    // --- Gruppo: ApplyAsync - Multiple Calls (2 tests) ---
-
     [Fact]
-    public async Task ApplyAsync_CalledMultipleTimes_UpdatesHeaderEachTime()
+    public async Task ApplyAsync_WhenTokenProviderThrows_PropagatesException()
     {
-        // Arrange
+        // ARRANGE
+        ITokenProvider tokenProvider = new DelegatingTokenProvider(
+            _ => throw new InvalidOperationException("Token fetch failed"));
+        BearerTokenAuthenticationProvider provider = new(tokenProvider);
+        HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
+
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => provider.ApplyAsync(request, CancellationToken.None).AsTask());
+    }
+    
+    [Fact]
+    public async Task ApplyAsync_CalledOnDifferentRequests_SetsTokenFromProviderEachTime()
+    {
+        // ARRANGE
         int callCount = 0;
         ITokenProvider tokenProvider = new DelegatingTokenProvider(_ =>
         {
@@ -218,29 +197,13 @@ public class BearerTokenAuthenticationProviderTests
         HttpRequestMessage request1 = new(HttpMethod.Get, "https://example.com/sse");
         HttpRequestMessage request2 = new(HttpMethod.Get, "https://example.com/sse");
 
-        // Act
+        // ACT
         await provider.ApplyAsync(request1, CancellationToken.None);
         await provider.ApplyAsync(request2, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Equal("token-1", request1.Headers.Authorization?.Parameter);
         Assert.Equal("token-2", request2.Headers.Authorization?.Parameter);
-    }
-
-    [Fact]
-    public async Task ApplyAsync_WithCancellationToken_CompletesSuccessfully()
-    {
-        // Arrange
-        ITokenProvider tokenProvider = new DelegatingTokenProvider(_ => new ValueTask<string>(TestToken));
-        BearerTokenAuthenticationProvider provider = new(tokenProvider);
-        HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
-        CancellationTokenSource cts = new();
-
-        // Act
-        await provider.ApplyAsync(request, cts.Token);
-
-        // Assert
-        Assert.NotNull(request.Headers.Authorization);
     }
 
     // --- Helper Class ---

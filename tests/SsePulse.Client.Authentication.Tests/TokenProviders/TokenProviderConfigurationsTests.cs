@@ -5,105 +5,102 @@ namespace SsePulse.Client.Authentication.Tests.TokenProviders;
 
 public class TokenProviderConfigurationsTests
 {
-    // --- Gruppo: StaticTokenProviderConfiguration (3 tests) ---
-
     [Fact]
-    public void StaticConfiguration_WithToken_CreatesInstance()
+    public void StaticConfiguration_StoresToken()
     {
-        // Arrange
+        // ARRANGE
         const string token = "test-token-12345";
 
-        // Act
+        // ACT
         StaticTokenProviderConfiguration config = new(token);
 
-        // Assert
+        // ASSERT
         Assert.Equal(token, config.Token);
     }
 
     [Fact]
     public void StaticConfiguration_ProviderName_ReturnsCorrectName()
     {
-        // Arrange
+        // ARRANGE
         StaticTokenProviderConfiguration config = new("test-token");
 
-        // Act
+        // ACT
         string providerName = config.ProviderName;
 
-        // Assert
+        // ASSERT
         Assert.Equal("StaticTokenProvider", providerName);
     }
 
     [Fact]
-    public void StaticConfiguration_WithEmptyToken_CreatesInstance()
+    public void StaticConfiguration_WithEmptyToken_StoresEmptyString()
     {
-        // Arrange & Act
-        StaticTokenProviderConfiguration config = new("");
+        // ARRANGE
+        const string token = "";
 
-        // Assert
+        // ACT
+        StaticTokenProviderConfiguration config = new(token);
+
+        // ASSERT
         Assert.Equal("", config.Token);
     }
-
-    // --- Gruppo: EnvironmentVariableTokenProviderConfiguration (4 tests) ---
-
+    
     [Fact]
-    public void EnvironmentVariableConfiguration_WithVariableName_CreatesInstance()
+    public void EnvironmentVariableConfiguration_StoresVariableName()
     {
-        // Arrange
+        // ARRANGE
         const string varName = "MY_ENV_VAR";
 
-        // Act
+        // ACT
         EnvironmentVariableTokenProviderConfiguration config = new(varName);
 
-        // Assert
+        // ASSERT
         Assert.Equal(varName, config.EnvironmentVariable);
     }
 
     [Fact]
     public void EnvironmentVariableConfiguration_ProviderName_ReturnsCorrectName()
     {
-        // Arrange
+        // ARRANGE
         EnvironmentVariableTokenProviderConfiguration config = new("MY_VAR");
 
-        // Act
+        // ACT
         string providerName = config.ProviderName;
 
-        // Assert
+        // ASSERT
         Assert.Equal("EnvironmentVariableTokenProvider", providerName);
     }
 
     [Fact]
-    public void EnvironmentVariableConfiguration_DefaultConstructor_CreatesInstance()
+    public void EnvironmentVariableConfiguration_DefaultConstructor_StoresEmptyString()
     {
-        // Act
+        // ACT
         EnvironmentVariableTokenProviderConfiguration config = new();
 
-        // Assert
+        // ASSERT
         Assert.Equal("", config.EnvironmentVariable);
     }
 
     [Fact]
-    public void EnvironmentVariableConfiguration_WithEmptyVariableName_CreatesInstance()
+    public void EnvironmentVariableConfiguration_WithEmptyVariableName_StoresEmptyString()
     {
-        // Act
+        // ACT
         EnvironmentVariableTokenProviderConfiguration config = new("");
 
-        // Assert
+        // ASSERT
         Assert.Equal("", config.EnvironmentVariable);
     }
 
-    // --- Gruppo: ClientCredentialsTokenProviderConfiguration (4 tests) ---
-
     [Fact]
-    public void ClientCredentialsConfiguration_WithEndpointAndCredentials_CreatesInstance()
+    public void ClientCredentialsConfiguration_StoresEndpointAndCredentials()
     {
-        // Arrange
+        // ARRANGE
         Uri tokenEndpoint = new("https://auth.example.com/token");
         ClientCredentials credentials = new("client-id", "client-secret");
 
-        // Act
+        // ACT
         ClientCredentialsTokenProviderConfiguration config = new(tokenEndpoint, credentials);
 
-        // Assert
+        // ASSERT
         Assert.Equal(tokenEndpoint, config.TokenEndpoint);
         Assert.Equal("client-id", config.Credentials.ClientId);
         Assert.Equal("client-secret", config.Credentials.ClientSecret);
@@ -112,72 +109,68 @@ public class TokenProviderConfigurationsTests
     [Fact]
     public void ClientCredentialsConfiguration_ProviderName_ReturnsCorrectName()
     {
-        // Arrange
+        // ARRANGE
         Uri tokenEndpoint = new("https://auth.example.com/token");
         ClientCredentials credentials = new("client-id", "client-secret");
+
+        // ACT
         ClientCredentialsTokenProviderConfiguration config = new(tokenEndpoint, credentials);
 
-        // Act
-        string providerName = config.ProviderName;
-
-        // Assert
-        Assert.Equal("ClientCredentialsTokenProvider", providerName);
+        // ASSERT
+        Assert.Equal("ClientCredentialsTokenProvider", config.ProviderName);
     }
 
     [Fact]
-    public void ClientCredentialsConfiguration_WithEmptyCredentials_CreatesInstance()
+    public void ClientCredentialsConfiguration_WithEmptyCredentials_StoresEmpty()
     {
-        // Arrange
+        // ARRANGE
         Uri tokenEndpoint = new("https://auth.example.com/token");
         ClientCredentials credentials = new("", "");
 
-        // Act
+        // ACT
         ClientCredentialsTokenProviderConfiguration config = new(tokenEndpoint, credentials);
 
-        // Assert
+        // ASSERT
         Assert.Equal("", config.Credentials.ClientId);
         Assert.Equal("", config.Credentials.ClientSecret);
     }
 
     [Fact]
-    public void ClientCredentialsConfiguration_WithDifferentEndpoints_CreatesInstances()
+    public void ClientCredentialsConfiguration_DifferentEndpoints_StoredIndependently()
     {
-        // Arrange
+        // ARRANGE
         Uri endpoint1 = new("https://auth.example.com/token");
         Uri endpoint2 = new("https://oauth.example.com/token");
         ClientCredentials credentials = new("client-id", "secret");
 
-        // Act
+        // ACT
         ClientCredentialsTokenProviderConfiguration config1 = new(endpoint1, credentials);
         ClientCredentialsTokenProviderConfiguration config2 = new(endpoint2, credentials);
 
-        // Assert
+        // ASSERT
         Assert.NotEqual(config1.TokenEndpoint, config2.TokenEndpoint);
     }
-
-    // --- Gruppo: Configuration Comparison (2 tests) ---
-
+    
     [Fact]
     public void StaticConfigurations_WithSameToken_AreEqual()
     {
-        // Arrange
+        // ARRANGE
         const string token = "same-token";
         StaticTokenProviderConfiguration config1 = new(token);
         StaticTokenProviderConfiguration config2 = new(token);
 
-        // Act & Assert
+        // ACT & ASSERT
         Assert.Equal(config1, config2);
     }
 
     [Fact]
     public void StaticConfigurations_WithDifferentTokens_AreNotEqual()
     {
-        // Arrange
+        // ARRANGE
         StaticTokenProviderConfiguration config1 = new("token1");
         StaticTokenProviderConfiguration config2 = new("token2");
 
-        // Act & Assert
+        // ACT & ASSERT
         Assert.NotEqual(config1, config2);
     }
 }
-

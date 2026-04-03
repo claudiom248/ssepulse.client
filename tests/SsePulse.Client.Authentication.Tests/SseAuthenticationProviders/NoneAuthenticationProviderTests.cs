@@ -1,64 +1,49 @@
 using SsePulse.Client.Authentication.Providers;
 
-namespace SsePulse.Client.Authentication.Tests.TokenProviders;
+namespace SsePulse.Client.Authentication.Tests.SseAuthenticationProviders;
 
 public class NoneAuthenticationProviderTests
 {
-    // --- Gruppo: Initialization (1 test) ---
-
-    [Fact]
-    public void Constructor_CreatesInstance()
-    {
-        // Act
-        NoneAuthenticationProvider provider = new();
-
-        // Assert
-        Assert.NotNull(provider);
-    }
-
-    // --- Gruppo: ApplyAsync (2 tests) ---
 
     [Fact]
     public async Task ApplyAsync_DoesNotModifyRequest()
     {
-        // Arrange
+        // ARRANGE
         NoneAuthenticationProvider provider = new();
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
-        
-        // Act
+
+        // ACT
         await provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.Empty(request.Headers);
         Assert.Null(request.Headers.Authorization);
     }
 
     [Fact]
-    public async Task ApplyAsync_CompletesSuccessfully()
+    public void ApplyAsync_ReturnsCompletedValueTask()
     {
-        // Arrange
+        // ARRANGE
         NoneAuthenticationProvider provider = new();
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
-        CancellationTokenSource cts = new();
 
-        // Act
-        ValueTask task = provider.ApplyAsync(request, cts.Token);
+        // ACT
+        ValueTask task = provider.ApplyAsync(request, CancellationToken.None);
 
-        // Assert
+        // ASSERT
         Assert.True(task.IsCompleted);
-        await task;
     }
 
     [Fact]
-    public async Task ApplyAsync_WithCancellationToken_DoesNotThrow()
+    public async Task ApplyAsync_WithCancelledToken_DoesNotThrow()
     {
-        // Arrange
+        // ARRANGE
         NoneAuthenticationProvider provider = new();
         HttpRequestMessage request = new(HttpMethod.Get, "https://example.com/sse");
         CancellationTokenSource cts = new();
         cts.Cancel();
 
-        // Act & Assert (should not throw)
+        // ACT & ASSERT
         await provider.ApplyAsync(request, cts.Token);
     }
 }

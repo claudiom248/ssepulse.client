@@ -28,6 +28,7 @@
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection.Tests" />
         <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection" />
         <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection.Tests" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
 
 </Project>

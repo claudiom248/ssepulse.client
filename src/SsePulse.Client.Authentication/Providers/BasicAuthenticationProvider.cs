@@ -19,7 +19,7 @@ public class BasicAuthenticationProvider : ISseAuthenticationProvider
     {
         string credentials = Convert.ToBase64String(
             Encoding.ASCII.GetBytes($"{_credentials.Username}:{_credentials.Password}"));
-        request.Headers.Authorization = new AuthenticationHeaderValue(Constants.BasicSchemeName, $"{credentials }");
+        request.Headers.Authorization = new AuthenticationHeaderValue(Constants.BasicSchemeName, credentials);
 #if NET8_0_OR_GREATER
         return ValueTask.CompletedTask;
 #else

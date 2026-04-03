@@ -17,4 +17,5 @@ public interface ISseSourceBuilder
     SseSourceBuilder AddHttpClient(Action<HttpClient>? configureClient, Action<IHttpClientBuilder>? clientBuilder);
     ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager;
     ISseSourceBuilder BindEventsManager(ISseEventsManager manager);
+    SseSourceBuilder AddHttpClient(Action<HttpClient> configureClient);
 }
