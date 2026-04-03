@@ -230,6 +230,8 @@ _TeamCity*
 coverage*.json
 coverage*.xml
 coverage*.info
+/.artifacts/coverage/
+/.artifacts/tools/
 
 # Visual Studio code coverage results
 *.coverage
