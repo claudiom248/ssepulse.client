@@ -37,13 +37,12 @@ internal class SseConnection
     {
         try
         {
-            cancellationToken.Register(() => SetDisconnected());
             HttpRequestMessage request = await PrepareRequestAsync();
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
                     HttpResponseMessage response = await SendRequestAsync(request);
-                    if (!response.IsSuccessStatusCode && !IsTransientError(response.StatusCode))
+                    if (!response.IsSuccessStatusCode && !IsTransientHttpError(response.StatusCode))
                     {
                         _logger.LogError(
                             "Error while establishing a connection with SSE endpoint. Response StatusCode does not indicate success: {StatusCode}",
@@ -66,7 +65,19 @@ internal class SseConnection
                     return SseStream.Wrap(this, responseStream);
                 },
                 _options.RetryOptions ?? RetryOptions.None,
-                shouldRetry: exception => IsTransientError(exception.Data["HttpStatusCode"] as HttpStatusCode?),
+                shouldRetry: exception =>
+                {
+                    if (exception is not HttpRequestException hre)
+                    {
+                        return false;
+                    }
+
+                    if (hre.Data.Count > 0)
+                    {
+                        return IsTransientHttpError(hre.Data["HttpStatusCode"] as HttpStatusCode?);
+                    }
+                    return hre.InnerException is TimeoutException;
+                },
                 cancellationToken: cancellationToken
             );
         }
@@ -122,7 +133,7 @@ internal class SseConnection
         }
     }
 
-    private static bool IsTransientError(HttpStatusCode? statusCode)
+    private static bool IsTransientHttpError(HttpStatusCode? statusCode)
     {
         if (statusCode is null) return false;
         return statusCode is not (
@@ -188,7 +199,11 @@ internal class SseConnection
         {
             try
             {
+#if NET8_0_OR_GREATER
+                return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+#else
                 return await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+#endif
             }
             catch (Exception ex)
             {
@@ -196,6 +211,21 @@ internal class SseConnection
                 throw;
             }
         }
+        
+#if NET8_0_OR_GREATER
+        public override int Read(Span<byte> buffer)
+        {
+            try
+            {
+                return base.Read(buffer);
+            }
+            catch (Exception ex)
+            {
+                _connection.SetDisconnected(ex);
+                throw;
+            }
+        }
+#endif
 
         public override long Seek(long offset, SeekOrigin origin)
         {
