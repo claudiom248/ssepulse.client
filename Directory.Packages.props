@@ -3,9 +3,9 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <ItemGroup>
     <!-- Core Dependencies -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <PackageVersion Include="System.Net.ServerSentEvents" Version="10.0.5" />
@@ -27,4 +27,3 @@
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
   </ItemGroup>
 </Project>
-

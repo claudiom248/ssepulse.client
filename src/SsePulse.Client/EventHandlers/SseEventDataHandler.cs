@@ -4,11 +4,11 @@ using SsePulse.Client.Serialization;
 
 namespace SsePulse.Client.EventHandlers;
 
-internal class SseDataEventHandler : ISseEventHandler
+internal class SseEventDataHandler : ISseEventHandler
 {
     private readonly Action<string> _handler;
 
-    public SseDataEventHandler(Action<string> handler)
+    public SseEventDataHandler(Action<string> handler)
     {
         _handler = handler;
     }
@@ -24,11 +24,11 @@ internal class SseDataEventHandler : ISseEventHandler
     }
 }
 
-internal class SseDataEventHandler<TEventData> : ISseEventHandler
+internal class SseEventDataHandler<TEventData> : ISseEventHandler
 {
     private readonly Action<TEventData> _handler;
 
-    public SseDataEventHandler(Action<TEventData> handler)
+    public SseEventDataHandler(Action<TEventData> handler)
     {
         _handler = handler;
     }

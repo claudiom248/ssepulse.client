@@ -8,7 +8,7 @@ public class LastEventIdRequestMutatorTests
     public async Task ApplyAsync_WithLastEventId_AddsHeaderToRequest()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
         store.Set("event-123");
         LastEventIdRequestMutator mutator = new(store);
         HttpRequestMessage request = new();
@@ -26,13 +26,13 @@ public class LastEventIdRequestMutatorTests
     public async Task ApplyAsync_WithoutLastEventId_DoesNotAddHeader()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
         LastEventIdRequestMutator mutator = new(store);
         HttpRequestMessage request = new();
 
         // ACT
         await mutator.ApplyAsync(request, CancellationToken.None);
-
+        
         // ASSERT
         Assert.False(request.Headers.Contains("Last-Event-ID"));
     }

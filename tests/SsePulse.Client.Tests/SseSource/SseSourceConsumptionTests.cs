@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Common.NamingPolicies;
 using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client.Core.Attributes;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Core.Internal;
 using SsePulse.Client.Tests.Mocks;
@@ -10,8 +11,6 @@ namespace SsePulse.Client.Tests.SseSource;
 
 public class SseSourceConsumptionTests : SseSourceTestBase
 {
-    // --- Gruppo: Handler dispatch (5 tests) ---
-
     [Fact]
     public async Task StartConsumeAsync_StringHandler_InvokesOnMatch()
     {
@@ -79,7 +78,6 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         Assert.Null(ex);
     }
 
-    // --- Gruppo: Error handling (3 tests) ---
 
     [Fact]
     public async Task StartConsumeAsync_HandlerError_InvokesOnError()
@@ -129,9 +127,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
 
         await Assert.ThrowsAsync<HttpRequestException>(async () => await source.Completion);
     }
-
-    // --- Gruppo: Connection callbacks (3 tests) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_Establishment_InvokesCallback()
     {
@@ -171,8 +167,6 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         Assert.True(called);
     }
 
-    // --- Gruppo: Mutators (4 tests) ---
-
     [Fact]
     public async Task StartConsumeAsync_WithNoMutators_StreamWorksNormally()
     {
@@ -211,9 +205,21 @@ public class SseSourceConsumptionTests : SseSourceTestBase
     {
         List<int> callOrder = [];
 
-        MockRequestMutator mutator1 = new(_ => { callOrder.Add(1); return Task.CompletedTask; });
-        MockRequestMutator mutator2 = new(_ => { callOrder.Add(2); return Task.CompletedTask; });
-        MockRequestMutator mutator3 = new(_ => { callOrder.Add(3); return Task.CompletedTask; });
+        MockRequestMutator mutator1 = new(_ =>
+        {
+            callOrder.Add(1);
+            return Task.CompletedTask;
+        });
+        MockRequestMutator mutator2 = new(_ =>
+        {
+            callOrder.Add(2);
+            return Task.CompletedTask;
+        });
+        MockRequestMutator mutator3 = new(_ =>
+        {
+            callOrder.Add(3);
+            return Task.CompletedTask;
+        });
 
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
@@ -240,9 +246,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
     }
-
-    // --- Gruppo: Last event ID (1 test) ---
-
+    
     [Fact]
     public async Task StartConsumeAsync_WithLastEventIdMutator_UpdatesInternalState()
     {
@@ -252,9 +256,10 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         MockHttpMessageHandler handler = new(sse);
         using HttpClient client = MockSseHelpers.CreateHttpClientWithHandler(handler);
 
-        LastEventIdStore lastEventIdStore = new();
+        InMemoryLastEventIdStore inMemoryLastEventIdStore = new();
         await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
-            [new LastEventIdRequestMutator(lastEventIdStore, NullLogger<Core.SseSource>.Instance)], lastEventIdStore);
+            [new LastEventIdRequestMutator(inMemoryLastEventIdStore, NullLogger<Core.SseSource>.Instance)],
+            inMemoryLastEventIdStore);
         source.On("e", _ => { });
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -265,7 +270,26 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         Assert.Equal("456", handler.LastEventIdSent);
     }
 
-    // --- Gruppo: Bind (2 tests) ---
+    [Fact]
+    public async Task StartConsumeAsync_Bind_WithFactory_DispatchesEventsFromProducedManager()
+    {
+        // ARRANGE
+        MockHandler handler = new();
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent
+        {
+            EventType = "SimpleAlert",
+            Data = "alert from factory"
+        });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client);
+
+        // ACT
+        source.Bind(() => handler);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT
+        Assert.Equal("alert from factory", handler.LastMessage);
+    }
 
     [Theory]
     [InlineData("stock_updated", NameCasePolicy.SnakeCase)]
@@ -273,6 +297,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
     [InlineData("stockUpdated", NameCasePolicy.CamelCase)]
     public async Task StartConsumeAsync_Bind_MapsCamelToConfiguredNameCases(string eventType, NameCasePolicy policy)
     {
+        // ARRANGE
         MockHandler handler = new();
         StockData stock = new("MSFT", 400.0m);
         string sse = MockSseHelpers.BuildSseStream(new SseEvent
@@ -280,16 +305,17 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             EventType = eventType,
             Data = JsonSerializer.Serialize(stock)
         });
-
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             DefaultEventNameCasePolicy = policy
         });
-
+        
+        // ACT
         source.Bind(handler);
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
+        // ASSERT
         Assert.NotNull(handler.LastStock);
         Assert.Equal("MSFT", handler.LastStock.Symbol);
         Assert.Equal(400.0m, handler.LastStock.Price);
@@ -297,7 +323,8 @@ public class SseSourceConsumptionTests : SseSourceTestBase
 
     [Fact]
     public async Task StartConsumeAsync_Bind_HandlesRawStringsCorrectly()
-    {
+    {        
+        // ARRANGE
         MockHandler handler = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent
         {
@@ -308,10 +335,121 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using Core.SseSource source = CreateSource(client);
 
+        // ACT
+        source.Bind(handler);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+        
+        // ASSERT
+        Assert.Equal("System Overload", handler.LastMessage);
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_Bind_WithInterfaceTypedArgument_ResolvesConcreteHandlers()
+    {
+        // ARRANGE
+        MockHandler concreteHandler = new();
+        ISseEventsManager manager = concreteHandler;
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent
+        {
+            EventType = "SimpleAlert",
+            Data = "dispatched via interface"
+        });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client);
+
+        // ACT
+        source.Bind(manager);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT
+        Assert.Equal("dispatched via interface", concreteHandler.LastMessage);
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_Bind_WithTypeParameter_RegistersHandlersFromConcreteType()
+    {
+        // ARRANGE
+        // ThrowWhenEventHandlerNotFound = true: if Bind<MockHandler>() fails to register any handler,
+        // HandlerNotFoundException is thrown and ex will not be null.
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "SimpleAlert", Data = "test" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            MaxDegreeOfParallelism = 1,
+            ThrowWhenEventHandlerNotFound = true
+        });
+
+        // ACT
+        source.Bind<MockHandler>();
+        Exception? ex = await Record.ExceptionAsync(() =>
+            source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
+
+        // ASSERT
+        Assert.Null(ex);
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_Bind_WithMapEventNameAttribute_UsesCustomEventName()
+    {
+        // ARRANGE
+        MockHandlerWithCustomEventName handler = new();
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent
+        {
+            EventType = "alert-received",
+            Data = "custom alert"
+        });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client);
+
+        // ACT
         source.Bind(handler);
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
-        Assert.Equal("System Overload", handler.LastMessage);
+        // ASSERT
+        Assert.Equal("custom alert", handler.LastMessage);
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_Bind_MultipleManagers_DispatchesToEachManager()
+    {
+        // ARRANGE
+        MockAlertHandler alertHandler = new();
+        MockStockHandler stockHandler = new();
+        StockData stock = new("AAPL", 200.0m);
+        string sse = MockSseHelpers.BuildSseStream(
+            new SseEvent { EventType = "SimpleAlert", Data = "critical" },
+            new SseEvent { EventType = "StockUpdated", Data = JsonSerializer.Serialize(stock) });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client);
+
+        // ACT
+        source.Bind(alertHandler);
+        source.Bind(stockHandler);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT
+        Assert.Equal("critical", alertHandler.LastMessage);
+        Assert.NotNull(stockHandler.LastStock);
+        Assert.Equal("AAPL", stockHandler.LastStock.Symbol);
+        Assert.Equal(200.0m, stockHandler.LastStock.Price);
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_Bind_ManagerWithNoHandlers_DoesNotThrow()
+    {
+        // ARRANGE
+        string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client);
+
+        // ACT
+        source.Bind(new EmptyManager());
+        Exception? ex = await Record.ExceptionAsync(() =>
+            source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
+
+        // ASSERT
+        Assert.Null(ex);
     }
 
     private class MockHandler : ISseEventsManager
@@ -323,6 +461,29 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         public void OnSimpleAlert(string message) => LastMessage = message;
     }
 
+    private class MockHandlerWithCustomEventName : ISseEventsManager
+    {
+        public string? LastMessage { get; private set; }
+
+        [MapEventName(EventName = "alert-received")]
+        public void OnSimpleAlert(string message) => LastMessage = message;
+    }
+
+    private class MockAlertHandler : ISseEventsManager
+    {
+        public string? LastMessage { get; private set; }
+
+        public void OnSimpleAlert(string message) => LastMessage = message;
+    }
+
+    private class MockStockHandler : ISseEventsManager
+    {
+        public StockData? LastStock { get; private set; }
+
+        public void OnStockUpdated(StockData data) => LastStock = data;
+    }
+
+    private class EmptyManager : ISseEventsManager { }
+
     private record StockData(string Symbol, decimal Price);
 }
-

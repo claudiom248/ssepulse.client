@@ -33,7 +33,7 @@ public partial class SseSource : IDisposable
     }
 
     internal SseSource(HttpClient client, SseSourceOptions options,
-        List<IRequestMutator> requestMutators, ILastEventIdStore? lastEventIdStore = null,
+        IReadOnlyCollection<IRequestMutator> requestMutators, ILastEventIdStore? lastEventIdStore = null,
         ILogger<SseSource>? logger = null)
     {
         _options = options;

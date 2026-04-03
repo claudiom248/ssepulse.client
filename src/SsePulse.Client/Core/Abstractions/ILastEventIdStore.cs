@@ -1,6 +1,6 @@
 namespace SsePulse.Client.Core.Abstractions;
 
-internal interface ILastEventIdStore
+public interface ILastEventIdStore
 {
     string? LastEventId { get; }
 

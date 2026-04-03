@@ -24,19 +24,29 @@ public class SseSourceLoggingTests
     [Fact]
     public void Constructor_WithoutLogger_DoesNotThrow()
     {
-        using HttpClient client = new();
+        // ARRANGE
         SseSourceOptions options = new() { Path = "/events" };
+        using HttpClient client = new();
+
+        // ACT
         using Core.SseSource source = new(client, options);
+
+        // ASSERT
         Assert.False(source.IsConnected);
     }
 
     [Fact]
     public void Constructor_WithLogger_AcceptsLogger()
     {
+        // ARRANGE
         MockLogger<Core.SseSource> logger = new();
         using HttpClient client = new();
         SseSourceOptions options = new() { Path = "/events" };
+
+        // ACT
         using Core.SseSource source = new(client, options, logger);
+
+        // ASSERT
         Assert.False(source.IsConnected);
         Assert.Empty(logger.Logs);
     }
@@ -201,8 +211,6 @@ public class SseSourceLoggingTests
         Assert.True(logger.HasLog(LogLevel.Information, "Stopping SSE consumption"));
     }
 
-    // --- Gruppo: Cancellation Logging (1 test) ---
-
     [Fact]
     public async Task StartConsumeAsync_Canceled_LogsInformation()
     {
@@ -218,8 +226,6 @@ public class SseSourceLoggingTests
             source.StartConsumeAsync(new CancellationToken(true)));
         Assert.True(logger.HasLog(LogLevel.Information, "SSE consumption canceled"));
     }
-
-    // --- Gruppo: Debug Level Logging (2 tests) ---
 
     [Fact]
     public async Task StartConsumeAsync_StreamOpened_LogsDebug()
@@ -248,9 +254,9 @@ public class SseSourceLoggingTests
             new SseEvent { Id = "456", EventType = "e", Data = "2" });
         MockHttpMessageHandler handler = new(sse);
         using HttpClient client = MockSseHelpers.CreateHttpClientWithHandler(handler);
-        LastEventIdStore lastEventIdStore = new();
+        InMemoryLastEventIdStore inMemoryLastEventIdStore = new();
         await using Core.SseSource source = new(client, DefaultOptions,
-            [new LastEventIdRequestMutator(lastEventIdStore, logger)], lastEventIdStore, logger);
+            [new LastEventIdRequestMutator(inMemoryLastEventIdStore, logger)], inMemoryLastEventIdStore, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -363,7 +369,7 @@ public class SseSourceLoggingTests
         // ACT
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
-        // ASSERT:
+        // ASSERT
         int errorLogCount = logger.CountLogs(LogLevel.Error);
         Assert.Equal(0, errorLogCount);
     }

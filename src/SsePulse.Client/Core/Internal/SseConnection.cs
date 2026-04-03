@@ -10,7 +10,7 @@ namespace SsePulse.Client.Core.Internal;
 
 internal class SseConnection
 {
-    private readonly List<IRequestMutator> _requestMutators;
+    private readonly IReadOnlyCollection<IRequestMutator> _requestMutators;
     private readonly ConnectionHandlers _handlers;
     private readonly ILogger<SseSource> _logger;
     private readonly HttpClient _client;
@@ -20,7 +20,7 @@ internal class SseConnection
     public bool IsConnected => Convert.ToBoolean(_connected);
 
     public SseConnection(
-        List<IRequestMutator> requestMutators,
+        IReadOnlyCollection<IRequestMutator> requestMutators,
         ConnectionHandlers handlers,
         HttpClient client,
         SseSourceOptions options,

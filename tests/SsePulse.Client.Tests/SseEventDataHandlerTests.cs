@@ -3,14 +3,14 @@ using SsePulse.Client.EventHandlers;
 
 namespace SsePulse.Client.Tests;
 
-public class SseDataEventHandlerTests
+public class SseEventDataHandlerTests
 {
     [Fact]
     public void WithCamelCaseJson_DeserializesToPascalCaseProperties()
     {
         // Arrange
         TestMessage? receivedData = null;
-        SseDataEventHandler<TestMessage> handler = new(data => receivedData = data);
+        SseEventDataHandler<TestMessage> handler = new(data => receivedData = data);
         SseItem<string> jsonItem = new("{\"userName\":\"Jane\",\"messageId\":456}", "test-event");
 
         // Act

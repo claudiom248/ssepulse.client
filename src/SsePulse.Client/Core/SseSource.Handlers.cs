@@ -101,10 +101,15 @@ public partial class SseSource
         return this;
     }
     
-    public SseSource Bind<TManager>() where TManager : ISseEventsManager
+    public SseSource Bind<TManager>() where TManager : ISseEventsManager, new()
     {
         TManager manager = Activator.CreateInstance<TManager>();
         return Bind(manager);
+    }
+    
+    public SseSource Bind<TManager>(Func<TManager> factory) where TManager : ISseEventsManager
+    {
+        return Bind(factory());
     }
     
     public SseSource Bind<TManager>(TManager manager) where TManager : ISseEventsManager
@@ -114,7 +119,7 @@ public partial class SseSource
         MethodInfo addDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
         MethodInfo addStronglyTypedDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddStronglyTypedDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
 
-        IEnumerable<MethodInfo> methods = typeof(TManager).GetMethods()
+        IEnumerable<MethodInfo> methods = manager.GetType().GetMethods()
             .Where(m => m.Name.StartsWith("On") && m.GetParameters().Length == 1);
 
         foreach (MethodInfo method in methods)

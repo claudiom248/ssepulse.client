@@ -1,9 +1,8 @@
-using SsePulse.Client.Common;
 using SsePulse.Client.Common.NamingPolicies;
 
 namespace SsePulse.Client.Utils;
 
-internal class NamingCasePolicyRegistry
+internal static class NamingCasePolicyRegistry
 {
     private static readonly Dictionary<NameCasePolicy, INamingCasePolicy> Policies = new()
     {

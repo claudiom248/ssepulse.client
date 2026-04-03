@@ -21,13 +21,13 @@ internal class SseHandlersDictionary : Dictionary<string, ISseEventHandler>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddDataHandler(string eventName, Action<string> handler)
     {
-        AddHandlerCore(eventName, new SseDataEventHandler(handler));
+        AddHandlerCore(eventName, new SseEventDataHandler(handler));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddStronglyTypedDataHandler<TEventData>(string eventName, Action<TEventData> handler)
     {
-        AddHandlerCore(eventName, new SseDataEventHandler<TEventData>(handler));
+        AddHandlerCore(eventName, new SseEventDataHandler<TEventData>(handler));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

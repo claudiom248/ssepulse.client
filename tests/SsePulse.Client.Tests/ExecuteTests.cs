@@ -5,13 +5,12 @@ namespace SsePulse.Client.Tests;
 
 public class ExecuteTests
 {
-    // --- Gruppo: WithRetryAsync - Success Cases ---
-    
     [Fact]
     public async Task WithRetryAsync_SuccessfulAction_ExecutesOnce()
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -30,6 +29,7 @@ public class ExecuteTests
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -44,14 +44,13 @@ public class ExecuteTests
         // ASSERT
         Assert.Equal(3, attempts);
     }
-
-    // --- Gruppo: WithRetryAsync - Failure Cases ---
-
+    
     [Fact]
     public async Task WithRetryAsync_AlwaysFails_ThrowsAfterMaxRetries()
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -59,17 +58,18 @@ public class ExecuteTests
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Execute.WithRetryAsync(Action, RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 50)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Execute.WithRetryAsync(Action, RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 50)));
 
         Assert.Equal(4, attempts); // Initial + 3 retries
     }
-    
+
     [Fact]
     public async Task WithRetryAsync_WhenConditionalRetrySet_ThrowsWhenConditionFails()
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -77,15 +77,15 @@ public class ExecuteTests
             {
                 throw new InvalidOperationException("failure");
             }
+
             throw new InvalidOperationException("unrecoverable");
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Execute.WithRetryAsync(
-                Action, 
-                RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 50),
-                shouldRetry: ex => ex.Message.Contains("unrecoverable")));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Execute.WithRetryAsync(
+            Action,
+            RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 50),
+            shouldRetry: ex => ex.Message.Contains("unrecoverable")));
 
         Assert.Equal(1, attempts); // Initial + 3 retries
     }
@@ -95,6 +95,7 @@ public class ExecuteTests
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -102,13 +103,11 @@ public class ExecuteTests
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Execute.WithRetryAsync(Action, RetryOptions.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Execute.WithRetryAsync(Action, RetryOptions.None));
 
         Assert.Equal(1, attempts); // No retries
     }
 
-    // --- Gruppo: WithRetryAsync - Cancellation ---
 
     [Fact]
     public async Task WithRetryAsync_CancellationRequested_ThrowsOperationCanceledException()
@@ -116,6 +115,7 @@ public class ExecuteTests
         // ARRANGE
         using CancellationTokenSource cts = new();
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -125,8 +125,8 @@ public class ExecuteTests
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<TaskCanceledException>(
-            () => Execute.WithRetryAsync(Action, RetryOptions.Fixed(5, 50), cancellationToken: cts.Token));
+        await Assert.ThrowsAsync<TaskCanceledException>(() =>
+            Execute.WithRetryAsync(Action, RetryOptions.Fixed(5, 50), cancellationToken: cts.Token));
 
         Assert.Equal(2, attempts);
     }
@@ -136,6 +136,7 @@ public class ExecuteTests
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -143,13 +144,11 @@ public class ExecuteTests
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<OperationCanceledException>(
-            () => Execute.WithRetryAsync(Action, RetryOptions.Fixed(5, 50)));
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            Execute.WithRetryAsync(Action, RetryOptions.Fixed(5, 50)));
 
         Assert.Equal(1, attempts); // Should not retry on OperationCanceledException
     }
-
-    // --- Gruppo: WithRetryAsync - Error Callback ---
 
     [Fact]
     public async Task WithRetryAsync_OnErrorCallback_InvokedOnEachFailure()
@@ -157,6 +156,7 @@ public class ExecuteTests
         // ARRANGE
         List<Exception> errors = new();
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -164,11 +164,10 @@ public class ExecuteTests
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Execute.WithRetryAsync(
-                Action,
-                RetryOptions.Fixed(2, 50),
-                onError: ex => errors.Add(ex)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Execute.WithRetryAsync(
+            Action,
+            RetryOptions.Fixed(2, 50),
+            onError: ex => errors.Add(ex)));
 
         Assert.Equal(3, errors.Count); // Initial + 2 retries
         Assert.All(errors, ex => Assert.IsType<InvalidOperationException>(ex));
@@ -179,6 +178,7 @@ public class ExecuteTests
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -193,8 +193,6 @@ public class ExecuteTests
         // ASSERT
         Assert.Equal(2, attempts);
     }
-
-    // --- Gruppo: RetryOptions - Configuration ---
 
     [Fact]
     public void RetryOptions_Default_HasExpectedValues()
@@ -246,15 +244,14 @@ public class ExecuteTests
         Assert.Equal(100, options.DelayInMilliseconds);
         Assert.Equal(5000, options.MaxDelayInMilliseconds);
     }
-
-    // --- Gruppo: WithRetryAsync - Retry Strategy Behavior ---
-
+    
     [Fact]
     public async Task WithRetryAsync_FixedStrategy_RetriesWithConstantDelay()
     {
         // ARRANGE
         List<DateTime> attemptTimes = new();
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attemptTimes.Add(DateTime.UtcNow);
@@ -263,8 +260,8 @@ public class ExecuteTests
         }
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Execute.WithRetryAsync(Action, RetryOptions.Fixed(2, 100)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Execute.WithRetryAsync(Action, RetryOptions.Fixed(2, 100)));
 
         // Note: In UNIT_TEST mode, delays are 10ms, so we just verify retries happened
         Assert.Equal(3, attempts);
@@ -276,6 +273,7 @@ public class ExecuteTests
     {
         // ARRANGE
         int attempts = 0;
+
         Task Action(CancellationToken ct)
         {
             attempts++;
@@ -292,14 +290,13 @@ public class ExecuteTests
         // ASSERT
         Assert.Equal(3, attempts);
     }
-
-    // --- Gruppo: WithIgnoreExceptionAsync ---
-
+    
     [Fact]
     public async Task WithIgnoreExceptionAsync_SuccessfulAction_Completes()
     {
         // ARRANGE
         bool executed = false;
+
         Task Action(CancellationToken ct)
         {
             executed = true;
@@ -320,8 +317,7 @@ public class ExecuteTests
         Task Action(CancellationToken ct) => throw new InvalidOperationException("Error");
 
         // ACT
-        Exception? caughtException = await Record.ExceptionAsync(
-            () => Execute.WithIgnoreExceptionAsync(Action));
+        Exception? caughtException = await Record.ExceptionAsync(() => Execute.WithIgnoreExceptionAsync(Action));
 
         // ASSERT
         Assert.Null(caughtException);
@@ -333,6 +329,7 @@ public class ExecuteTests
         // ARRANGE
         using CancellationTokenSource cts = new();
         cts.Cancel();
+
         Task Action(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
@@ -340,8 +337,8 @@ public class ExecuteTests
         }
 
         // ACT
-        Exception? caughtException = await Record.ExceptionAsync(
-            () => Execute.WithIgnoreExceptionAsync(Action, cancellationToken: cts.Token));
+        Exception? caughtException =
+            await Record.ExceptionAsync(() => Execute.WithIgnoreExceptionAsync(Action, cancellationToken: cts.Token));
 
         // ASSERT
         Assert.Null(caughtException);

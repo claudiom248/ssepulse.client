@@ -2,13 +2,13 @@ using SsePulse.Client.Core.Internal;
 
 namespace SsePulse.Client.Tests;
 
-public class LastEventIdStoreTests
+public class InMemoryLastEventIdStoreTests
 {
     [Fact]
     public void GetLastEventId_Initially_ReturnsNull()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
 
         // ACT
         string? result = store.LastEventId;
@@ -21,7 +21,7 @@ public class LastEventIdStoreTests
     public void SetLastEventId_WithValidId_StoresValue()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
         string eventId = "event-456";
 
         // ACT
@@ -35,7 +35,7 @@ public class LastEventIdStoreTests
     public void SetLastEventId_WithEmptyString_DoesNotStore()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
 
         // ACT
         store.Set("");
@@ -48,7 +48,7 @@ public class LastEventIdStoreTests
     public void SetLastEventId_WithWhitespace_DoesNotStore()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
 
         // ACT
         store.Set("   ");
@@ -61,7 +61,7 @@ public class LastEventIdStoreTests
     public void SetLastEventId_Multiple_UsesLastValue()
     {
         // ARRANGE
-        LastEventIdStore store = new();
+        InMemoryLastEventIdStore store = new();
 
         // ACT
         store.Set("id-1");

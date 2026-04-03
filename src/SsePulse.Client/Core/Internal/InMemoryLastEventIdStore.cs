@@ -2,7 +2,7 @@ using SsePulse.Client.Core.Abstractions;
 
 namespace SsePulse.Client.Core.Internal;
 
-internal class LastEventIdStore : ILastEventIdStore
+internal class InMemoryLastEventIdStore : ILastEventIdStore
 {
     public string? LastEventId { get; private set; }
 
