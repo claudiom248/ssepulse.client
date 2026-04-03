@@ -9,8 +9,6 @@ $testsPath = Join-Path $repoRoot "tests"
 $artifactsPath = Join-Path $repoRoot ".artifacts\coverage"
 $rawResultsPath = Join-Path $artifactsPath "raw"
 $reportPath = Join-Path $artifactsPath "report"
-$toolsPath = Join-Path $repoRoot ".artifacts\tools"
-$reportGeneratorPath = Join-Path $toolsPath "reportgenerator.exe"
 
 Write-Host "--- Coverage Generation ---" -ForegroundColor Cyan
 
@@ -49,7 +47,6 @@ foreach ($testProject in $testProjects) {
     Write-Host "[$projectName] Running tests + coverage..." -ForegroundColor Yellow
 
     New-Item -Path $projectResultsPath -ItemType Directory -Force | Out-Null
-
     dotnet test $testProject.FullName `
         --configuration Release `
         /p:CollectCoverage=true `
@@ -72,16 +69,10 @@ if (-not $coverageFiles -or $coverageFiles.Count -eq 0) {
     exit 1
 }
 
-if (-not (Test-Path $reportGeneratorPath)) {
-    Write-Host "Installing ReportGenerator..." -ForegroundColor Yellow
-    New-Item -Path $toolsPath -ItemType Directory -Force | Out-Null
-
-    dotnet tool install --tool-path $toolsPath dotnet-reportgenerator-globaltool
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ReportGenerator installation failed" -ForegroundColor Red
-        exit 1
-    }
+if (-not (Get-Command reportgenerator -ErrorAction SilentlyContinue)) {
+    Write-Host "ReportGenerator is not installed or not on PATH." -ForegroundColor Red
+    Write-Host "Install it globally with: dotnet tool install -g dotnet-reportgenerator-globaltool" -ForegroundColor Yellow
+    exit 1
 }
 
 $reports = ($coverageFiles | ForEach-Object { $_.FullName }) -join ";"
@@ -89,7 +80,7 @@ $reports = ($coverageFiles | ForEach-Object { $_.FullName }) -join ";"
 Write-Host ""
 Write-Host "Generating report..." -ForegroundColor Cyan
 
-& $reportGeneratorPath "-reports:$reports" "-targetdir:$reportPath" "-reporttypes:$ReportTypes"
+reportgenerator "-reports:$reports" "-targetdir:$reportPath" "-reporttypes:$ReportTypes"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Report generation failed" -ForegroundColor Red
