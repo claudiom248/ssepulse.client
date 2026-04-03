@@ -137,3 +137,29 @@ public class SseCrashHandler(bool failImmediately) : HttpMessageHandler
         return Task.FromResult(response);
     }
 }
+
+/// <summary>Always returns the same fixed HTTP status code, with an empty body.</summary>
+public class FixedStatusHttpMessageHandler(HttpStatusCode statusCode) : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+        => Task.FromResult(new HttpResponseMessage(statusCode));
+}
+
+/// <summary>
+/// Delegates every call to a <see cref="Func{T, TResult}"/> that receives the 1-based call index.
+/// The total number of invocations is accessible via <see cref="CallCount"/>.
+/// </summary>
+public class CallCountingHttpMessageHandler(Func<int, Task<HttpResponseMessage>> handler) : HttpMessageHandler
+{
+    private int _callCount;
+
+    /// <summary>Gets the number of times <see cref="SendAsync"/> has been called.</summary>
+    public int CallCount => _callCount;
+
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+        => handler(Interlocked.Increment(ref _callCount));
+}

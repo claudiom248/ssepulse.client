@@ -37,12 +37,12 @@ internal class SseConnection
     {
         try
         {
-            HttpRequestMessage request = await PrepareRequestAsync();
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
+                    HttpRequestMessage request = await PrepareRequestAsync();
                     HttpResponseMessage response = await SendRequestAsync(request);
-                    if (!response.IsSuccessStatusCode && !IsTransientHttpError(response.StatusCode))
+                    if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogError(
                             "Error while establishing a connection with SSE endpoint. Response StatusCode does not indicate success: {StatusCode}",
@@ -141,7 +141,9 @@ internal class SseConnection
             or HttpStatusCode.InternalServerError
             or HttpStatusCode.BadGateway
             or HttpStatusCode.ServiceUnavailable
-            or HttpStatusCode.GatewayTimeout);
+            or HttpStatusCode.GatewayTimeout
+            or HttpStatusCode.Unauthorized
+            or HttpStatusCode.Forbidden);
     }
 
 
@@ -211,7 +213,7 @@ internal class SseConnection
                 throw;
             }
         }
-        
+
 #if NET8_0_OR_GREATER
         public override int Read(Span<byte> buffer)
         {

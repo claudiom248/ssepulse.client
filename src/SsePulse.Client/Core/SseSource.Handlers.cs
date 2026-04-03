@@ -24,7 +24,7 @@ public partial class SseSource
             field = WrapDefaultHandler(value);
             _connectionHandlers.OnConnectionEstablished = field;
         }
-    } = () => { Console.WriteLine("Connection established"); };
+    } = () => { };
 
     public Action OnConnectionClosed
     {
@@ -35,7 +35,7 @@ public partial class SseSource
             field = WrapDefaultHandler(value);   
             _connectionHandlers.OnConnectionClosed = field;
         }
-    } = () => { Console.WriteLine("Connection gracefully closed"); };
+    } = () => {  };
 
     public Action<Exception> OnConnectionLost
     {
@@ -46,7 +46,7 @@ public partial class SseSource
             field = WrapDefaultHandler(value);        
             _connectionHandlers.OnConnectionLost = field;
         }
-    } = ex => { Console.WriteLine("Connection lost due to: " + ex.Message + ""); };
+    } = _ => { };
     
 
     public Action<Exception> OnError 
