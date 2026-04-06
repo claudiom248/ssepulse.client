@@ -61,18 +61,20 @@ public partial class SseSource : IDisposable
 
         _logger.LogInformation("Starting SSE consumption from {Path}", _options.Path);
 
-        CancellationToken linkedCancellationToken = CreateLinkedCancellationToken();
+        CancellationTokenSource linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+            _cts.Token,
+            cancellationToken);
 
         try
         {
 #if NET8_0_OR_GREATER
-            await using Stream sseStream = await _connection.EstablishAsync(linkedCancellationToken);
+            await using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
 #else
-            using Stream sseStream = await _connection.EstablishAsync(linkedCancellationToken);
+            using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
 #endif
             _logger.LogDebug("SSE stream opened successfully");
             StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-            await consumer.ConsumeAsync(sseStream, linkedCancellationToken);
+            await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
             _tcs.TrySetResult(true);
             _connection.SetDisconnected();
         }
@@ -80,7 +82,7 @@ public partial class SseSource : IDisposable
         {
             _logger.LogInformation("SSE consumption canceled");
             _connection.SetDisconnected();
-            if (_cts.IsCancellationRequested)
+            if (linkedCancellationTokenSource.IsCancellationRequested)
             {
                 _tcs.TrySetResult(true);
             }
@@ -99,14 +101,6 @@ public partial class SseSource : IDisposable
         }
 
         return;
-
-        CancellationToken CreateLinkedCancellationToken()
-        {
-            using CancellationTokenSource linkedCancellationTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, cancellationToken);
-            CancellationToken linkedCancellationToken1 = linkedCancellationTokenSource.Token;
-            return linkedCancellationToken1;
-        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

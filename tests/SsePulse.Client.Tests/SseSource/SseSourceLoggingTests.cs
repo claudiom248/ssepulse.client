@@ -221,9 +221,10 @@ public class SseSourceLoggingTests
         await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
-        // ACT & ASSERT
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            source.StartConsumeAsync(new CancellationToken(true)));
+        // ACT
+        await source.StartConsumeAsync(new CancellationToken(true));
+        
+        // ASSERT
         Assert.True(logger.HasLog(LogLevel.Information, "SSE consumption canceled"));
     }
 
