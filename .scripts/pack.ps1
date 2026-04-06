@@ -5,7 +5,7 @@ param(
 
 $repoRoot = Split-Path -Path $PSScriptRoot -Parent
 $srcPath = Join-Path $repoRoot "src"
-$outputPath = Join-Path $repoRoot ".artifacts\$Configuration"
+$outputPath = Join-Path $repoRoot ".artifacts\nuget\$Configuration"
 
 $gvJson = dotnet gitversion | ConvertFrom-Json
 
