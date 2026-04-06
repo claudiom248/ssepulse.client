@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Authentication.Providers;
+namespace SsePulse.Client.Authentication.Providers.Configurations;
 
 public class ApiKeyAuthenticationProviderConfiguration
 {

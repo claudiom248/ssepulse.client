@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
 using SsePulse.Client.Authentication.Abstractions;
 using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
-using Constants = SsePulse.Client.Authentication.Providers.TokenProviders.Constants;
 
 namespace SsePulse.Client.Authentication.Providers;
 

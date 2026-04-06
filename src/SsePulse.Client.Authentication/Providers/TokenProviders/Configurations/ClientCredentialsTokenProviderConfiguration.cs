@@ -4,5 +4,5 @@ namespace SsePulse.Client.Authentication.Providers.TokenProviders.Configurations
 
 public record struct ClientCredentialsTokenProviderConfiguration(Uri TokenEndpoint, ClientCredentials Credentials) : ITokenProviderConfiguration
 {
-    public string ProviderName => Constants.ClientCredentialsTokenProviderName;  
+    public string Provider => Constants.ClientCredentialsTokenProviderName;  
 }

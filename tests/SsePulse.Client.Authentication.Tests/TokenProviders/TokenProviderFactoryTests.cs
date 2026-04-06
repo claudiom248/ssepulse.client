@@ -183,6 +183,6 @@ public class TokenProviderFactoryTests
 
     private class InvalidTokenProviderConfiguration : ITokenProviderConfiguration
     {
-        public string ProviderName => "Invalid";
+        public string Provider => "Invalid";
     }
 }

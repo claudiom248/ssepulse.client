@@ -22,9 +22,8 @@ public class SseSourceBuilder : ISseSourceBuilder
     }
 
     public SseSourceBuilder(IServiceCollection services, Action<SseSourceOptions> configureOptions)
-        : this(Constants.DefaultSourceName, services)
+        : this(Constants.DefaultSourceName, services, configureOptions)
     {
-        Services.Configure<SseSourceFactoryOptions>(Name, configureOptions);
     }
 
     public SseSourceBuilder(IServiceCollection services, IConfiguration? configuration = null)

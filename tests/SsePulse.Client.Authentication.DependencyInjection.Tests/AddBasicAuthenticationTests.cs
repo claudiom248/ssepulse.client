@@ -122,8 +122,8 @@ public class AddBasicAuthenticationTests
         IConfiguration config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Username"] = "alice",
-                ["Password"] = "secret"
+                ["Args:Username"] = "alice",
+                ["Args:Password"] = "secret"
             })
             .Build();
         ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SsePulse.Client.Authentication.Internal;
 using SsePulse.Client.Authentication.Providers;
+using SsePulse.Client.Authentication.Providers.Configurations;
 using SsePulse.Client.DependencyInjection;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Internal;
@@ -124,8 +125,8 @@ public class AddApiKeyAuthenticationTests
         IConfiguration config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Key"] = "my-key",
-                ["Header"] = "X-API-Key"
+                ["Args:Key"] = "my-key",
+                ["Args:Header"] = "X-API-Key"
             })
             .Build();
         ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);

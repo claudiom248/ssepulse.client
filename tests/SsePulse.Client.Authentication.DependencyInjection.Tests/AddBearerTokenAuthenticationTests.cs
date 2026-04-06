@@ -9,6 +9,7 @@ using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.DependencyInjection;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Internal;
+using Constants = SsePulse.Client.Authentication.Providers.Constants;
 
 namespace SsePulse.Client.Authentication.DependencyInjection.Tests;
 
@@ -92,7 +93,7 @@ public class AddBearerTokenAuthenticationTests
         IConfiguration config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ProviderName"] = "StaticTokenProvider",
+                ["Args:TokenProvider"] = Constants.StaticTokenProviderName,
                 ["Token"] = "static-bearer-token"
             })
             .Build();
@@ -118,7 +119,7 @@ public class AddBearerTokenAuthenticationTests
             IConfiguration config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["ProviderName"] = "EnvironmentVariableTokenProvider",
+                    ["Args:TokenProvider"] = Constants.EnvironmentVariableTokenProviderName,
                     ["EnvironmentVariable"] = envVarName
                 })
                 .Build();
@@ -138,12 +139,12 @@ public class AddBearerTokenAuthenticationTests
     }
 
     [Fact]
-    public void AddBearerTokenAuthentication_WithUnknownProviderName_ThrowsArgumentOutOfRangeException()
+    public void AddBearerTokenAuthentication_WithUnknownTokenProvider_ThrowsArgumentOutOfRangeException()
     {
         // ARRANGE
         ServiceCollection services = new();
         IConfiguration config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["ProviderName"] = "UnknownProvider" })
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["Args:TokenProvider"] = "UnknownProvider" })
             .Build();
         ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
 

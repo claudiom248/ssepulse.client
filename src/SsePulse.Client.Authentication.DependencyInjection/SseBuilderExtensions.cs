@@ -5,49 +5,69 @@ using SsePulse.Client.Authentication.Abstractions;
 using SsePulse.Client.Authentication.Common.Credentials;
 using SsePulse.Client.Authentication.Internal;
 using SsePulse.Client.Authentication.Providers;
+using SsePulse.Client.Authentication.Providers.Configurations;
 using SsePulse.Client.Authentication.Providers.TokenProviders;
 using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
 using SsePulse.Client.DependencyInjection.Abstractions;
-using Constants = SsePulse.Client.Authentication.Providers.TokenProviders.Constants;
 
 namespace SsePulse.Client.Authentication.DependencyInjection;
 
 public static class SseBuilderExtensions
 {
+    public const string AuthenticationSectionName = "Authentication";
+    public const string AuthenticationProviderKeyName = "Provider";
+    public const string AuthenticationProviderArgumentsSectionName = "Args";
+    public const string TokenProviderKeyName = "TokenProvider";
+    
     extension(ISseSourceBuilder builder)
     {
         public ISseSourceBuilder AddAuthentication()
         {
+            IConfigurationSection? configurationSection = builder.Configuration?.GetSection(AuthenticationSectionName);
+            if (configurationSection?.Exists() ?? false)
+            {
+                builder = builder.AddAuthentication(configurationSection);
+                return builder;
+            }
+            
             builder.Services.AddTransient<AuthenticationRequestMutator>();
-            builder = builder.AddRequestMutator<AuthenticationRequestMutator>();
+            builder.AddRequestMutator<AuthenticationRequestMutator>();
             return builder;
         }
 
         public ISseSourceBuilder AddAuthentication(ISseAuthenticationProvider provider)
         {
-            builder = builder.AddRequestMutator(_ => new AuthenticationRequestMutator(provider));
-            return builder;
+            return builder.AddRequestMutator(_ => new AuthenticationRequestMutator(provider));
         }
 
         public ISseSourceBuilder AddAuthentication<TAuthenticationProvider>()
             where TAuthenticationProvider : ISseAuthenticationProvider
         {
-            builder = builder.AddRequestMutator(sp =>
+            return builder.AddRequestMutator(sp =>
                 new AuthenticationRequestMutator(sp.GetRequiredService<TAuthenticationProvider>()));
-            return builder;
         }
 
         public ISseSourceBuilder AddAuthentication(Func<IServiceProvider, ISseAuthenticationProvider> authProviderFactory)
         {
-            builder = builder.AddRequestMutator(sp => new AuthenticationRequestMutator(authProviderFactory(sp)));
+            return builder.AddRequestMutator(sp => new AuthenticationRequestMutator(authProviderFactory(sp)));
+        }
+
+        public ISseSourceBuilder AddAuthentication(IConfiguration authConfiguration)
+        {
+            builder = authConfiguration.GetValue<string>(AuthenticationProviderKeyName) switch
+            {
+                Constants.BearerTokenAuthenticationProviderName => builder.AddBearerTokenAuthentication(authConfiguration),
+                Constants.BasicCredentialsAuthenticationProviderName => builder.AddBasicAuthentication(authConfiguration),
+                Constants.ApiKeyAuthenticationProviderName => builder.AddApiKeyAuthentication(authConfiguration),
+                _ => throw new ArgumentOutOfRangeException()
+            };
             return builder;
         }
         
         public ISseSourceBuilder AddBearerTokenAuthentication()
         {
             builder.Services.AddSingleton<BearerTokenAuthenticationProvider>();
-            builder = builder.AddAuthentication<BearerTokenAuthenticationProvider>();
-            return builder;
+            return builder.AddAuthentication<BearerTokenAuthenticationProvider>();
         }
         
         public ISseSourceBuilder AddBearerTokenAuthentication(ITokenProvider tokenProvider)
@@ -57,81 +77,64 @@ public static class SseBuilderExtensions
         
         public ISseSourceBuilder AddBearerTokenAuthentication(Func<IServiceProvider, ITokenProvider> tokenProviderFactory)
         {
-            builder = builder.AddAuthentication(sp => new BearerTokenAuthenticationProvider(tokenProviderFactory.Invoke(sp)));
-            return builder;
+            return builder.AddAuthentication(sp => new BearerTokenAuthenticationProvider(tokenProviderFactory.Invoke(sp)));
         }
         
         public ISseSourceBuilder AddBearerTokenAuthentication(IConfiguration authConfiguration)
         {
+            ConfigurationSection argsSection = (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
             ITokenProviderConfiguration config =
-                authConfiguration.GetValue<string>(nameof(ITokenProviderConfiguration.ProviderName)) switch
+                argsSection.GetValue<string>(TokenProviderKeyName) switch
                 {
                     Constants.ClientCredentialsTokenProviderName => authConfiguration
                         .Get<ClientCredentialsTokenProviderConfiguration>(),
                     Constants.StaticTokenProviderName => authConfiguration.Get<StaticTokenProviderConfiguration>(),
                     Constants.EnvironmentVariableTokenProviderName => authConfiguration
                         .Get<EnvironmentVariableTokenProviderConfiguration>(),
-                    _ => throw new ArgumentException(nameof(ITokenProviderConfiguration.ProviderName))
+                    _ => throw new ArgumentException(nameof(ITokenProviderConfiguration.Provider))
                 };
-            builder = builder.AddAuthentication(_ =>
+            return builder.AddAuthentication(_ =>
                 new BearerTokenAuthenticationProvider(TokenProviderFactory.Create(config)));
-            return builder;
         }
-
-        // public ISseSourceBuilder AddBearerTokenAuthentication<TConfiguration>(
-        //     IConfiguration authConfiguration,
-        //     Func<TConfiguration, ITokenProvider> tokenProviderFactory)
-        //     where TConfiguration : ITokenProviderConfiguration
-        // {
-        //     TConfiguration configuration = authConfiguration.Get<TConfiguration>()!;
-        //     builder.Services.AddSingleton<ITokenProvider>(sp => tokenProviderFactory(configuration));
-        //     builder.AddAuthentication<BearerTokenAuthenticationProvider>();
-        //     return builder;
-        // }
         
         public ISseSourceBuilder AddBasicAuthentication()
         {
             builder.Services.AddSingleton<BasicAuthenticationProvider>();
-            builder = builder.AddAuthentication<BasicAuthenticationProvider>();
-            return builder;
+            return builder.AddAuthentication<BasicAuthenticationProvider>();
         }
         
         public ISseSourceBuilder AddBasicAuthentication(Action<BasicCredentials> configureOptions)
         {
             builder.Services.Configure(builder.Name, configureOptions);
-            builder = builder.AddAuthentication(sp => new BasicAuthenticationProvider(
+            return builder.AddAuthentication(sp => new BasicAuthenticationProvider(
                 sp.GetRequiredService<IOptionsMonitor<BasicCredentials>>().Get(builder.Name)));
-            return builder;
         }
         
         public ISseSourceBuilder AddBasicAuthentication(BasicCredentials configuration)
         {
-            builder = builder.AddAuthentication(_ => new BasicAuthenticationProvider(configuration));
-            return builder;
+            return builder.AddAuthentication(_ => new BasicAuthenticationProvider(configuration));
         }
 
         public ISseSourceBuilder AddBasicAuthentication(IConfiguration authConfiguration)
         {
+            ConfigurationSection argsSection = (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
             BasicCredentials basicCredentials = 
-                authConfiguration.Get<BasicCredentials>() ??
+                argsSection.Get<BasicCredentials>() ??
                 throw new InvalidOperationException("Invalid configuration for Basic Authentication");
-            builder = builder.AddAuthentication(_ => new BasicAuthenticationProvider(basicCredentials));
-            return builder;
+            return builder.AddAuthentication(_ => new BasicAuthenticationProvider(basicCredentials));
         }
         
         public ISseSourceBuilder AddApiKeyAuthentication()
         {
             builder.Services.AddSingleton<ApiKeyAuthenticationProvider>();
-            builder = builder.AddAuthentication<ApiKeyAuthenticationProvider>();
-            return builder;
+            return builder.AddAuthentication<ApiKeyAuthenticationProvider>();
         }
         
         public ISseSourceBuilder AddApiKeyAuthentication(Action<ApiKeyAuthenticationProviderConfiguration> configureOptions)
         {
             builder.Services.Configure(builder.Name, configureOptions);
-            builder = builder.AddAuthentication(sp => new ApiKeyAuthenticationProvider(
+            return builder.AddAuthentication(sp => new ApiKeyAuthenticationProvider(
                 sp.GetRequiredService<IOptionsMonitor<ApiKeyAuthenticationProviderConfiguration>>().Get(builder.Name)));
-            return builder;
         }
         
         public ISseSourceBuilder AddApiKeyAuthentication(ApiKeyAuthenticationProviderConfiguration configuration)
@@ -142,8 +145,9 @@ public static class SseBuilderExtensions
 
         public ISseSourceBuilder AddApiKeyAuthentication(IConfiguration authConfiguration)
         {
+            ConfigurationSection argsSection = (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
             ApiKeyAuthenticationProviderConfiguration configuration =
-                authConfiguration.Get<ApiKeyAuthenticationProviderConfiguration>() ??
+                argsSection.Get<ApiKeyAuthenticationProviderConfiguration>() ??
                 throw new InvalidOperationException("Invalid configuration for API Key Authentication");
             builder = builder.AddAuthentication(_ => new ApiKeyAuthenticationProvider(configuration));
             return builder;

@@ -1,4 +1,5 @@
 using SsePulse.Client.Authentication.Common.Credentials;
+using SsePulse.Client.Authentication.Providers;
 using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
 
 namespace SsePulse.Client.Authentication.Tests.TokenProviders;
@@ -25,10 +26,10 @@ public class TokenProviderConfigurationsTests
         StaticTokenProviderConfiguration config = new("test-token");
 
         // ACT
-        string providerName = config.ProviderName;
+        string providerName = config.Provider;
 
         // ASSERT
-        Assert.Equal("StaticTokenProvider", providerName);
+        Assert.Equal(Constants.StaticTokenProviderName, providerName);
     }
 
     [Fact]
@@ -64,10 +65,10 @@ public class TokenProviderConfigurationsTests
         EnvironmentVariableTokenProviderConfiguration config = new("MY_VAR");
 
         // ACT
-        string providerName = config.ProviderName;
+        string providerName = config.Provider;
 
         // ASSERT
-        Assert.Equal("EnvironmentVariableTokenProvider", providerName);
+        Assert.Equal(Constants.EnvironmentVariableTokenProviderName, providerName);
     }
 
     [Fact]
@@ -117,7 +118,7 @@ public class TokenProviderConfigurationsTests
         ClientCredentialsTokenProviderConfiguration config = new(tokenEndpoint, credentials);
 
         // ASSERT
-        Assert.Equal("ClientCredentialsTokenProvider", config.ProviderName);
+        Assert.Equal(Constants.ClientCredentialsTokenProviderName, config.Provider);
     }
 
     [Fact]

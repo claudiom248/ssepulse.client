@@ -1,4 +1,5 @@
 using SsePulse.Client.Authentication.Providers;
+using SsePulse.Client.Authentication.Providers.Configurations;
 
 namespace SsePulse.Client.Authentication.Tests.SseAuthenticationProviders;
 
