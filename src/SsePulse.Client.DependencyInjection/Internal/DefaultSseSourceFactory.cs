@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
@@ -23,11 +24,13 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
         SseSourceFactoryOptions options = _optionsMonitor.Get(name);
         IReadOnlyCollection<IRequestMutator> mutators = BuildMutators();
         ILastEventIdStore? store = options.LastEventIdStoreFactory?.Invoke(_serviceProvider);
+        ILoggerFactory? loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
         SseSource source = new(
             _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(name), 
             options, 
             mutators,
-            store);
+            store,
+            loggerFactory?.CreateLogger<SseSource>());
         BindEventsManagers();
         return source;
 
