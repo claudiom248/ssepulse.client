@@ -103,19 +103,25 @@ public class SseSourceLoggingTests
     }
 
     [Fact]
-    public async Task StartConsumeAsync_NoHandler_LogsWarning()
+    public async Task StartConsumeAsync_NoHandler_LogsError()
     {
         // ARRANGE
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "unknown", Data = "test" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(
+            client, 
+            new SseSourceOptions
+            {
+                ThrowWhenEventHandlerNotFound = true
+            }, 
+            logger);
 
         // ACT & ASSERT
         await Assert.ThrowsAsync<HandlerNotFoundException>(() =>
             source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
-        Assert.True(logger.HasLog(LogLevel.Warning, "No handler found"));
-        Assert.True(logger.HasLog(LogLevel.Warning, "unknown"));
+        Assert.True(logger.HasLog(LogLevel.Error, "No handler found"));
+        Assert.True(logger.HasLog(LogLevel.Error, "unknown"));
     }
 
     [Fact]

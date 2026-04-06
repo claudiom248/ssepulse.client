@@ -42,6 +42,10 @@ internal class StreamConsumer
                 {
                     _lastEventIdStore.Set(sseItem.EventId!);
                 }
+                if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
+                {
+                    throw dispatcherBlock.Completion.Exception;
+                }
                 await dispatcherBlock.SendAsync(sseItem, cancellationToken);
             }
         }
@@ -70,11 +74,13 @@ internal class StreamConsumer
         string eventType = @event.EventType;
         if (!_handlers.TryGetValue(eventType, out ISseEventHandler? handler))
         {
-            _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
             if (_options.ThrowWhenEventHandlerNotFound)
             {
+                _logger.LogError("No handler found for event type '{EventType}'", eventType);
                 throw new HandlerNotFoundException(eventType);
             }
+
+            _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
             return;
         }
         try
