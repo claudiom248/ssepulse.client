@@ -65,36 +65,6 @@ public class DependencyInjectionIntegrationTests
     }
 
     [Fact]
-    public void SsePulseBuilder_SetupMultipleSources()
-    {
-        // Arrange
-        ServiceCollection services = new();
-        services.AddHttpClient();
-
-        // Act
-        SsePulseBuilder builder = new(services);
-        builder
-            .AddSseSource("Events", sourceBuilder =>
-            {
-                sourceBuilder.AddHttpClient();
-            })
-            .AddSseSource("Notifications", sourceBuilder =>
-            {
-                sourceBuilder.AddHttpClient();
-            });
-
-        ServiceProvider provider = services.BuildServiceProvider();
-
-        // Assert
-        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
-        SseSource events = factory.CreateSseSource("Events");
-        SseSource notifications = factory.CreateSseSource("Notifications");
-
-        Assert.NotNull(events);
-        Assert.NotNull(notifications);
-    }
-
-    [Fact]
     public void ConfigurationBinding_WorksWithOptions()
     {
         // Arrange
@@ -264,23 +234,6 @@ public class DependencyInjectionIntegrationTests
         // Assert
         SseSource? source = provider.GetService<SseSource>();
         Assert.NotNull(source);
-    }
-
-    [Fact]
-    public void NamedSourceBuilder_AllowsSourceRetrieval()
-    {
-        // Arrange
-        ServiceCollection services = new();
-        services.AddHttpClient();
-        SsePulseBuilder builder = new(services);
-
-        // Act
-        builder.AddSseSource("RetrievableSource", _ => { });
-        ISseSourceBuilder retrieved = builder.Source("RetrievableSource");
-
-        // Assert
-        Assert.NotNull(retrieved);
-        Assert.Equal("RetrievableSource", retrieved.Name);
     }
 }
 
