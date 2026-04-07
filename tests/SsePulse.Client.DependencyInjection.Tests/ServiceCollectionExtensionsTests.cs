@@ -2,8 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
+using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.DependencyInjection.Extensions;
-using SsePulse.Client.DependencyInjection.Internal;
 
 namespace SsePulse.Client.DependencyInjection.Tests;
 
@@ -96,8 +96,8 @@ public class ServiceCollectionExtensionsTests
 
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
-        SseSourceFactoryOptions resolved = provider
-            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
+        SseSourceOptions resolved = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceOptions>>()
             .Get("MySource");
 
         Assert.Equal("/api/events", resolved.Path);
@@ -116,8 +116,8 @@ public class ServiceCollectionExtensionsTests
 
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
-        SseSourceFactoryOptions resolved = provider
-            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
+        SseSourceOptions resolved = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceOptions>>()
             .Get(Constants.DefaultSourceName);
 
         Assert.Equal("/default-events", resolved.Path);

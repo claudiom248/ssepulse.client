@@ -18,7 +18,7 @@ public class SseSourceBuilder : ISseSourceBuilder
     public SseSourceBuilder(string name, IServiceCollection services, Action<SseSourceOptions> configureOptions)
         : this(name, services)
     {
-        Services.Configure<SseSourceFactoryOptions>(Name, configureOptions);
+        Services.Configure(Name, configureOptions);
     }
 
     public SseSourceBuilder(IServiceCollection services, Action<SseSourceOptions> configureOptions)
@@ -39,14 +39,11 @@ public class SseSourceBuilder : ISseSourceBuilder
         Services = services;
         Name = name;
 
-        if (Configuration is null)
+        Services.AddOptions<SseSourceFactoryOptions>(Name);
+        
+        if (Configuration is not null)
         {
-            Services.AddOptions<SseSourceFactoryOptions>(Name)
-                .Configure(_ => { });
-        }
-        else
-        {
-            Services.AddOptions<SseSourceFactoryOptions>(Name)
+            Services.AddOptions<SseSourceOptions>(Name)
                 .Bind(Configuration);
         }
     }

@@ -4,26 +4,33 @@ using Microsoft.Extensions.Options;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client.Core.Configurations;
 
 namespace SsePulse.Client.DependencyInjection.Internal;
 
 internal class DefaultSseSourceFactory : ISseSourceFactory
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IOptionsMonitor<SseSourceFactoryOptions> _optionsMonitor;
+    private readonly IOptionsMonitor<SseSourceOptions> _sourceOptions;
+    private readonly IOptionsMonitor<SseSourceFactoryOptions> _sourceFactoryOptions;
 
-    public DefaultSseSourceFactory(IServiceProvider serviceProvider, IOptionsMonitor<SseSourceFactoryOptions> optionsMonitor)
+    public DefaultSseSourceFactory(
+        IServiceProvider serviceProvider, 
+        IOptionsMonitor<SseSourceOptions> sourceOptions,
+        IOptionsMonitor<SseSourceFactoryOptions> sourceFactoryOptions)
     {
         _serviceProvider = serviceProvider;
-        _optionsMonitor = optionsMonitor;
+        _sourceOptions = sourceOptions;
+        _sourceFactoryOptions = sourceFactoryOptions;
     }
 
     public SseSource CreateSseSource(string? name)
     {
         name ??= Constants.DefaultSourceName;
-        SseSourceFactoryOptions options = _optionsMonitor.Get(name);
+        SseSourceOptions options = _sourceOptions.Get(name);
+        SseSourceFactoryOptions sourceFactoryOptions = _sourceFactoryOptions.Get(name);
         IReadOnlyCollection<IRequestMutator> mutators = BuildMutators();
-        ILastEventIdStore? store = options.LastEventIdStoreFactory?.Invoke(_serviceProvider);
+        ILastEventIdStore? store = sourceFactoryOptions.LastEventIdStoreFactory?.Invoke(_serviceProvider);
         ILoggerFactory? loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
         SseSource source = new(
             _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(name), 
@@ -34,18 +41,15 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
         BindEventsManagers();
         return source;
 
-        IReadOnlyCollection<IRequestMutator> BuildMutators()
-        {
-            IReadOnlyCollection<IRequestMutator> readOnlyCollection = options.RequestMutatorsFactories
+        IReadOnlyCollection<IRequestMutator> BuildMutators() =>
+            sourceFactoryOptions.RequestMutatorsFactories
                 .Select(registration => registration.Invoke(_serviceProvider))
                 .ToList()
                 .AsReadOnly();
-            return readOnlyCollection;
-        }
-        
+
         void BindEventsManagers()
         {
-            foreach (Func<IServiceProvider, ISseEventsManager>? managerFactory in options.EventManagerFactories)
+            foreach (Func<IServiceProvider, ISseEventsManager>? managerFactory in sourceFactoryOptions.EventManagerFactories)
             {
                 source.Bind(() => managerFactory(_serviceProvider));
             }

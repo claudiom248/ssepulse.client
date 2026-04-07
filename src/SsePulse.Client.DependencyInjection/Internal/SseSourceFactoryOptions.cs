@@ -1,9 +1,8 @@
 using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
 
 namespace SsePulse.Client.DependencyInjection.Internal;
 
-internal class SseSourceFactoryOptions : SseSourceOptions
+internal class SseSourceFactoryOptions
 {
     internal List<Func<IServiceProvider, IRequestMutator>> RequestMutatorsFactories
     {
