@@ -59,7 +59,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -76,7 +76,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -93,7 +93,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -110,7 +110,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "unknown", Data = "test" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(
+        await using Core.SseSource source = new(
             client, 
             new SseSourceOptions
             {
@@ -132,7 +132,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => throw new InvalidOperationException("Handler error"));
         source.OnError = _ => { }; // Suppress default error handler
 
@@ -153,7 +153,7 @@ public class SseSourceLoggingTests
         {
             BaseAddress = new Uri("https://example.com")
         };
-        using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
+        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
 
         // ACT & ASSERT
         await Assert.ThrowsAsync<HttpRequestException>(() =>
@@ -169,7 +169,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         using HttpClient client = new(new SseCrashHandler(failImmediately: false));
         client.BaseAddress = new Uri("https://example.com");
-        using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
+        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
         source.On("message", _ => { });
 
         // ACT & ASSERT
@@ -187,7 +187,7 @@ public class SseSourceLoggingTests
         {
             BaseAddress = new Uri("https://example.com")
         };
-        using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
+        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" }, logger);
 
         // ACT & ASSERT
         await Assert.ThrowsAsync<HttpRequestException>(() =>
@@ -205,7 +205,7 @@ public class SseSourceLoggingTests
             new SseEvent { EventType = "e", Data = "2" },
             new SseEvent { EventType = "e", Data = "3" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", async _ => await Task.Delay(5000)); // Handler lento per permettere lo stop
 
         // ACT
@@ -229,7 +229,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -246,7 +246,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -267,7 +267,7 @@ public class SseSourceLoggingTests
         MockHttpMessageHandler handler = new(sse);
         using HttpClient client = MockSseHelpers.CreateHttpClientWithHandler(handler);
         InMemoryLastEventIdStore inMemoryLastEventIdStore = new();
-        using Core.SseSource source = new(client, DefaultOptions,
+        await using Core.SseSource source = new(client, DefaultOptions,
             [new LastEventIdRequestMutator(inMemoryLastEventIdStore, logger)], inMemoryLastEventIdStore, logger);
         source.On("e", _ => { });
 
@@ -297,7 +297,7 @@ public class SseSourceLoggingTests
             new SseEvent { EventType = "e", Data = "2" },
             new SseEvent { EventType = "e", Data = "3" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, logger);
         source.On("e", _ => { });
 
         // ACT
@@ -318,7 +318,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, DefaultOptions, [failingMutator], null, logger);
+        await using Core.SseSource source = new(client, DefaultOptions, [failingMutator], null, logger);
         source.On("e", _ => { });
 
         // ACT & ASSERT
@@ -349,7 +349,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, new SseSourceOptions
+        await using Core.SseSource source = new(client, new SseSourceOptions
         {
             Path = "/sse"
         }, [mutator1, mutator2], null, logger);
@@ -376,7 +376,7 @@ public class SseSourceLoggingTests
         MockLogger<Core.SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = new(client, new SseSourceOptions
+        await using Core.SseSource source = new(client, new SseSourceOptions
         {
             Path = "/sse"
         }, [successMutator], null, logger);

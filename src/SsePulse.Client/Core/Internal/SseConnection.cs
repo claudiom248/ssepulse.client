@@ -8,14 +8,14 @@ using SsePulse.Client.Utils;
 
 namespace SsePulse.Client.Core.Internal;
 
-internal class SseConnection
+internal partial class SseConnection
 {
     private readonly IReadOnlyCollection<IRequestMutator> _requestMutators;
     private readonly ConnectionHandlers _handlers;
     private readonly ILogger<SseSource> _logger;
     private readonly HttpClient _client;
     private readonly SseSourceOptions _options;
-    private volatile int _connected;
+    private int _connected;
 
     public bool IsConnected => Convert.ToBoolean(_connected);
 
@@ -149,9 +149,8 @@ internal class SseConnection
 
     private void SetConnected()
     {
-        int wasConnected = Interlocked.CompareExchange(ref _connected, 0, 1);
+        int wasConnected = Interlocked.CompareExchange(ref _connected, 1, 0);
         if (wasConnected != 0) return;
-        _connected = 1;
         _logger.LogInformation("SSE connection established");
         _handlers.OnConnectionEstablished.Invoke();
     }
@@ -159,7 +158,6 @@ internal class SseConnection
     public void SetDisconnected(Exception? exception = null)
     {
         int wasConnected = Interlocked.CompareExchange(ref _connected, 0, 1);
-        _connected = 0;
         if (wasConnected != 1) return;
         if (exception is null)
         {
@@ -170,89 +168,6 @@ internal class SseConnection
         {
             _logger.LogError(exception, "SSE connection lost due to exception");
             _handlers.OnConnectionLost.Invoke(exception);
-        }
-    }
-
-    private class SseStream : Stream
-    {
-        private readonly SseConnection _connection;
-        private readonly Stream _innerStream;
-
-        private SseStream(SseConnection connection, Stream innerStream)
-        {
-            _innerStream = innerStream;
-            _connection = connection;
-        }
-
-        public static SseStream Wrap(SseConnection connection, Stream innerStream) => new(connection, innerStream);
-
-        public override void Flush()
-        {
-            _innerStream.Flush();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            return _innerStream.Read(buffer, offset, count);
-        }
-
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-#if NET8_0_OR_GREATER
-                return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
-#else
-                return await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
-#endif
-            }
-            catch (Exception ex)
-            {
-                _connection.SetDisconnected(ex);
-                throw;
-            }
-        }
-
-#if NET8_0_OR_GREATER
-        public override int Read(Span<byte> buffer)
-        {
-            try
-            {
-                return base.Read(buffer);
-            }
-            catch (Exception ex)
-            {
-                _connection.SetDisconnected(ex);
-                throw;
-            }
-        }
-#endif
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            return _innerStream.Seek(offset, origin);
-        }
-
-        public override void SetLength(long value)
-        {
-            _innerStream.SetLength(value);
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            _innerStream.Write(buffer, offset, count);
-        }
-
-        public override bool CanRead => _innerStream.CanRead;
-        public override bool CanSeek => _innerStream.CanSeek;
-        public override bool CanWrite => _innerStream.CanWrite;
-        public override long Length => _innerStream.Length;
-
-        public override long Position
-        {
-            get => _innerStream.Position;
-            set => _innerStream.Position = value;
         }
     }
 }

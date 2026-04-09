@@ -31,7 +31,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = CreateSource(client);
+        await using Core.SseSource source = CreateSource(client);
 
         // ACT & ASSERT
         _ = Task.Run(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
@@ -53,7 +53,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        using Core.SseSource source = CreateSource(client);
+        await using Core.SseSource source = CreateSource(client);
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ACT

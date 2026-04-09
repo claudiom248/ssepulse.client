@@ -10,6 +10,7 @@ namespace SsePulse.Client.Core.Internal;
 
 internal class StreamConsumer
 {
+    private const string? ResponseEndedPrematurelyExceptionMessage = "SSE stream ended prematurely. This may indicate that the server closed the connection unexpectedly.";
     private readonly SseHandlersDictionary _handlers;
     private readonly SseSourceOptions _options;
     private readonly ILogger<SseSource> _logger;
@@ -29,7 +30,7 @@ internal class StreamConsumer
         _onError = onError;
         _lastEventIdStore = lastEventIdStore;
     }
-    
+
     public async Task ConsumeAsync(Stream stream, CancellationToken cancellationToken)
     {
         ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock(cancellationToken);
@@ -42,12 +43,27 @@ internal class StreamConsumer
                 {
                     _lastEventIdStore.Set(sseItem.EventId!);
                 }
+
                 if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
                 {
                     throw dispatcherBlock.Completion.Exception;
                 }
+
                 await dispatcherBlock.SendAsync(sseItem, cancellationToken);
             }
+        }
+#if NET8_0_OR_GREATER
+        catch (HttpIOException ioEx) when (ioEx.HttpRequestError == HttpRequestError.ResponseEnded)
+        {
+            _logger.LogError(ioEx, ResponseEndedPrematurelyExceptionMessage);
+            throw new ResponseEndedPrematurelyException(ioEx);
+        }
+#endif
+        catch (IOException hre) when (string.Equals("The response ended prematurely.",
+                                               hre.Message, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogError(hre, ResponseEndedPrematurelyExceptionMessage);
+            throw new ResponseEndedPrematurelyException(hre);
         }
         finally
         {
@@ -83,6 +99,7 @@ internal class StreamConsumer
             _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
             return;
         }
+
         try
         {
             handler.Invoke(@event);

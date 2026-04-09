@@ -82,7 +82,6 @@ public class MockHttpMessageHandler : HttpMessageHandler
             throw _exception;
         }
 
-        // Capture Last-Event-ID header
         if (request.Headers.TryGetValues("Last-Event-ID", out IEnumerable<string>? values))
         {
             LastEventIdSent = values.FirstOrDefault();
@@ -123,7 +122,6 @@ public class NetworkFailureStream : Stream
     public override void Write(byte[] b, int o, int c) => throw new NotSupportedException();
 }
 
-// 2. L'handler che decide QUANDO crashare
 public class SseCrashHandler(bool failImmediately) : HttpMessageHandler
 {
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

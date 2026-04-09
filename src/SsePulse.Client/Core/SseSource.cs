@@ -7,10 +7,7 @@ using SsePulse.Client.Core.Internal;
 
 namespace SsePulse.Client.Core;
 
-public partial class SseSource : IDisposable
-#if !NETSTANDARD2_0
-    , IAsyncDisposable
-#endif
+public partial class SseSource: IDisposable, IAsyncDisposable
 {
     private readonly SseSourceOptions _options;
     private readonly ILogger<SseSource> _logger;
@@ -137,16 +134,18 @@ public partial class SseSource : IDisposable
         _logger.LogInformation("Stopping SSE consumption");
         _cts.Cancel();
     }
-
-#if !NETSTANDARD2_0
+    
     public async Task StopAsync()
     {
         AssertNotDisposed();
         AssertStarted();
         _logger.LogInformation("Stopping SSE consumption");
+#if !NETSTANDARD2_0
         await _cts.CancelAsync();
-    }
+#else
+        _cts.Cancel();
 #endif
+    }
 
     public void Reset()
     {
@@ -194,7 +193,11 @@ public partial class SseSource : IDisposable
 
         if (_started && !Completion.IsCompleted)
         {
+#if !NETSTANDARD2_0
             await _cts.CancelAsync();
+#else
+            _cts.Cancel();   
+#endif            
             _cts.Dispose();
             await Completion;
         }
