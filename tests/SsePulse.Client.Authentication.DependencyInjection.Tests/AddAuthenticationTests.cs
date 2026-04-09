@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -129,7 +130,7 @@ public class AddAuthenticationTests
         // ASSERT
         Assert.IsType<AuthenticationRequestMutator>(requestMutator);
         Assert.Equal("Basic", request.Headers.Authorization?.Scheme);
-        Assert.Equal(Convert.ToBase64String(Encoding.ASCII.GetBytes("alice:secret")), request.Headers.Authorization?.Parameter);
+        Assert.Equal(Convert.ToBase64String("alice:secret"u8.ToArray()), request.Headers.Authorization?.Parameter);
     }
 
     [Fact]

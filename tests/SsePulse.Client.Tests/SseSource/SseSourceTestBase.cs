@@ -28,7 +28,9 @@ public abstract class SseSourceTestBase
         ILastEventIdStore? lastEventIdStore = null) =>
         new(client ?? DefaultClient, options ?? DefaultOptions, mutators?.ToList() ?? [], lastEventIdStore, NullLogger<Core.SseSource>.Instance);
 
+#if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
     protected class TestEventData
     {
         public string Message { get; set; } = "";

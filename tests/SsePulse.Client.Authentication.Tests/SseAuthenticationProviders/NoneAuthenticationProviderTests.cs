@@ -1,3 +1,4 @@
+using System.Net.Http;
 using SsePulse.Client.Authentication.Providers;
 
 namespace SsePulse.Client.Authentication.Tests.SseAuthenticationProviders;

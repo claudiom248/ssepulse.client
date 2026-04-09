@@ -210,7 +210,7 @@ public class ServiceCollectionExtensionsTests
             (ServiceCollectionExtensions.SseSourceRegistrationService)services
                 .Single(d => d.ServiceType == typeof(ServiceCollectionExtensions.SseSourceRegistrationService))
                 .ImplementationInstance!;
-        Assert.Same(tracker.DefaultDescriptor, sseDescriptors[^1]);
+        Assert.Same(tracker.DefaultDescriptor, sseDescriptors.Last());
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class ServiceCollectionExtensionsTests
             (ServiceCollectionExtensions.SseSourceRegistrationService)services
                 .Single(d => d.ServiceType == typeof(ServiceCollectionExtensions.SseSourceRegistrationService))
                 .ImplementationInstance!;
-        Assert.Same(tracker.DefaultDescriptor, sseDescriptors[^1]);
+        Assert.Same(tracker.DefaultDescriptor, sseDescriptors.Last());
     }
 
     [Fact]

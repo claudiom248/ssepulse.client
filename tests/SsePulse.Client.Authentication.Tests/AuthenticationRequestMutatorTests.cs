@@ -1,3 +1,4 @@
+using System.Net.Http;
 using NSubstitute;
 using SsePulse.Client.Authentication.Abstractions;
 using SsePulse.Client.Authentication.Internal;

@@ -2,7 +2,7 @@ using SsePulse.Client.Tests.Mocks;
 
 namespace SsePulse.Client.Tests.SseSource;
 
-public class SseSourceLifecycleTests : SseSourceTestBase
+public partial class SseSourceLifecycleTests : SseSourceTestBase
 {
     [Fact]
     public void IsConnected_Initially_ReturnsFalse()
@@ -31,7 +31,7 @@ public class SseSourceLifecycleTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        using Core.SseSource source = CreateSource(client);
 
         // ACT & ASSERT
         _ = Task.Run(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
@@ -53,7 +53,7 @@ public class SseSourceLifecycleTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        using Core.SseSource source = CreateSource(client);
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ACT
@@ -64,23 +64,26 @@ public class SseSourceLifecycleTests : SseSourceTestBase
     }
 
     [Fact]
-    public async Task StopAsync_NotStarted_ThrowsInvalidOperationException()
+    public void Stop_NotStarted_ThrowsInvalidOperationException()
     {
-        // ARRANGE & ACT & ASSERT
-        await using Core.SseSource source = CreateSource();
-        await Assert.ThrowsAsync<InvalidOperationException>(() => source.StopAsync());
+        // ARRANGE
+        using Core.SseSource source = CreateSource();
+
+        // ACT & ASSERT
+        Assert.Throws<InvalidOperationException>(() => source.Stop());
     }
 
     [Fact]
-    public async Task StopAsync_AfterDisposeAsync_ThrowsObjectDisposedException()
+    public void Stop_AfterDispose_ThrowsObjectDisposedException()
     {
         // ARRANGE
         Core.SseSource source = CreateSource();
-        await source.DisposeAsync();
+        source.Dispose();
 
         // ACT & ASSERT
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => source.StopAsync());
+        Assert.Throws<ObjectDisposedException>(() => source.Stop());
     }
+
 
     [Fact]
     public void Dispose_MultipleTimes_IsIdempotent()
@@ -89,15 +92,18 @@ public class SseSourceLifecycleTests : SseSourceTestBase
         Core.SseSource source = CreateSource();
 
         // ACT
-        source.Dispose();
-        source.Dispose();
+        Exception? exception = Record.Exception(() =>
+        {
+            source.Dispose();
+            source.Dispose();
+        });
 
         // ASSERT
-        // If no exception is thrown, test passes
+        Assert.Null(exception);
     }
 
     [Fact]
-    public void Dispose_On_ThrowsObjectDisposedException()
+    public void Dispose_AfterDispose_ThrowsObjectDisposedException()
     {
         // ARRANGE
         Core.SseSource source = CreateSource();
@@ -145,61 +151,37 @@ public class SseSourceLifecycleTests : SseSourceTestBase
     {
         // ARRANGE
         Core.SseSource source = CreateSource();
-        await source.DisposeAsync();
+        source.Dispose();
 
         // ACT & ASSERT
         await Assert.ThrowsAsync<ObjectDisposedException>(() => source.StartConsumeAsync(CancellationToken.None));
     }
 
     [Fact]
-    public async Task DisposeAsync_NewInstance_CompletesSuccessfully()
+    public void Dispose_NewInstance_CompletesSuccessfully()
     {
         // ARRANGE
         Core.SseSource source = CreateSource();
 
         // ACT
-        await source.DisposeAsync();
-
-        // ASSERT
-        // If no exception is thrown, test passes
-    }
-
-    [Fact]
-    public async Task DisposeAsync_MultipleTimes_IsIdempotent()
-    {
-        // ARRANGE
-        Core.SseSource source = CreateSource();
-
-        // ACT
-        await source.DisposeAsync();
-        await source.DisposeAsync();
-
-        // ASSERT
-        // If no exception is thrown, test passes
-    }
-
-    [Fact]
-    public async Task DisposeAsync_AfterDispose_ThrowsObjectDisposedException()
-    {
-        // ARRANGE
-        Core.SseSource source = CreateSource();
-        await source.DisposeAsync();
-
-        // ACT & ASSERT
-        Assert.Throws<ObjectDisposedException>(() => source.On("t", _ => { }));
-    }
-
-    [Fact]
-    public async Task DisposeAsync_CancelsTcs()
-    {
-        // ARRANGE
-        Core.SseSource source = CreateSource();
-
-        // ACT
-        await source.DisposeAsync();
+        source.Dispose();
 
         // ASSERT
         Assert.True(source.Completion.IsCompleted);
     }
+
+    [Fact]
+    public void Dispose_CancelsTcs()
+    {
+        // ARRANGE
+        Core.SseSource source = CreateSource();
+
+        // ACT
+        source.Dispose();
+
+        // ASSERT
+        Assert.True(source.Completion.IsCompleted);
+    }
+
 }
 

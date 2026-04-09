@@ -136,7 +136,6 @@ public partial class SseSource : IDisposable
         AssertStarted();
         _logger.LogInformation("Stopping SSE consumption");
         _cts.Cancel();
-        Completion.Wait(TimeSpan.FromSeconds(10));
     }
 
 #if !NETSTANDARD2_0

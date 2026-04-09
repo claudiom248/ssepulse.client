@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text;
 using SsePulse.Client.Authentication.Common.Credentials;
 using SsePulse.Client.Authentication.Providers;

@@ -1,3 +1,4 @@
+using System.Net.Http;
 using SsePulse.Client.Authentication.Providers;
 using SsePulse.Client.Authentication.Providers.TokenProviders;
 using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;

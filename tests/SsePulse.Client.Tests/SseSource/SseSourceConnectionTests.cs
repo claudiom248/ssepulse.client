@@ -20,7 +20,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         // ARRANGE
         using HttpClient client = new(new FixedStatusHttpMessageHandler(statusCode));
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" });
+        using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" });
 
         // ACT & ASSERT
         await Assert.ThrowsAsync<HttpRequestException>(() =>
@@ -39,7 +39,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         // ARRANGE
         using HttpClient client = new(new FixedStatusHttpMessageHandler(statusCode));
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" });
+        using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" });
 
         // ACT
         _ = await Record.ExceptionAsync(() => source.StartConsumeAsync(CancellationToken.None));
@@ -56,7 +56,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
             throw new InvalidOperationException("not a network error"));
         using HttpClient client = new(handler);
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
             RetryOptions = RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 0)
@@ -76,7 +76,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
         using HttpClient client = new(handler);
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
             RetryOptions = RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 0)
@@ -97,7 +97,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
             throw new HttpRequestException("timed out", new TimeoutException()));
         using HttpClient client = new(handler);
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
             RetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
@@ -129,7 +129,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         });
         using HttpClient client = new(handler);
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
             RetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)

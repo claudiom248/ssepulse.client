@@ -44,5 +44,17 @@ public class MockLogger<T> : ILogger<T>
         _logs.Clear();
     }
 
-    public record LogEntry(LogLevel LogLevel, string Message, Exception? Exception);
+    public class LogEntry(LogLevel logLevel, string message, Exception? exception)
+    {
+        public LogLevel LogLevel { get; } = logLevel;
+        public string Message { get; } = message;
+        public Exception? Exception { get; } = exception;
+
+        public void Deconstruct(out LogLevel logLevel, out string message, out Exception? exception)
+        {
+            logLevel = this.LogLevel;
+            message = this.Message;
+            exception = this.Exception;
+        }
+    }
 }

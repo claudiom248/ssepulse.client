@@ -163,7 +163,7 @@ public class DelegatingTokenProviderTests
         // ARRANGE
         DelegatingTokenProvider provider = new(_ => new ValueTask<string>(TestToken));
         CancellationTokenSource cts = new();
-        await cts.CancelAsync();
+        cts.Cancel();
 
         // ACT
         // The delegate itself controls cancellation; a simple delegate ignores the token.

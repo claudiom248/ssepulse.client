@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SsePulse.Client.Core.Abstractions;
