@@ -183,7 +183,6 @@ public partial class SseSource: IDisposable, IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
-#if !NETSTANDARD2_0
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -210,5 +209,4 @@ public partial class SseSource: IDisposable, IAsyncDisposable
         OnDisposed?.Invoke();
         GC.SuppressFinalize(this);
     }
-#endif
 }
