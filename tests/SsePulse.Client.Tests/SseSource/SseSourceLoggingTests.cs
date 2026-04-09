@@ -292,7 +292,7 @@ public class SseSourceLoggingTests
         source.On("e", _ => { });
 
         // ACT
-        await source.StartConsumeAsync(new CancellationTokenSource(10).Token);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
         Assert.True(logger.CountLogs(LogLevel.Information) >= 3);
