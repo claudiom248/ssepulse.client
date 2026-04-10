@@ -30,26 +30,24 @@ internal class StreamConsumer
         _onError = onError;
         _lastEventIdStore = lastEventIdStore;
     }
-
+    
     public async Task ConsumeAsync(Stream stream, CancellationToken cancellationToken)
     {
         ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock(cancellationToken);
         SseParser<string> parser = SseParser.Create(stream);
         try
         {
-            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken))
+            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
                 {
                     _lastEventIdStore.Set(sseItem.EventId!);
                 }
-
                 if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
                 {
                     throw dispatcherBlock.Completion.Exception;
                 }
-
-                await dispatcherBlock.SendAsync(sseItem, cancellationToken);
+                await dispatcherBlock.SendAsync(sseItem, cancellationToken).ConfigureAwait(false);
             }
         }
 #if NET8_0_OR_GREATER
@@ -68,7 +66,7 @@ internal class StreamConsumer
         finally
         {
             dispatcherBlock.Complete();
-            await dispatcherBlock.Completion;
+            await dispatcherBlock.Completion.ConfigureAwait(false);
         }
     }
 
@@ -99,7 +97,6 @@ internal class StreamConsumer
             _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
             return;
         }
-
         try
         {
             handler.Invoke(@event);

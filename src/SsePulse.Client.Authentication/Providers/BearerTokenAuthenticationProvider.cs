@@ -15,7 +15,7 @@ public class BearerTokenAuthenticationProvider : ISseAuthenticationProvider
     
     public async ValueTask ApplyAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        string token = await _tokenProvider.GetAuthenticationTokenAsync(cancellationToken);
+        string token = await _tokenProvider.GetAuthenticationTokenAsync(cancellationToken).ConfigureAwait(false);
         request.Headers.Authorization = new AuthenticationHeaderValue(Constants.BearerTokenSchemeName, token);
     }
 }

@@ -65,13 +65,22 @@ public partial class SseSource: IDisposable, IAsyncDisposable
         try
         {
 #if NET8_0_OR_GREATER
-            await using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
+            Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            await using (sseStream.ConfigureAwait(false))
+            {
+                _logger.LogDebug("SSE stream opened successfully");
+                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            }
 #else
-            using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
+            using (Stream sseStream =
+                   await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false))
+            {
+                _logger.LogDebug("SSE stream opened successfully");
+                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            }
 #endif
-            _logger.LogDebug("SSE stream opened successfully");
-            StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-            await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
             _tcs.TrySetResult(true);
             _connection.SetDisconnected();
         }
@@ -141,7 +150,7 @@ public partial class SseSource: IDisposable, IAsyncDisposable
         AssertStarted();
         _logger.LogInformation("Stopping SSE consumption");
 #if !NETSTANDARD2_0
-        await _cts.CancelAsync();
+        await _cts.CancelAsync().ConfigureAwait(false);
 #else
         _cts.Cancel();
 #endif
@@ -193,12 +202,12 @@ public partial class SseSource: IDisposable, IAsyncDisposable
         if (_started && !Completion.IsCompleted)
         {
 #if !NETSTANDARD2_0
-            await _cts.CancelAsync();
+            await _cts.CancelAsync().ConfigureAwait(false);
 #else
             _cts.Cancel();   
 #endif            
             _cts.Dispose();
-            await Completion;
+            await Completion.ConfigureAwait(false);
         }
         else
         {

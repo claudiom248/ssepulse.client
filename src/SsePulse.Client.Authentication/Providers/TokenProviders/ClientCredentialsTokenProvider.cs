@@ -21,16 +21,16 @@ public class ClientCredentialsTokenProvider : ITokenProvider
         HttpRequestMessage request = new(HttpMethod.Post, httpClient.BaseAddress);
         try
         {
-            HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"HTTP error occurred: {response.StatusCode}");
             }
 
 #if NET8_0_OR_GREATER
-            return await response.Content.ReadAsStringAsync(cancellationToken);
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 #endif
         }
         catch (Exception ex)
