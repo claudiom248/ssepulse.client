@@ -36,7 +36,7 @@ internal class StreamConsumer
         SseParser<string> parser = SseParser.Create(stream);
         try
         {
-            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken))
+            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
                 {
@@ -46,13 +46,13 @@ internal class StreamConsumer
                 {
                     throw dispatcherBlock.Completion.Exception;
                 }
-                await dispatcherBlock.SendAsync(sseItem, cancellationToken);
+                await dispatcherBlock.SendAsync(sseItem, cancellationToken).ConfigureAwait(false);
             }
         }
         finally
         {
             dispatcherBlock.Complete();
-            await dispatcherBlock.Completion;
+            await dispatcherBlock.Completion.ConfigureAwait(false);
         }
     }
 

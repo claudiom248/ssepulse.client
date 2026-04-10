@@ -11,7 +11,7 @@ public static class Execute
     {
         try
         {
-            await function.Invoke(cancellationToken);
+            await function.Invoke(cancellationToken).ConfigureAwait(false);
         }
         catch(Exception ex)
         {
@@ -29,13 +29,13 @@ public static class Execute
         await WithRetryAsyncCore<object?>(
             async _ =>
             {
-                await func.Invoke(cancellationToken);
+                await func.Invoke(cancellationToken).ConfigureAwait(false);
                 return null!;
             },
             options,
             onError ?? (ex => { }),
             shouldRetry,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<TResult> WithRetryAsync<TResult>(
@@ -50,7 +50,7 @@ public static class Execute
             options,
             onError ?? (ex => { }),
             shouldRetry,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<TResult> WithRetryAsyncCore<TResult>(
@@ -67,7 +67,7 @@ public static class Execute
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                return await func.Invoke(cancellationToken);
+                return await func.Invoke(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -79,7 +79,7 @@ public static class Execute
                 }
 
                 TimeSpan delay = CalculateDelay();
-                await Task.Delay(delay, cancellationToken);
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
 
             TimeSpan CalculateDelay()

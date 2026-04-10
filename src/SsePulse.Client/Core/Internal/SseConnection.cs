@@ -40,8 +40,8 @@ internal class SseConnection
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
-                    HttpRequestMessage request = await PrepareRequestAsync();
-                    HttpResponseMessage response = await SendRequestAsync(request);
+                    HttpRequestMessage request = await PrepareRequestAsync().ConfigureAwait(false);
+                    HttpResponseMessage response = await SendRequestAsync(request).ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogError(
@@ -58,9 +58,9 @@ internal class SseConnection
 
                     SetConnected();
 #if NET8_0_OR_GREATER
-                    Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                    Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #else
-                    Stream responseStream = await response.Content.ReadAsStreamAsync();
+                    Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #endif
                     return SseStream.Wrap(this, responseStream);
                 },
@@ -79,7 +79,7 @@ internal class SseConnection
                     return hre.InnerException is TimeoutException;
                 },
                 cancellationToken: cancellationToken
-            );
+            ).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -91,7 +91,7 @@ internal class SseConnection
         {
             HttpRequestMessage request = new(HttpMethod.Get, _options.Path);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-            await TryApplyMutators(request);
+            await TryApplyMutators(request).ConfigureAwait(false);
             return request;
         }
 
@@ -101,7 +101,7 @@ internal class SseConnection
             {
                 try
                 {
-                    await requestMutator.ApplyAsync(request, cancellationToken);
+                    await requestMutator.ApplyAsync(request, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -120,7 +120,7 @@ internal class SseConnection
                 HttpResponseMessage response = await _client.SendAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
                 return response;
             }
             catch (HttpRequestException hre)
@@ -202,9 +202,9 @@ internal class SseConnection
             try
             {
 #if NET8_0_OR_GREATER
-                return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+                return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
 #else
-                return await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+                return await _innerStream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
 #endif
             }
             catch (Exception ex)

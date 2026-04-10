@@ -68,13 +68,22 @@ public partial class SseSource : IDisposable
         try
         {
 #if NET8_0_OR_GREATER
-            await using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
+            Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            await using (sseStream.ConfigureAwait(false))
+            {
+                _logger.LogDebug("SSE stream opened successfully");
+                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            }
 #else
-            using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
+            using (Stream sseStream =
+                   await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false))
+            {
+                _logger.LogDebug("SSE stream opened successfully");
+                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            }
 #endif
-            _logger.LogDebug("SSE stream opened successfully");
-            StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-            await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
             _tcs.TrySetResult(true);
             _connection.SetDisconnected();
         }
@@ -145,7 +154,7 @@ public partial class SseSource : IDisposable
         AssertNotDisposed();
         AssertStarted();
         _logger.LogInformation("Stopping SSE consumption");
-        await _cts.CancelAsync();
+        await _cts.CancelAsync().ConfigureAwait(false);
     }
 #endif
 
@@ -195,9 +204,9 @@ public partial class SseSource : IDisposable
 
         if (_started && !Completion.IsCompleted)
         {
-            await _cts.CancelAsync();
+            await _cts.CancelAsync().ConfigureAwait(false);
             _cts.Dispose();
-            await Completion;
+            await Completion.ConfigureAwait(false);
         }
         else
         {
