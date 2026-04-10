@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using SsePulse.Client.Common.Models;
+using SsePulse.Client.Core;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Tests.Mocks;
 
@@ -59,7 +61,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         await using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
-            RetryOptions = RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 0)
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 0)
         });
 
         // ACT
@@ -79,7 +81,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         await using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
-            RetryOptions = RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 0)
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 3, delayInMilliseconds: 0)
         });
 
         // ACT
@@ -100,7 +102,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         await using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
-            RetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
         });
 
         // ACT
@@ -132,7 +134,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         await using Core.SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
-            RetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
         });
         source.On("e", data => received = data);
 
@@ -141,6 +143,99 @@ public class SseSourceConnectionTests : SseSourceTestBase
 
         // ASSERT
         Assert.Equal(2, handler.CallCount);
+        Assert.Equal("hello", received);
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenConnectionSuddenlyDrops_AttemptsReconnection()
+    {
+        // ARRANGE
+        string? received = null;
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "hello" });
+        CallCountingHttpMessageHandler handler = new(callIndex =>
+        {
+            HttpResponseMessage response;
+            if (callIndex == 1)
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new NetworkFailureStream(
+                        new IOException(
+                            string.Empty, 
+                            new SocketException((int)SocketError.ConnectionReset)),
+                        sseData))
+                };
+            }
+            else
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(sseData, Encoding.UTF8, "text/event-stream")
+                };
+            }
+            
+            return Task.FromResult(response);
+        });
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.None
+        });
+        source.On("e", data => received = data);
+
+        // ACT
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT
+        Assert.Equal(2, handler.CallCount);
+        Assert.Equal("hello", received);
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenConnectionSuddenlyDrops_AndORestartOnConnectionAbortIsFalse_NotAttemptsReconnection()
+    {
+        // ARRANGE
+        string? received = null;
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "hello" });
+        CallCountingHttpMessageHandler handler = new(callIndex =>
+        {
+            HttpResponseMessage response;
+            if (callIndex == 1)
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new NetworkFailureStream(
+                        new IOException(
+                            string.Empty, 
+                            new SocketException((int)SocketError.ConnectionReset)),
+                        sseData))
+                };
+            }
+            else
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(sseData, Encoding.UTF8, "text/event-stream")
+                };
+            }
+            
+            return Task.FromResult(response);
+        });
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.None,
+            RestartOnConnectionAbort = false
+        });
+        source.On("e", data => received = data);
+
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<ResponseAbortedException>(() => source.StartConsumeAsync(CancellationToken.None));
+        Assert.Equal(1, handler.CallCount);
         Assert.Equal("hello", received);
     }
 }

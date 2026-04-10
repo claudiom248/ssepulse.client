@@ -97,18 +97,29 @@ public class MockHttpMessageHandler : HttpMessageHandler
     }
 }
 
-// 1. Lo stream che esplode alla seconda lettura
 public class NetworkFailureStream : Stream
 {
     private bool _firstRead = true;
+    private Exception _exception = new IOException("Connection closed by remote host.");
+    private readonly byte[] _data;
+
+    public NetworkFailureStream(Exception? exception = null, string? data = null)
+    {
+        if (exception is not null)
+        {
+            _exception = exception;
+        }
+        _data = data is not null 
+            ? Encoding.UTF8.GetBytes(data) 
+            : "event: message\ndata: healthy\n\n"u8.ToArray();
+    }
+    
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
     {
-        // Il crash avviene qui, quando il parser chiede il secondo evento
-        if (!_firstRead) throw new IOException("Connessione interrotta forzatamente dal remote host.");
+        if (!_firstRead) throw _exception;
         _firstRead = false;
-        ReadOnlySpan<byte> data = "event: message\ndata: healthy\n\n"u8; // Primo evento OK
-        data.CopyTo(buffer);
-        return Task.FromResult(data.Length);
+        _data.CopyTo(buffer);
+        return Task.FromResult(_data.Length);
     }
     public override bool CanRead => true;
     public override bool CanSeek => false;
@@ -137,7 +148,6 @@ public class SseCrashHandler(bool failImmediately) : HttpMessageHandler
     }
 }
 
-/// <summary>Always returns the same fixed HTTP status code, with an empty body.</summary>
 public class FixedStatusHttpMessageHandler(HttpStatusCode statusCode) : HttpMessageHandler
 {
     protected override Task<HttpResponseMessage> SendAsync(
@@ -146,10 +156,6 @@ public class FixedStatusHttpMessageHandler(HttpStatusCode statusCode) : HttpMess
         => Task.FromResult(new HttpResponseMessage(statusCode));
 }
 
-/// <summary>
-/// Delegates every call to a <see cref="Func{T, TResult}"/> that receives the 1-based call index.
-/// The total number of invocations is accessible via <see cref="CallCount"/>.
-/// </summary>
 public class CallCountingHttpMessageHandler(Func<int, Task<HttpResponseMessage>> handler) : HttpMessageHandler
 {
     private int _callCount;

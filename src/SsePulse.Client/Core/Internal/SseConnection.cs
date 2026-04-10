@@ -64,7 +64,7 @@ internal partial class SseConnection
 #endif
                     return SseStream.Wrap(this, responseStream);
                 },
-                _options.RetryOptions ?? RetryOptions.None,
+                _options.ConnectionRetryOptions ?? RetryOptions.None,
                 shouldRetry: exception =>
                 {
                     if (exception is not HttpRequestException hre)

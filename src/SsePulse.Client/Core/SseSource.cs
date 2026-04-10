@@ -62,51 +62,61 @@ public partial class SseSource: IDisposable, IAsyncDisposable
             _cts.Token,
             cancellationToken);
 
-        try
+        while (true)
         {
+            try
+            {
 #if NET8_0_OR_GREATER
-            Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false);
-            await using (sseStream.ConfigureAwait(false))
-            {
-                _logger.LogDebug("SSE stream opened successfully");
-                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
-            }
+                Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false);
+                await using (sseStream.ConfigureAwait(false))
+                {
+                    _logger.LogDebug("SSE stream opened successfully");
+                    StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                    await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+                }
 #else
-            using (Stream sseStream =
-                   await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false))
-            {
-                _logger.LogDebug("SSE stream opened successfully");
-                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
-            }
+                using (Stream sseStream =
+                       await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false))
+                {
+                    _logger.LogDebug("SSE stream opened successfully");
+                    StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                    await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+                }
 #endif
-            _tcs.TrySetResult(true);
-            _connection.SetDisconnected();
-        }
-        catch (OperationCanceledException oce)
-        {
-            _logger.LogInformation("SSE consumption canceled");
-            _connection.SetDisconnected();
-            if (linkedCancellationTokenSource.IsCancellationRequested)
-            {
                 _tcs.TrySetResult(true);
+                _connection.SetDisconnected();
+                return;
             }
-            else
+            catch (OperationCanceledException oce)
             {
+                _logger.LogInformation("SSE consumption canceled");
+                _connection.SetDisconnected();
+                if (linkedCancellationTokenSource.IsCancellationRequested)
+                {
+                    _tcs.TrySetResult(true);
+                    return;
+                }
                 _tcs.TrySetCanceled(oce.CancellationToken);
                 throw;
             }
+            catch (ResponseAbortedException rae)
+            {
+                // When the connection is closed prematurely, we will restart the connection-consume loop.
+                if (_options.RestartOnConnectionAbort)
+                {
+                    continue;
+                }
+                _tcs.TrySetException(rae);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred during SSE consumption");
+                _tcs.TrySetException(ex);
+                _connection.SetDisconnected(ex);
+                throw;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Exception occurred during SSE consumption");
-            _tcs.TrySetException(ex);
-            _connection.SetDisconnected(ex);
-            throw;
-        }
-
-        return;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

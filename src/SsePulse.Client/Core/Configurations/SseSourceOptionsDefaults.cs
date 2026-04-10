@@ -10,5 +10,5 @@ public static class SseSourceOptionsDefaults
     public const NameCasePolicy DefaultEventNameCasePolicy = NameCasePolicy.PascalCase;
     public static readonly RetryOptions DefaultRetryOptions = RetryOptions.None;
     public const bool ThrowWhenEventHandlerNotFound = false;
-
+    public const bool RestartOnConnectionAbort = true;
 }
