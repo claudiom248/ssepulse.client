@@ -6,7 +6,7 @@ namespace SsePulse.Client.DependencyInjection.Abstractions;
 
 public interface ISseSourceBuilder
 {
-    public IServiceCollection Services { get; }
+    IServiceCollection Services { get; }
     IConfiguration? Configuration { get; }
     string Name { get; }
 
