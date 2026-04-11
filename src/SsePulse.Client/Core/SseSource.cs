@@ -16,7 +16,7 @@ public partial class SseSource: IDisposable, IAsyncDisposable
     private readonly SseConnection _connection;
     private readonly ConnectionHandlers _connectionHandlers;
 
-    private volatile bool _started;
+    private int _started;
     private volatile bool _disposed;
 
     public bool IsConnected => _connection.IsConnected;
@@ -25,7 +25,7 @@ public partial class SseSource: IDisposable, IAsyncDisposable
     private readonly ILastEventIdStore? _lastEventIdStore;
 
     public SseSource(HttpClient client, SseSourceOptions options, ILogger<SseSource>? logger = null)
-        : this(client, options, [], null, logger ?? NullLogger<SseSource>.Instance)
+        :this(client, options, [], null, logger ?? NullLogger<SseSource>.Instance)
     {
     }
 
@@ -53,17 +53,18 @@ public partial class SseSource: IDisposable, IAsyncDisposable
     public async Task StartConsumeAsync(CancellationToken cancellationToken)
     {
         AssertNotDisposed();
-        AssertNotStarted();
-        _started = true;
-
-        _logger.LogInformation("Starting SSE consumption from {Path}", _options.Path);
-
+        if (Interlocked.CompareExchange(ref _started, 1, 0) == 1)
+        {
+            throw new InvalidOperationException($"{nameof(SseSource)} already started.");
+        }
+        
         CancellationTokenSource linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
             _cts.Token,
             cancellationToken);
 
         while (true)
         {
+            _logger.LogInformation("Starting SSE consumption from {Path}", _options.Path);
             try
             {
 #if NET8_0_OR_GREATER
@@ -75,14 +76,12 @@ public partial class SseSource: IDisposable, IAsyncDisposable
                     await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
                 }
 #else
-                using (Stream sseStream =
-                       await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false))
-                {
-                    _logger.LogDebug("SSE stream opened successfully");
-                    StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-                    await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
-                }
+                using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
+                _logger.LogDebug("SSE stream opened successfully");
+                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
 #endif
+                
                 _tcs.TrySetResult(true);
                 _connection.SetDisconnected();
                 return;
@@ -122,18 +121,18 @@ public partial class SseSource: IDisposable, IAsyncDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertStarted()
     {
-        if (!_started)
+        if (_started == 0)
         {
-            throw new InvalidOperationException("SseSource not started.");
+            throw new InvalidOperationException($"{nameof(SseSource)} not started.");
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertNotStarted()
     {
-        if (_started)
+        if (_started == 1)
         {
-            throw new InvalidOperationException("SseSource already started.");
+            throw new InvalidOperationException($"{nameof(SseSource)} already started.");
         }
     }
 
@@ -171,13 +170,13 @@ public partial class SseSource: IDisposable, IAsyncDisposable
         AssertNotDisposed();
         if (!Completion.GetAwaiter().IsCompleted)
         {
-            throw new InvalidOperationException("SseSource can be reset only after completion.");
+            throw new InvalidOperationException($"{nameof(SseSource)} can be reset only after completion.");
         }
 
         _cts.Dispose();
         _cts = new CancellationTokenSource();
         _tcs = new TaskCompletionSource<bool>();
-        _started = false;
+        _started = 0;
     }
 
     public void Dispose()
@@ -187,7 +186,8 @@ public partial class SseSource: IDisposable, IAsyncDisposable
             return;
         }
 
-        if (_started)
+        _disposed = true;
+        if (_started == 1)
         {
             _cts.Cancel();
             _cts.Dispose();
@@ -209,7 +209,8 @@ public partial class SseSource: IDisposable, IAsyncDisposable
             return;
         }
 
-        if (_started && !Completion.IsCompleted)
+        _disposed = true;
+        if (_started == 1 && !Completion.IsCompleted)
         {
 #if !NETSTANDARD2_0
             await _cts.CancelAsync().ConfigureAwait(false);
@@ -224,7 +225,6 @@ public partial class SseSource: IDisposable, IAsyncDisposable
             _tcs.TrySetResult(true);
         }
 
-        _disposed = true;
         OnDisposed?.Invoke();
         GC.SuppressFinalize(this);
     }
