@@ -1,6 +1,8 @@
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.DependencyInjection.Abstractions;
@@ -170,7 +172,7 @@ public class SseSourceBuilderTests
     }
 
     [Fact]
-    public void AddHttpClient_WithDelegate_HttpClientContainsBearer()
+    public void AddHttpClient_WithDelegate_AddClientToServices()
     {
         // ARRANGE
         ServiceCollection services = new();
@@ -198,7 +200,7 @@ public class SseSourceBuilderTests
         builder.AddHttpClient(client =>
         {
             client.BaseAddress = new Uri("https://api.example.com");
-        }, null);
+        });
 
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
@@ -206,6 +208,31 @@ public class SseSourceBuilderTests
         HttpClient client = factory.CreateClient("MySource");
 
         Assert.Equal(new Uri("https://api.example.com"), client.BaseAddress);
+    }
+    
+    [Fact]
+    public void AddHttpClient_WithClientBuilderCallback_CallbackIsApplied()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        SseSourceBuilder builder = new("MySource", services);
+
+        // ACT
+        bool clientBuilderCalled = false;
+        builder.AddHttpClient(null, clientBuilder =>
+        {
+            clientBuilder.ConfigureHttpMessageHandlerBuilder(handlerBuilder =>
+            {
+                clientBuilderCalled = true;
+            });
+        });
+
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        IHttpClientFactory factory = provider.GetRequiredService<IHttpClientFactory>();
+        _ = factory.CreateClient("MySource");
+
+        Assert.True(clientBuilderCalled);
     }
     
     [Fact]
@@ -243,7 +270,7 @@ public class SseSourceBuilderTests
     }
 
     [Fact]
-    public void RegisterHandlers_OnNamedSource_DoesNotPollutOtherSource()
+    public void RegisterHandlers_OnNamedSource_DoesNotPolluteOtherSource()
     {
         // ARRANGE
         ServiceCollection services = new();

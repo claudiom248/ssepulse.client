@@ -1,4 +1,6 @@
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
@@ -7,67 +9,64 @@ using SsePulse.Client.DependencyInjection.Extensions;
 
 namespace SsePulse.Client.DependencyInjection.Tests;
 
-/// <summary>
-/// Tests for DefaultSseSourceFactory covering SseSource creation with DI resolution.
-/// </summary>
 public class DefaultSseSourceFactoryTests
 {
     [Fact]
     public void CreateSseSource_WithDefaultName_CreatesValidSource()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource();
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("Default");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_WithCustomName_CreatesValidSource()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource("CustomSource");
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("CustomSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_ReturnsNewInstanceEachTime()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource();
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source1 = factory.CreateSseSource("Default");
         SseSource source2 = factory.CreateSseSource("Default");
 
-        // Assert
+        // ASSERT
         Assert.NotSame(source1, source2);
     }
 
     [Fact]
     public void CreateSseSource_WithConfiguredOptions_AppliesOptions()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         string expectedPath = "/custom-sse";
@@ -78,17 +77,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("TestSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_ResolvesRequestMutators()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
 
@@ -98,17 +97,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("TestSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_WithMultipleMutators_IncludesAllMutators()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
 
@@ -120,17 +119,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("TestSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_ResolvesLastEventIdStore()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource("TestSource");
@@ -138,17 +137,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("TestSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_UsesHttpClientFactory()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource("TestSource");
@@ -156,17 +155,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("TestSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_WithNullName_UsesDefaultNameFromOptions()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource();
@@ -174,17 +173,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource(null);
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_MultipleCallsWithDifferentNames_CreatesDistinctSources()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource("Source1");
@@ -193,11 +192,11 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source1 = factory.CreateSseSource("Source1");
         SseSource source2 = factory.CreateSseSource("Source2");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source1);
         Assert.NotNull(source2);
     }
@@ -205,7 +204,7 @@ public class DefaultSseSourceFactoryTests
     [Fact]
     public void CreateSseSource_WithConfiguredHttpClient_UsesConfiguredClient()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient("TestSource", client =>
         {
@@ -216,17 +215,17 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource("TestSource");
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
     [Fact]
     public void CreateSseSource_ImplementsISseSourceFactory()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         services.AddSseSource();
@@ -234,14 +233,14 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act & Assert
+        // ACT & ASSERT
         Assert.IsAssignableFrom<ISseSourceFactory>(factory);
     }
 
     [Fact]
     public void CreateSseSource_WithOptionsMonitor_ReadsCurrentOptions()
     {
-        // Arrange
+        // ARRANGE
         ServiceCollection services = new();
         services.AddHttpClient();
         string sourceName = "DynamicSource";
@@ -254,10 +253,10 @@ public class DefaultSseSourceFactoryTests
         ServiceProvider provider = services.BuildServiceProvider();
         ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
 
-        // Act
+        // ACT
         SseSource source = factory.CreateSseSource(sourceName);
 
-        // Assert
+        // ASSERT
         Assert.NotNull(source);
     }
 
@@ -279,6 +278,47 @@ public class DefaultSseSourceFactoryTests
 
         // ASSERT
         Assert.Same(createdSource, capturedSource);
+    }
+    
+    [Fact]
+    public void CreateSseSource_WhenUseHttpClient_InvokeHttpClientFactoryWithProvidedClientName()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        services.AddSseSource("TestSource")
+            .UseHttpClient("SharedHttpClient");
+        
+        IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
+        services.AddSingleton(httpClientFactory);
+        ServiceProvider provider = services.BuildServiceProvider();
+        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
+
+        // ACT
+        _ = factory.CreateSseSource("TestSource");
+
+        // ASSERT
+        httpClientFactory.Received(1).CreateClient("SharedHttpClient");
+    }
+
+    [Fact]
+    public void CreateSseSource_WhenAddHttpClient_InvokeHttpClientFactoryWithSourceName()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        services.AddSseSource("TestSource")
+            .AddHttpClient();
+        IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
+        services.AddSingleton(httpClientFactory);
+        ServiceProvider provider = services.BuildServiceProvider();
+        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
+
+        // ACT
+        _ = factory.CreateSseSource("TestSource");
+
+        // ASSERT
+        httpClientFactory.Received(1).CreateClient("TestSource");
     }
 }
 

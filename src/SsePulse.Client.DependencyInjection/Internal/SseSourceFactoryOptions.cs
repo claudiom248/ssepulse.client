@@ -12,4 +12,5 @@ internal class SseSourceFactoryOptions
     internal Func<IServiceProvider, ILastEventIdStore>? LastEventIdStoreFactory { get; set; }
     internal List<Func<IServiceProvider, ISseEventsManager>> EventManagerFactories { get; } = [];
     internal Action<IServiceProvider, SseSource>? RegisterHandlersAction { get; set; }
+    internal string? ClientName { get; set; }
 }

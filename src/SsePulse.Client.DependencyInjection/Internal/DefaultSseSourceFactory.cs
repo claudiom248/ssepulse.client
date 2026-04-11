@@ -33,7 +33,7 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
         ILastEventIdStore? store = sourceFactoryOptions.LastEventIdStoreFactory?.Invoke(_serviceProvider);
         ILoggerFactory? loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
         SseSource source = new(
-            _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(name), 
+            _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(sourceFactoryOptions.ClientName ?? name), 
             options, 
             mutators,
             store,
