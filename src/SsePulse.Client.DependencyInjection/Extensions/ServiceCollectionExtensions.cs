@@ -13,93 +13,89 @@ namespace SsePulse.Client.DependencyInjection.Extensions;
 /// </summary>
 public static partial class ServiceCollectionExtensions
 {
-    extension(IServiceCollection services)
+    /// <summary>
+    /// Registers a default-named SSE source with no initial configuration.
+    /// Call methods on the returned <see cref="ISseSourceBuilder"/> to configure the HTTP client,
+    /// event handlers, and other components.
+    /// </summary>
+    /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services)
     {
-        /// <summary>
-        /// Registers a default-named SSE source with no initial configuration.
-        /// Call methods on the returned <see cref="ISseSourceBuilder"/> to configure the HTTP client,
-        /// authentication, and event handlers.
-        /// </summary>
-        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-        public ISseSourceBuilder AddSseSource()
+        return services.AddSseSource(Constants.DefaultSourceName);
+    }
+
+    /// <summary>
+    /// Registers a default-named SSE source and binds its options from <paramref name="configuration"/>.
+    /// </summary>
+    /// <param name="configuration">Configuration section containing <see cref="SseSourceOptions"/> values.</param>
+    /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, IConfiguration configuration)
+    {
+        return services.AddSseSource(Constants.DefaultSourceName, configuration);
+    }
+
+    /// <summary>
+    /// Registers a named SSE source and optionally binds its options from <paramref name="configuration"/>.
+    /// </summary>
+    /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
+    /// <param name="configuration">Optional configuration section. When <see langword="null"/>, default option values are used.</param>
+    /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name, IConfiguration? configuration = null)
+    {
+        return services.AddSseSourceCore(name, configuration);
+    }
+
+    /// <summary>
+    /// Registers a default-named SSE source and configures its options using <paramref name="configureOptions"/>.
+    /// </summary>
+    /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
+    /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, Action<SseSourceOptions> configureOptions)
+    {
+        return services.AddSseSource(Constants.DefaultSourceName, configureOptions);
+    }
+
+    /// <summary>
+    /// Registers a named SSE source and configures its options using <paramref name="configureOptions"/>.
+    /// </summary>
+    /// <param name="name">Unique name for this SSE source.</param>
+    /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
+    /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name, Action<SseSourceOptions> configureOptions)
+    {
+        return services.AddSseSourceCore(name, configureOptions: configureOptions);
+    }
+
+    private static SseSourceBuilder AddSseSourceCore(this IServiceCollection services, string name,
+        IConfiguration? configuration = null,
+        Action<SseSourceOptions>? configureOptions = null)
+    {
+        services.TryAddSingleton<DefaultSseSourceFactory>();
+        services.TryAddSingleton<ISseSourceFactory>(sp => sp.GetRequiredService<DefaultSseSourceFactory>());
+
+        SseSourceRegistrationService registrationService = services.GetSseSourceRegistrationService();
+        if (!registrationService.TryRegister(name))
         {
-            return services.AddSseSource(Constants.DefaultSourceName);
+            return registrationService.SourceBuildersCache[name];
         }
+        SseSourceBuilder sourceBuilder = configureOptions is not null
+            ? new SseSourceBuilder(name, services, configureOptions)
+            : new SseSourceBuilder(name, services, configuration);
+        registrationService.SourceBuildersCache.Add(name, sourceBuilder);
+        return sourceBuilder;
+    }
 
-        /// <summary>
-        /// Registers a default-named SSE source and binds its options from <paramref name="configuration"/>.
-        /// </summary>
-        /// <param name="configuration">Configuration section containing <see cref="SseSourceOptions"/> values.</param>
-        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-        public ISseSourceBuilder AddSseSource(IConfiguration configuration)
+    private static SseSourceRegistrationService GetSseSourceRegistrationService(this IServiceCollection services)
+    {
+        SseSourceRegistrationService? registrationService =
+            (SseSourceRegistrationService?)services
+                .FirstOrDefault(s => s.ServiceType == typeof(SseSourceRegistrationService))?.ImplementationInstance;
+        if (registrationService is not null)
         {
-            return services.AddSseSource(Constants.DefaultSourceName, configuration);
-        }
-
-        /// <summary>
-        /// Registers a named SSE source and optionally binds its options from <paramref name="configuration"/>.
-        /// </summary>
-        /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
-        /// <param name="configuration">Optional configuration section. When <see langword="null"/>, default option values are used.</param>
-        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-        public ISseSourceBuilder AddSseSource(string name, IConfiguration? configuration = null)
-        {
-            return services.AddSseSourceCore(name, configuration);
-        }
-
-        /// <summary>
-        /// Registers a default-named SSE source and configures its options using <paramref name="configureOptions"/>.
-        /// </summary>
-        /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
-        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-        public ISseSourceBuilder AddSseSource(Action<SseSourceOptions> configureOptions)
-        {
-            return services.AddSseSource(Constants.DefaultSourceName, configureOptions);
-        }
-
-        /// <summary>
-        /// Registers a named SSE source and configures its options using <paramref name="configureOptions"/>.
-        /// </summary>
-        /// <param name="name">Unique name for this SSE source.</param>
-        /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
-        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-        public ISseSourceBuilder AddSseSource(string name, Action<SseSourceOptions> configureOptions)
-        {
-            return services.AddSseSourceCore(name, configureOptions: configureOptions);
-        }
-
-        private SseSourceBuilder AddSseSourceCore(
-            string name,
-            IConfiguration? configuration = null,
-            Action<SseSourceOptions>? configureOptions = null)
-        {
-            services.TryAddSingleton<DefaultSseSourceFactory>();
-            services.TryAddSingleton<ISseSourceFactory>(sp => sp.GetRequiredService<DefaultSseSourceFactory>());
-
-            SseSourceRegistrationService registrationService = services.GetSseSourceRegistrationService();
-            if (!registrationService.TryRegister(name))
-            {
-                return registrationService.SourceBuildersCache[name];
-            }
-            SseSourceBuilder sourceBuilder = configureOptions is not null
-                ? new SseSourceBuilder(name, services, configureOptions)
-                : new SseSourceBuilder(name, services, configuration);
-            registrationService.SourceBuildersCache.Add(name, sourceBuilder);
-            return sourceBuilder;
-        }
-
-        private SseSourceRegistrationService GetSseSourceRegistrationService()
-        {
-            SseSourceRegistrationService? registrationService =
-                (SseSourceRegistrationService?)services
-                    .FirstOrDefault(s => s.ServiceType == typeof(SseSourceRegistrationService))?.ImplementationInstance;
-            if (registrationService is not null)
-            {
-                return registrationService;
-            }
-            registrationService = new SseSourceRegistrationService(services);
-            services.AddSingleton(registrationService);
             return registrationService;
         }
+        registrationService = new SseSourceRegistrationService(services);
+        services.AddSingleton(registrationService);
+        return registrationService;
     }
 }

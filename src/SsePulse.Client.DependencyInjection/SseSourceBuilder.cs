@@ -111,6 +111,13 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
 
+    /// <inheritdoc/>
+    public ISseSourceBuilder RegisterHandlers(Action<IServiceProvider, SseSource> registerHandlers)
+    {
+        Services.Configure<SseSourceFactoryOptions>(Name,
+            options => { options.RegisterHandlersAction = registerHandlers; });
+        return this;
+    }
 
     /// <inheritdoc/>
     public ISseSourceBuilder BindEventsManager(ISseEventsManager manager)
@@ -127,20 +134,8 @@ public class SseSourceBuilder : ISseSourceBuilder
             options => { options.EventManagerFactories.Add(sp => sp.GetRequiredService<TManager>()); });
         return this;
     }
-    
-    /// <inheritdoc/>
-    public ISseSourceBuilder RegisterHandlers(Action<IServiceProvider, SseSource> registerHandlers)
-    {
-        Services.Configure<SseSourceFactoryOptions>(Name,
-            options => { options.RegisterHandlersAction = registerHandlers; });
-        return this;
-    }
 
-    /// <summary>
-    /// Binds an <see cref="ISseEventsManager"/> resolved via a factory delegate at source creation time.
-    /// </summary>
-    /// <param name="managerFactory">Factory that receives the <see cref="IServiceProvider"/> and returns the manager.</param>
-    /// <returns>The same builder for chaining.</returns>
+    /// <inheritdoc/>
     public ISseSourceBuilder BindEventsManager(Func<IServiceProvider, ISseEventsManager> managerFactory)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
@@ -148,7 +143,7 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
 
-    
+
     ISseSourceBuilder ISseSourceBuilder.AddRequestMutator(IRequestMutator mutator)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,

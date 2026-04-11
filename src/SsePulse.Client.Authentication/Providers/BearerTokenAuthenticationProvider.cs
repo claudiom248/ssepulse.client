@@ -6,7 +6,7 @@ namespace SsePulse.Client.Authentication.Providers;
 
 /// <summary>
 /// Authenticates SSE requests using a Bearer token obtained from an <see cref="ITokenProvider"/>.
-/// The token is fetched on every request, allowing the provider to handle caching and refresh.
+/// The token is fetched on every request.
 /// </summary>
 public class BearerTokenAuthenticationProvider : ISseAuthenticationProvider
 {
