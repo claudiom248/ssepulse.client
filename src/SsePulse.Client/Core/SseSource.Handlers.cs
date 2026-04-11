@@ -68,7 +68,7 @@ public partial class SseSource
     
     public SseSource OnItem<TEventData>(Action<SseItem<TEventData>> handler)
     {
-        return On(
+        return OnItem(
             typeof(TEventData).Name.ApplyNamingCasePolicy(_options.DefaultEventNameCasePolicy), 
             handler);
     }
