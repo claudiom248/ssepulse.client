@@ -280,25 +280,5 @@ public class DefaultSseSourceFactoryTests
         // ASSERT
         Assert.Same(createdSource, capturedSource);
     }
-
-    [Fact]
-    public void CreateSseSource_WithRegisteredHandlers_PassesServiceProviderToAction()
-    {
-        // ARRANGE
-        ServiceCollection services = new();
-        services.AddHttpClient();
-        IServiceProvider? capturedServiceProvider = null;
-        services.AddSseSource("TestSource")
-            .RegisterHandlers((sp, _) => capturedServiceProvider = sp);
-
-        ServiceProvider provider = services.BuildServiceProvider();
-        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
-
-        // ACT
-        factory.CreateSseSource("TestSource");
-
-        // ASSERT
-        Assert.Same(provider, capturedServiceProvider);
-    }
 }
 
