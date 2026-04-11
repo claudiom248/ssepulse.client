@@ -8,30 +8,61 @@ using SsePulse.Client.DependencyInjection.Internal;
 
 namespace SsePulse.Client.DependencyInjection.Extensions;
 
+/// <summary>
+/// Extension methods on <see cref="IServiceCollection"/> for registering SSE sources.
+/// </summary>
 public static partial class ServiceCollectionExtensions
 {
     extension(IServiceCollection services)
     {
+        /// <summary>
+        /// Registers a default-named SSE source with no initial configuration.
+        /// Call methods on the returned <see cref="ISseSourceBuilder"/> to configure the HTTP client,
+        /// authentication, and event handlers.
+        /// </summary>
+        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
         public ISseSourceBuilder AddSseSource()
         {
             return services.AddSseSource(Constants.DefaultSourceName);
         }
 
+        /// <summary>
+        /// Registers a default-named SSE source and binds its options from <paramref name="configuration"/>.
+        /// </summary>
+        /// <param name="configuration">Configuration section containing <see cref="SseSourceOptions"/> values.</param>
+        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
         public ISseSourceBuilder AddSseSource(IConfiguration configuration)
         {
             return services.AddSseSource(Constants.DefaultSourceName, configuration);
         }
 
+        /// <summary>
+        /// Registers a named SSE source and optionally binds its options from <paramref name="configuration"/>.
+        /// </summary>
+        /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
+        /// <param name="configuration">Optional configuration section. When <see langword="null"/>, default option values are used.</param>
+        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
         public ISseSourceBuilder AddSseSource(string name, IConfiguration? configuration = null)
         {
             return services.AddSseSourceCore(name, configuration);
         }
 
+        /// <summary>
+        /// Registers a default-named SSE source and configures its options using <paramref name="configureOptions"/>.
+        /// </summary>
+        /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
+        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
         public ISseSourceBuilder AddSseSource(Action<SseSourceOptions> configureOptions)
         {
             return services.AddSseSource(Constants.DefaultSourceName, configureOptions);
         }
 
+        /// <summary>
+        /// Registers a named SSE source and configures its options using <paramref name="configureOptions"/>.
+        /// </summary>
+        /// <param name="name">Unique name for this SSE source.</param>
+        /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
+        /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
         public ISseSourceBuilder AddSseSource(string name, Action<SseSourceOptions> configureOptions)
         {
             return services.AddSseSourceCore(name, configureOptions: configureOptions);

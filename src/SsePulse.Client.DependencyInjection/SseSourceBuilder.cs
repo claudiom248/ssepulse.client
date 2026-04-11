@@ -8,30 +8,61 @@ using SsePulse.Client.DependencyInjection.Internal;
 
 namespace SsePulse.Client.DependencyInjection;
 
+/// <summary>
+/// Default implementation of <see cref="ISseSourceBuilder"/> that registers SSE source
+/// components into an <see cref="IServiceCollection"/>.
+/// Instances are created by the <c>AddSseSource</c> extension methods and returned to the
+/// caller for further configuration.
+/// </summary>
 public class SseSourceBuilder : ISseSourceBuilder
 {
+    /// <inheritdoc/>
     public IServiceCollection Services { get; }
 
+    /// <inheritdoc/>
     public IConfiguration? Configuration { get; }
 
+    /// <inheritdoc/>
     public string Name { get; }
 
+    /// <summary>
+    /// Initializes a new <see cref="SseSourceBuilder"/> with a named registration and an options-configure delegate.
+    /// </summary>
+    /// <param name="name">Unique name for this SSE source.</param>
+    /// <param name="services">The service collection to register into.</param>
+    /// <param name="configureOptions">Delegate used to configure <see cref="SseSourceOptions"/>.</param>
     public SseSourceBuilder(string name, IServiceCollection services, Action<SseSourceOptions> configureOptions)
         : this(name, services)
     {
         Services.Configure(Name, configureOptions);
     }
 
+    /// <summary>
+    /// Initializes a new <see cref="SseSourceBuilder"/> using the default source name and an options-configure delegate.
+    /// </summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <param name="configureOptions">Delegate used to configure <see cref="SseSourceOptions"/>.</param>
     public SseSourceBuilder(IServiceCollection services, Action<SseSourceOptions> configureOptions)
         : this(Constants.DefaultSourceName, services, configureOptions)
     {
     }
 
+    /// <summary>
+    /// Initializes a new <see cref="SseSourceBuilder"/> using the default source name and an optional configuration section.
+    /// </summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <param name="configuration">Optional configuration section to bind <see cref="SseSourceOptions"/> from.</param>
     public SseSourceBuilder(IServiceCollection services, IConfiguration? configuration = null)
         : this(Constants.DefaultSourceName, services, configuration)
     {
     }
 
+    /// <summary>
+    /// Initializes a new <see cref="SseSourceBuilder"/> with a named registration and an optional configuration section.
+    /// </summary>
+    /// <param name="name">Unique name for this SSE source.</param>
+    /// <param name="services">The service collection to register into.</param>
+    /// <param name="configuration">Optional configuration section to bind <see cref="SseSourceOptions"/> from.</param>
     public SseSourceBuilder(string name,
         IServiceCollection services,
         IConfiguration? configuration = null)
@@ -49,16 +80,19 @@ public class SseSourceBuilder : ISseSourceBuilder
         }
     }
 
+    /// <inheritdoc/>
     public SseSourceBuilder AddHttpClient()
     {
         return AddHttpClient(_ => { });
     }
 
+    /// <inheritdoc/>
     public SseSourceBuilder AddHttpClient(Action<HttpClient> configureClient)
     {
         return AddHttpClient(configureClient, null);
     }
 
+    /// <inheritdoc/>
     public SseSourceBuilder AddHttpClient(Action<HttpClient>? configureClient,
         Action<IHttpClientBuilder>? clientBuilder)
     {
@@ -69,6 +103,7 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
 
+    /// <inheritdoc/>
     public SseSourceBuilder UseHttpClient(string clientName)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
@@ -77,6 +112,7 @@ public class SseSourceBuilder : ISseSourceBuilder
     }
 
 
+    /// <inheritdoc/>
     public ISseSourceBuilder BindEventsManager(ISseEventsManager manager)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
@@ -84,6 +120,7 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
 
+    /// <inheritdoc/>
     public ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
@@ -91,6 +128,7 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
     
+    /// <inheritdoc/>
     public ISseSourceBuilder RegisterHandlers(Action<IServiceProvider, SseSource> registerHandlers)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
@@ -98,6 +136,11 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
 
+    /// <summary>
+    /// Binds an <see cref="ISseEventsManager"/> resolved via a factory delegate at source creation time.
+    /// </summary>
+    /// <param name="managerFactory">Factory that receives the <see cref="IServiceProvider"/> and returns the manager.</param>
+    /// <returns>The same builder for chaining.</returns>
     public ISseSourceBuilder BindEventsManager(Func<IServiceProvider, ISseEventsManager> managerFactory)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,

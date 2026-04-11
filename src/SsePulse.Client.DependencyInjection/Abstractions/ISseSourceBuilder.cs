@@ -5,18 +5,78 @@ using SsePulse.Client.Core.Abstractions;
 
 namespace SsePulse.Client.DependencyInjection.Abstractions;
 
+/// <summary>
+/// Fluent builder for configuring a named SSE source in the dependency-injection container.
+/// Obtained by calling <c>services.AddSseSource()</c> and used to wire up the HTTP client,
+/// authentication, event handlers, and other pipeline components.
+/// </summary>
 public interface ISseSourceBuilder
 {
+    /// <summary>Gets the underlying service collection where registrations are applied.</summary>
     IServiceCollection Services { get; }
+
+    /// <summary>
+    /// Gets the optional configuration section bound to this source, or <see langword="null"/>
+    /// when the source was registered without a configuration object.
+    /// </summary>
     IConfiguration? Configuration { get; }
+
+    /// <summary>Gets the name that uniquely identifies this SSE source registration.</summary>
     string Name { get; }
-    
+
+    /// <summary>
+    /// Registers a named <see cref="HttpClient"/> for this source using default settings.
+    /// </summary>
+    /// <returns>The same builder for chaining.</returns>
     SseSourceBuilder AddHttpClient();
+
+    /// <summary>
+    /// Registers a named <see cref="HttpClient"/> configured by <paramref name="configureClient"/>.
+    /// </summary>
+    /// <param name="configureClient">Delegate that configures the <see cref="HttpClient"/> (e.g. base address).</param>
+    /// <returns>The same builder for chaining.</returns>
     SseSourceBuilder AddHttpClient(Action<HttpClient> configureClient);
+
+    /// <summary>
+    /// Registers a named <see cref="HttpClient"/> with optional client configuration and
+    /// access to the underlying <see cref="IHttpClientBuilder"/> for advanced setup.
+    /// </summary>
+    /// <param name="configureClient">Delegate to configure the <see cref="HttpClient"/>; may be <see langword="null"/>.</param>
+    /// <param name="clientBuilder">Delegate to further configure the <see cref="IHttpClientBuilder"/>; may be <see langword="null"/>.</param>
+    /// <returns>The same builder for chaining.</returns>
     SseSourceBuilder AddHttpClient(Action<HttpClient>? configureClient, Action<IHttpClientBuilder>? clientBuilder);
+
+    /// <summary>
+    /// Instructs this SSE source to reuse an existing named <see cref="HttpClient"/> instead of
+    /// registering a new one.
+    /// </summary>
+    /// <param name="clientName">The name of the already-registered HTTP client to use.</param>
+    /// <returns>The same builder for chaining.</returns>
     SseSourceBuilder UseHttpClient(string clientName);
+
+    /// <summary>
+    /// Registers a callback that is invoked when the <see cref="SseSource"/> is created,
+    /// allowing imperative handler registration at resolution time.
+    /// </summary>
+    /// <param name="registerHandlers">
+    /// Callback receiving the <see cref="IServiceProvider"/> and the freshly created <see cref="SseSource"/>.
+    /// </param>
+    /// <returns>The same builder for chaining.</returns>
     ISseSourceBuilder RegisterHandlers(Action<IServiceProvider, SseSource> registerHandlers);
+
+    /// <summary>
+    /// Binds an <see cref="ISseEventsManager"/> implementation resolved from the DI container
+    /// to this SSE source at creation time.
+    /// </summary>
+    /// <typeparam name="TManager">The events manager type registered in the DI container.</typeparam>
+    /// <returns>The same builder for chaining.</returns>
     ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager;
+
+    /// <summary>
+    /// Binds a pre-created <see cref="ISseEventsManager"/> instance to this SSE source.
+    /// </summary>
+    /// <param name="manager">The manager instance whose <c>On*</c> methods will be registered as handlers.</param>
+    /// <returns>The same builder for chaining.</returns>
     ISseSourceBuilder BindEventsManager(ISseEventsManager manager);
     internal ISseSourceBuilder AddRequestMutator<TRequestMutator>() where TRequestMutator : IRequestMutator;
     internal ISseSourceBuilder AddRequestMutator(IRequestMutator mutator);
