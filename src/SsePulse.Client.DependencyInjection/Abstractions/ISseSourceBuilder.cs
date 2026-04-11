@@ -78,13 +78,14 @@ public interface ISseSourceBuilder
     /// <typeparam name="TManager">The events manager type registered in the DI container.</typeparam>
     /// <returns>The same builder for chaining.</returns>
     ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager;
-
+    
     /// <summary>
-    /// Binds a pre-created <see cref="ISseEventsManager"/> instance to this SSE source.
+    /// Binds an <see cref="ISseEventsManager"/> resolved via a factory delegate at source creation time.
     /// </summary>
-    /// <param name="manager">The manager instance whose <c>On*</c> methods will be registered as handlers.</param>
+    /// <param name="managerFactory">Factory that receives the <see cref="IServiceProvider"/> and returns the manager.</param>
     /// <returns>The same builder for chaining.</returns>
-    ISseSourceBuilder BindEventsManager(ISseEventsManager manager);
+    ISseSourceBuilder BindEventsManager(Func<IServiceProvider, ISseEventsManager> managerFactory);
+    
     internal ISseSourceBuilder AddRequestMutator<TRequestMutator>() where TRequestMutator : IRequestMutator;
     internal ISseSourceBuilder AddRequestMutator(IRequestMutator mutator);
     internal ISseSourceBuilder AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory);
