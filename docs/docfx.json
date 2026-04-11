@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "./src",
+          "files": [
+            "**/*.csproj"
+          ]
+        }
+      ],
+      "dest": ".artifacts/docs/api",
+      "properties": {
+        "TargetFramework": "net10.0"
+      }
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+          "exclude": [
+            "**/AGENTS.md",
+            "**/GitVersion.yml",
+            "../artifacts/docs/_site/**"
+          ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "../.artifacts/docfx/_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "SsePulse.Client",
+      "_appTitle": "SsePulse.Client",
+      "_enableSearch": true,
+      "pdf": true
+    }
+  }
+}

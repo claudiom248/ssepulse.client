@@ -230,8 +230,6 @@ _TeamCity*
 coverage*.json
 coverage*.xml
 coverage*.info
-/.artifacts/coverage/
-/.artifacts/tools/
 
 # Visual Studio code coverage results
 *.coverage
@@ -387,10 +385,6 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files
-*.ncb
-*.aps
-
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -491,3 +485,5 @@ FodyWeavers.xsd
 /.github/git-commit-instructions.md
 /NuGet.Config
 /AGENTS.md
+
+/.artifacts/
