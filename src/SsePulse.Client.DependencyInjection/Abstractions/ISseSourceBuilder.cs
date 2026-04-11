@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 
 namespace SsePulse.Client.DependencyInjection.Abstractions;
@@ -18,4 +19,5 @@ public interface ISseSourceBuilder
     SseSourceBuilder AddHttpClient(Action<HttpClient>? configureClient, Action<IHttpClientBuilder>? clientBuilder);
     ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager;
     ISseSourceBuilder BindEventsManager(ISseEventsManager manager);
+    ISseSourceBuilder RegisterHandlers(Action<IServiceProvider, SseSource> registerHandlers);
 }

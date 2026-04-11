@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.DependencyInjection.Abstractions;
@@ -105,6 +106,16 @@ public class SseSourceBuilder : ISseSourceBuilder
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
             options => { options.EventManagerFactories.Add(managerFactory); });
+        return this;
+    }
+    
+    public ISseSourceBuilder RegisterHandlers(Action<IServiceProvider, SseSource> registerHandlers)
+    {
+        Services.Configure<SseSourceFactoryOptions>(Name,
+            options =>
+            {
+                options.RegisterHandlersAction = registerHandlers;
+            });
         return this;
     }
 }
