@@ -18,6 +18,7 @@ public static partial class ServiceCollectionExtensions
     /// Call methods on the returned <see cref="ISseSourceBuilder"/> to configure the HTTP client,
     /// event handlers, and other components.
     /// </summary>
+    /// <param name="services">The service collection to add the SSE source to.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
     public static ISseSourceBuilder AddSseSource(this IServiceCollection services)
     {
@@ -27,6 +28,7 @@ public static partial class ServiceCollectionExtensions
     /// <summary>
     /// Registers a default-named SSE source and binds its options from <paramref name="configuration"/>.
     /// </summary>
+    /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="configuration">Configuration section containing <see cref="SseSourceOptions"/> values.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
     public static ISseSourceBuilder AddSseSource(this IServiceCollection services, IConfiguration configuration)
@@ -37,6 +39,7 @@ public static partial class ServiceCollectionExtensions
     /// <summary>
     /// Registers a named SSE source and optionally binds its options from <paramref name="configuration"/>.
     /// </summary>
+    /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
     /// <param name="configuration">Optional configuration section. When <see langword="null"/>, default option values are used.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
@@ -48,6 +51,7 @@ public static partial class ServiceCollectionExtensions
     /// <summary>
     /// Registers a default-named SSE source and configures its options using <paramref name="configureOptions"/>.
     /// </summary>
+    /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
     public static ISseSourceBuilder AddSseSource(this IServiceCollection services, Action<SseSourceOptions> configureOptions)
@@ -58,6 +62,7 @@ public static partial class ServiceCollectionExtensions
     /// <summary>
     /// Registers a named SSE source and configures its options using <paramref name="configureOptions"/>.
     /// </summary>
+    /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="name">Unique name for this SSE source.</param>
     /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
