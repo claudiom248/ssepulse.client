@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [ main, feature/*, hotfix/* ]
   push:
-    branches: [ main, feature/*, hotfix/* ]
+    branches: [ main, feature/*, hotfix/*, release/* ]
   workflow_dispatch:
 
 jobs:
