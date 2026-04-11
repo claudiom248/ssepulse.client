@@ -260,5 +260,45 @@ public class DefaultSseSourceFactoryTests
         // Assert
         Assert.NotNull(source);
     }
+
+    [Fact]
+    public void CreateSseSource_WithRegisteredHandlers_InvokesActionWithCreatedSource()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        SseSource? capturedSource = null;
+        services.AddSseSource("TestSource")
+            .RegisterHandlers((_, source) => capturedSource = source);
+
+        ServiceProvider provider = services.BuildServiceProvider();
+        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
+
+        // ACT
+        SseSource createdSource = factory.CreateSseSource("TestSource");
+
+        // ASSERT
+        Assert.Same(createdSource, capturedSource);
+    }
+
+    [Fact]
+    public void CreateSseSource_WithRegisteredHandlers_PassesServiceProviderToAction()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        IServiceProvider? capturedServiceProvider = null;
+        services.AddSseSource("TestSource")
+            .RegisterHandlers((sp, _) => capturedServiceProvider = sp);
+
+        ServiceProvider provider = services.BuildServiceProvider();
+        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
+
+        // ACT
+        factory.CreateSseSource("TestSource");
+
+        // ASSERT
+        Assert.Same(provider, capturedServiceProvider);
+    }
 }
 

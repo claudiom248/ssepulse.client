@@ -1,6 +1,7 @@
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Internal;
@@ -207,6 +208,60 @@ public class SseSourceBuilderTests
         Assert.Equal(new Uri("https://api.example.com"), client.BaseAddress);
     }
     
+    [Fact]
+    public void RegisterHandlers_WithDelegate_StoresActionInOptions()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
+        Action<IServiceProvider, SseSource> action = (_, _) => { };
+
+        // ACT
+        builder.RegisterHandlers(action);
+
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        SseSourceFactoryOptions options = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
+            .Get("MySource");
+
+        Assert.Same(action, options.RegisterHandlersAction);
+    }
+
+    [Fact]
+    public void RegisterHandlers_ReturnsBuilder()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
+
+        // ACT
+        ISseSourceBuilder result = builder.RegisterHandlers((_, _) => { });
+
+        // ASSERT
+        Assert.Same(builder, result);
+    }
+
+    [Fact]
+    public void RegisterHandlers_OnNamedSource_DoesNotPollutOtherSource()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder source1 = new SseSourceBuilder("Source1", services);
+        _ = new SseSourceBuilder("Source2", services);
+
+        // ACT
+        source1.RegisterHandlers((_, _) => { });
+
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        SseSourceFactoryOptions options2 = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
+            .Get("Source2");
+
+        Assert.Null(options2.RegisterHandlersAction);
+    }
+
     private class FakeRequestMutator : IRequestMutator
     {
         public ValueTask ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken)
