@@ -14,8 +14,8 @@ public interface ISseSourceBuilder
     internal ISseSourceBuilder AddRequestMutator(IRequestMutator mutator);
     internal ISseSourceBuilder AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory);
     SseSourceBuilder AddHttpClient();
+    SseSourceBuilder AddHttpClient(Action<HttpClient> configureClient);
     SseSourceBuilder AddHttpClient(Action<HttpClient>? configureClient, Action<IHttpClientBuilder>? clientBuilder);
     ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager;
     ISseSourceBuilder BindEventsManager(ISseEventsManager manager);
-    SseSourceBuilder AddHttpClient(Action<HttpClient> configureClient);
 }

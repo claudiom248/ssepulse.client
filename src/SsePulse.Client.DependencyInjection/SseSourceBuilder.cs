@@ -50,14 +50,12 @@ public class SseSourceBuilder : ISseSourceBuilder
 
     public SseSourceBuilder AddHttpClient()
     {
-        Services.AddHttpClient(Name);
-        return this;
+        return AddHttpClient(_ => { });
     }
     
     public SseSourceBuilder AddHttpClient(Action<HttpClient> configureClient)
     {
-        Services.AddHttpClient(Name, configureClient);
-        return this;
+        return AddHttpClient(configureClient, null);
     }
 
     public SseSourceBuilder AddHttpClient(Action<HttpClient>? configureClient,
@@ -89,17 +87,24 @@ public class SseSourceBuilder : ISseSourceBuilder
         return this;
     }
 
-    ISseSourceBuilder ISseSourceBuilder.BindEventsManager(ISseEventsManager manager)
+    public ISseSourceBuilder BindEventsManager(ISseEventsManager manager)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
             options => { options.EventManagerFactories.Add(_ => manager); });
         return this;
     }
 
-    ISseSourceBuilder ISseSourceBuilder.BindEventsManager<TManager>()
+    public ISseSourceBuilder BindEventsManager<TManager>() where TManager : ISseEventsManager
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
             options => { options.EventManagerFactories.Add(sp => sp.GetRequiredService<TManager>()); });
+        return this;
+    }
+    
+    public ISseSourceBuilder BindEventsManager(Func<IServiceProvider, ISseEventsManager> managerFactory)
+    {
+        Services.Configure<SseSourceFactoryOptions>(Name,
+            options => { options.EventManagerFactories.Add(managerFactory); });
         return this;
     }
 }
