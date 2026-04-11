@@ -77,8 +77,27 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.Null(ex);
     }
-
-
+    [Fact]
+    public async Task StartConsumeAsync_MultipleHandlersPerEventType_DispatchesAll()
+    {
+        // ARRANGE
+        bool handler1Called = false;
+        bool handler2Called = false;
+        string sse = MockSseHelpers.BuildSseStream(
+            new SseEvent { EventType = "e", Data = "1" });
+        using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
+        await using Core.SseSource source = CreateSource(client);
+        
+        // ACT
+        source.On("e", _ => handler1Called = true);
+        source.On("e", _ => handler2Called = true);
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+        
+        // ASSERT
+        Assert.True(handler1Called);
+        Assert.True(handler2Called);
+    }
+    
     [Fact]
     public async Task StartConsumeAsync_HandlerError_InvokesOnError()
     {
@@ -381,7 +400,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         {
             Path = "/sse",
             MaxDegreeOfParallelism = 1,
-            ThrowWhenEventHandlerNotFound = true
+            ThrowWhenNoEventHandlerFound = true
         });
 
         // ACT

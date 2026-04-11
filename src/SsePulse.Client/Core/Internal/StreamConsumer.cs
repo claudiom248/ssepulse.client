@@ -90,9 +90,9 @@ internal class StreamConsumer
     private void Dispatch(SseItem<string> @event)
     {
         string eventType = @event.EventType;
-        if (!_handlers.TryGetValue(eventType, out ISseEventHandler? handler))
+        if (!_handlers.TryGetValue(eventType, out List<ISseEventHandler>? eventHandlers))
         {
-            if (_options.ThrowWhenEventHandlerNotFound)
+            if (_options.ThrowWhenNoEventHandlerFound)
             {
                 _logger.LogError("No handler found for event type '{EventType}'", eventType);
                 throw new HandlerNotFoundException(eventType);
@@ -104,7 +104,10 @@ internal class StreamConsumer
 
         try
         {
-            handler.Invoke(@event);
+            foreach (ISseEventHandler eventHandler in eventHandlers)
+            {
+                eventHandler.Invoke(@event);
+            }
         }
         catch (Exception ex)
         {

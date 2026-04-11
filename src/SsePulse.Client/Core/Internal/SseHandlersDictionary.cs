@@ -4,7 +4,7 @@ using SsePulse.Client.EventHandlers;
 
 namespace SsePulse.Client.Core.Internal;
 
-internal class SseHandlersDictionary : Dictionary<string, ISseEventHandler>
+internal class SseHandlersDictionary : Dictionary<string, List<ISseEventHandler>>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddHandler(string eventName, Action<SseItem<string>> handler)
@@ -33,10 +33,15 @@ internal class SseHandlersDictionary : Dictionary<string, ISseEventHandler>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddHandlerCore(string eventName, ISseEventHandler handler)
     {
-#if NET8_0_OR_GREATER
-        TryAdd(eventName, handler);
-#else
-        Add(eventName, handler);
-#endif
+        if (!TryGetValue(eventName, out List<ISseEventHandler>? handlers))
+        {
+            handlers =
+            [
+                handler
+            ];
+            Add(eventName, handlers);
+            return;
+        }
+        handlers.Add(handler);
     }
 }

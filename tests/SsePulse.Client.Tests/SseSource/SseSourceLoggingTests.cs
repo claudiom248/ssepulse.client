@@ -114,7 +114,7 @@ public class SseSourceLoggingTests
             client, 
             new SseSourceOptions
             {
-                ThrowWhenEventHandlerNotFound = true
+                ThrowWhenNoEventHandlerFound = true
             }, 
             logger);
 

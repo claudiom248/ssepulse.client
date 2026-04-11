@@ -9,6 +9,6 @@ public class SseSourceOptions
     public int MaxDegreeOfParallelism { get; set; }  = SseSourceOptionsDefaults.MaxDegreeOfParallelism;
     public NameCasePolicy DefaultEventNameCasePolicy { get; set; } = SseSourceOptionsDefaults.DefaultEventNameCasePolicy;
     public RetryOptions? ConnectionRetryOptions { get; set; } = SseSourceOptionsDefaults.DefaultRetryOptions;
-    public bool ThrowWhenEventHandlerNotFound { get; set; } = SseSourceOptionsDefaults.ThrowWhenEventHandlerNotFound;
+    public bool ThrowWhenNoEventHandlerFound { get; set; } = SseSourceOptionsDefaults.ThrowWhenEventHandlerNotFound;
     public bool RestartOnConnectionAbort { get; set; } = SseSourceOptionsDefaults.RestartOnConnectionAbort;
 }
