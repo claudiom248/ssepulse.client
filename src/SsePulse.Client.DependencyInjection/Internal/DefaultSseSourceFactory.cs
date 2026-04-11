@@ -39,6 +39,7 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
             store,
             loggerFactory?.CreateLogger<SseSource>());
         BindEventsManagers();
+        sourceFactoryOptions.RegisterHandlersAction?.Invoke(_serviceProvider, source);
         return source;
 
         IReadOnlyCollection<IRequestMutator> BuildMutators() =>
