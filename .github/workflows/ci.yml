@@ -25,12 +25,13 @@ jobs:
       with:
         dotnet-version: 10.x
         cache: true
+        cache-dependency-path: '**/packages.lock.json'
           
       name: build
 
-    - run: dotnet restore --locked-mode
-    
     - run: dotnet tool restore
+
+    - run: dotnet restore --locked-mode
 
     - run: dotnet build -c Release --maxcpucount --binaryLogger
       shell: bash
