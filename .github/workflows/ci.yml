@@ -50,6 +50,7 @@ jobs:
       id: test-netframework462
 
     - run: dotnet tool run docfx docs/docfx.json
+      if: matrix.os == 'ubuntu-latest'
 
     - uses: actions/upload-pages-artifact@v4
       if: matrix.os == 'ubuntu-latest'
