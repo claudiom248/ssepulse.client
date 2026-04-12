@@ -13,7 +13,7 @@ public interface ILastEventIdStore
     string? LastEventId { get; }
 
     /// <summary>
-    /// Updates the last event ID stored in the implementation.
+    /// Updates the last event ID stored.
     /// </summary>
     /// <param name="eventId">The event ID to be stored.</param>
     void Set(string eventId);

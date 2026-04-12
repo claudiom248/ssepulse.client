@@ -24,7 +24,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SsePulse.Client\SsePulse.Client.csproj"/>
-        <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection"/>
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection.Tests"/>
         <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection.Tests"/>
     </ItemGroup>

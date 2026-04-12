@@ -86,8 +86,27 @@ public interface ISseSourceBuilder
     /// <returns>The same builder for chaining.</returns>
     ISseSourceBuilder BindEventsManager(Func<IServiceProvider, ISseEventsManager> managerFactory);
     
-    internal ISseSourceBuilder AddRequestMutator<TRequestMutator>() where TRequestMutator : IRequestMutator;
-    internal ISseSourceBuilder AddRequestMutator(IRequestMutator mutator);
-    internal ISseSourceBuilder AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory);
+    /// <summary>
+    /// Registers an <see cref="IRequestMutator"/> implementation resolved from the DI container
+    /// to be applied to every outgoing request made by this SSE source.
+    /// </summary>
+    /// <typeparam name="TRequestMutator">The mutator type registered in the DI container.</typeparam>
+    /// <returns>The same builder for chaining.</returns>
+    ISseSourceBuilder AddRequestMutator<TRequestMutator>() where TRequestMutator : IRequestMutator;
 
+    /// <summary>
+    /// Registers a pre-created <see cref="IRequestMutator"/> instance to be applied to every
+    /// outgoing request made by this SSE source.
+    /// </summary>
+    /// <param name="mutator">The mutator instance to register.</param>
+    /// <returns>The same builder for chaining.</returns>
+    ISseSourceBuilder AddRequestMutator(IRequestMutator mutator);
+
+    /// <summary>
+    /// Registers an <see cref="IRequestMutator"/> resolved via a factory delegate at source
+    /// creation time to be applied to every outgoing request made by this SSE source.
+    /// </summary>
+    /// <param name="mutatorFactory">Factory that receives the <see cref="IServiceProvider"/> and returns the mutator.</param>
+    /// <returns>The same builder for chaining.</returns>
+    ISseSourceBuilder AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory);
 }

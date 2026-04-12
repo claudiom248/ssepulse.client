@@ -51,7 +51,23 @@ public partial class SseSource : IDisposable, IAsyncDisposable
     {
     }
 
-    internal SseSource(HttpClient client, SseSourceOptions options,
+    /// <summary>
+    /// Initializes a new <see cref="SseSource"/> with full control over request mutators and
+    /// last-event-ID resumption. Mutators are supplied at construction time and applied to every
+    /// outgoing request in the order they appear in <paramref name="requestMutators"/>.
+    /// </summary>
+    /// <param name="client">The HTTP client used to connect to the SSE endpoint.</param>
+    /// <param name="options">Configuration options such as path, retry policy, and parallelism.</param>
+    /// <param name="requestMutators">
+    /// An ordered collection of <see cref="IRequestMutator"/> instances applied to every outgoing
+    /// request. Pass an empty collection when no mutation is required.
+    /// </param>
+    /// <param name="lastEventIdStore">
+    /// Optional store that persists the last received event ID. When provided, the value is
+    /// automatically set via the <c>Last-Event-ID</c> header on reconnections.
+    /// </param>
+    /// <param name="logger">Optional logger. Falls back to <see cref="Microsoft.Extensions.Logging.Abstractions.NullLogger{T}"/> when omitted.</param>
+    public SseSource(HttpClient client, SseSourceOptions options,
         IReadOnlyCollection<IRequestMutator> requestMutators, ILastEventIdStore? lastEventIdStore = null,
         ILogger<SseSource>? logger = null)
     {

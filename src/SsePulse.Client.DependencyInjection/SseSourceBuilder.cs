@@ -142,23 +142,25 @@ public class SseSourceBuilder : ISseSourceBuilder
             options => { options.EventManagerFactories.Add(managerFactory); });
         return this;
     }
-
-
-    ISseSourceBuilder ISseSourceBuilder.AddRequestMutator(IRequestMutator mutator)
+    
+    /// <inheritdoc/>
+    public ISseSourceBuilder AddRequestMutator(IRequestMutator mutator)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
             options => { options.RequestMutatorsFactories.Add(_ => mutator); });
         return this;
     }
 
-    ISseSourceBuilder ISseSourceBuilder.AddRequestMutator<TRequestMutator>()
+    /// <inheritdoc/>
+    public ISseSourceBuilder AddRequestMutator<TRequestMutator>() where TRequestMutator : IRequestMutator
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
             options => { options.RequestMutatorsFactories.Add(sp => sp.GetRequiredService<TRequestMutator>()); });
         return this;
     }
 
-    ISseSourceBuilder ISseSourceBuilder.AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory)
+    /// <inheritdoc/>
+    public ISseSourceBuilder AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
             options => { options.RequestMutatorsFactories.Add(mutatorFactory); });

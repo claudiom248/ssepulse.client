@@ -6,6 +6,8 @@
   href: dependency-injection.md
 - name: Authentication
   href: authentication.md
+- name: Request Mutators
+  href: request-mutators.md
 - name: Configuration
   href: configuration.md
 - name: Platform Availability
