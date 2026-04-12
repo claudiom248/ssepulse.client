@@ -23,8 +23,8 @@ jobs:
 
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: |
-          10.x
+        dotnet-version: 10.x
+        cache: true
           
       name: build
     - run: dotnet tool restore
