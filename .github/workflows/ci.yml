@@ -64,11 +64,11 @@ jobs:
 
     - name: Generate Documentation
       run: dotnet tool run docfx docs/docfx.json
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && matrix.tfm == 'net10.0'
 
     - name: Upload Documentation
       uses: actions/upload-pages-artifact@v4
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && matrix.tfm == 'net10.0'
       with:
         path: docs/_site
 
@@ -76,11 +76,11 @@ jobs:
       uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}
       with:
-        name: logs-${{ matrix.os }}
+        name: logs-${{ matrix.os }}-${{ matrix.tfm }}
         path: |
           msbuild.binlog
-          test/**/TestResults/*.trx
-          test/**/TestResults/*.html
+          **/*.trx
+        
 
   publish-docs:
     if: > 
