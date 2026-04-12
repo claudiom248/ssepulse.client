@@ -4,13 +4,13 @@
     {
       "src": [
         {
-          "src": "./src",
+          "src": "../src",
           "files": [
             "**/*.csproj"
           ]
         }
       ],
-      "dest": ".artifacts/docs/api",
+      "dest": "../.artifacts/docfx/api",
       "properties": {
         "TargetFramework": "net10.0"
       }
@@ -25,7 +25,7 @@
           "exclude": [
             "**/AGENTS.md",
             "**/GitVersion.yml",
-            "../artifacts/docs/_site/**"
+            "./_site/**"
           ]
       }
     ],
