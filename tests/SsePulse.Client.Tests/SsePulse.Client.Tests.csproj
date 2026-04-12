@@ -22,7 +22,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="xunit.runner.visualstudio" Condition="'$(TargetFramework)' != 'net462'" />
+    <PackageReference Include="xunit.runner.visualstudio" VersionOverride="2.8.2" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="xunit.extensibility.core" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="xunit.abstractions" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
