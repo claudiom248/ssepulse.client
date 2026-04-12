@@ -86,7 +86,7 @@ jobs:
     if: > 
       github.event_name == 'push' 
       && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
-    needs: [test]
+    needs: [build]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
