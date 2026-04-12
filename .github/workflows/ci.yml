@@ -36,21 +36,30 @@ jobs:
     - run: dotnet build -c Release --maxcpucount --binaryLogger
       shell: bash
 
-    - run: dotnet test -c Release -f net10.0 --no-build  --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+    - run: dotnet test -c Release -f net10.0 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
       if: matrix.os == 'ubuntu-latest'
       id: test-net100
 
-    - run: dotnet test -c Release -f net9.0 --no-build --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+    - run: dotnet test -c Release -f net9.0 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
       if: matrix.os == 'ubuntu-latest'
       id: test-net90
 
-    - run: dotnet test -c Release -f net8.0 --no-build --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+    - run: dotnet test -c Release -f net8.0 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
       if: matrix.os == 'ubuntu-latest'
       id: test-net80
 
-    - run: dotnet test -c Release -f net462 --no-build --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+    - run: dotnet test -c Release -f net462 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
       if: matrix.os == 'windows-latest'
       id: test-netframework462
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure() 
+      with:
+        name: .NET Tests (${{ matrix.os }}) 
+        path: '**/*.trx'                    
+        reporter: dotnet-trx
+        fail-on-error: 'false'
 
     - run: dotnet tool run docfx docs/docfx.json
       if: matrix.os == 'ubuntu-latest'
