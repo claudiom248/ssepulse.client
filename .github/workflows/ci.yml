@@ -47,7 +47,7 @@ jobs:
     - name: Run Tests
       run: >
         dotnet test -c Release 
-        -framework ${{ matrix.tfm }} 
+        --framework ${{ matrix.tfm }} 
         --no-build 
         --logger "trx;LogFileName=${{ matrix.tfm }}.trx" 
         --consoleLoggerParameters:"Summary;Verbosity=Minimal"
