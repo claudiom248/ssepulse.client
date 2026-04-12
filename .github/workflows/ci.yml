@@ -25,6 +25,8 @@ jobs:
       with:
         dotnet-version: |
           10.x
+          9.x
+          8.x
           
       name: build
     - run: dotnet tool restore
