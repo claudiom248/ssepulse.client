@@ -56,7 +56,7 @@ jobs:
     - uses: actions/upload-pages-artifact@v4
       if: matrix.os == 'ubuntu-latest'
       with:
-        path: .artifacts/docfx/_site
+        path: docs/_site
 
     - name: Upload Logs
       uses: actions/upload-artifact@v7
