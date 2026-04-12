@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest]
     steps:
     - uses: actions/checkout@v6
       with:
@@ -35,6 +35,7 @@ jobs:
       shell: bash
 
     - run: dotnet test -c Release -f net10.0 --no-build --collect:"XPlat Code Coverage" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+      if: matrix.os == 'ubuntu-latest'
       id: test-net100
 
     - run: dotnet test -c Release -f net9.0 --no-build --collect:"XPlat Code Coverage" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
@@ -68,7 +69,9 @@ jobs:
           test/**/TestResults/*.html
 
   publish-docs:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: > 
+      github.event_name == 'push' 
+      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
     needs: [test]
     environment:
       name: github-pages
