@@ -7,64 +7,67 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest]
+        tfm: [net10.0, net9.0, net8.0]
+        include:
+          - os: windows-latest
+            tfm: net462
+            
     steps:
-    - uses: actions/checkout@v6
+    - name: Checkout code
+      uses: actions/checkout@v6
       with:
         ref: ${{github.event.pull_request.head.ref}}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         lfs: true
 
-    - uses: actions/setup-dotnet@v5
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 10.x
         cache: true
         cache-dependency-path: '**/packages.lock.json'
           
-      name: build
+    - name: Restore tools
+      run: dotnet tool restore
 
-    - run: dotnet tool restore
+    - name: Restore packages
+      run: dotnet restore --locked-mode
 
-    - run: dotnet restore --locked-mode
-
-    - run: dotnet build -c Release --maxcpucount --binaryLogger
+    - name: Build
+      run: dotnet build -c Release --maxcpucount --binaryLogger
       shell: bash
 
-    - run: dotnet test -c Release -f net10.0 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
-      if: matrix.os == 'ubuntu-latest'
-      id: test-net100
-
-    - run: dotnet test -c Release -f net9.0 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
-      if: matrix.os == 'ubuntu-latest'
-      id: test-net90
-
-    - run: dotnet test -c Release -f net8.0 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
-      if: matrix.os == 'ubuntu-latest'
-      id: test-net80
-
-    - run: dotnet test -c Release -f net462 --no-build --logger "trx" --consoleLoggerParameters:"Summary;Verbosity=Minimal"
-      if: matrix.os == 'windows-latest'
-      id: test-netframework462
+    - name: Run Tests
+      run: >
+        dotnet test -c Release 
+        -framework ${{ matrix.tfm }} 
+        --no-build 
+        --logger "trx;LogFileName=${{ matrix.tfm }}.trx" 
+        --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+      id: dotnet-test
 
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: success() || failure() 
       with:
-        name: .NET Tests (${{ matrix.os }}) 
-        path: '**/*.trx'                    
+        name: .NET Tests - ${{ matrix.os }} - ${{ matrix.tfm }}
+        path: '**/${{ matrix.tfm }}.trx'
         reporter: dotnet-trx
         fail-on-error: 'false'
 
-    - run: dotnet tool run docfx docs/docfx.json
+    - name: Generate Documentation
+      run: dotnet tool run docfx docs/docfx.json
       if: matrix.os == 'ubuntu-latest'
 
-    - uses: actions/upload-pages-artifact@v4
+    - name: Upload Documentation
+      uses: actions/upload-pages-artifact@v4
       if: matrix.os == 'ubuntu-latest'
       with:
         path: docs/_site
@@ -95,3 +98,4 @@ jobs:
     steps:
     - id: deployment
       uses: actions/deploy-pages@v4
+        
