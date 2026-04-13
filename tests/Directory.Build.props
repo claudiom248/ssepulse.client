@@ -10,6 +10,9 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+    <ItemGroup>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </ItemGroup>
 </Project>
 
 
