@@ -35,8 +35,9 @@ public static class SseBuilderExtensions
         /// <summary>
         /// Adds authentication to this SSE source.
         /// If the builder's configuration contains an <c>Authentication</c> section, the provider is
-        /// resolved from configuration; otherwise, an <see cref="SsePulse.Client.Authentication.Providers.NoneAuthenticationProvider"/>
-        /// is used (requires manual provider registration).
+        /// resolved from configuration; otherwise, <see cref="AuthenticationRequestMutator"/> is registered
+        /// without a pre-configured provider — register an <see cref="ISseAuthenticationProvider"/> in the
+        /// DI container separately before the source is resolved.
         /// </summary>
         /// <returns>The same builder for chaining.</returns>
         public ISseSourceBuilder AddAuthentication()
