@@ -33,8 +33,8 @@ public class SseSourceConnectionTests : SseSourceTestBase
     [InlineData(HttpStatusCode.NotFound)]
     [InlineData(HttpStatusCode.InternalServerError)]
     [InlineData(HttpStatusCode.BadGateway)]
-    [InlineData(HttpStatusCode.ServiceUnavailable)]
-    [InlineData(HttpStatusCode.GatewayTimeout)]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
     public async Task StartConsumeAsync_WhenServerReturnsNonTransientErrorCode_LeavesIsConnectedFalse(
         HttpStatusCode statusCode)
     {
@@ -70,6 +70,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
         // ASSERT
         Assert.Equal(1, handler.CallCount);
     }
+    
     [Fact]
     public async Task StartConsumeAsync_WhenNonTransientHttpErrorOccursWithRetryEnabled_DoesNotRetry()
     {
@@ -110,6 +111,53 @@ public class SseSourceConnectionTests : SseSourceTestBase
 
         // ASSERT
         Assert.Equal(2, handler.CallCount);
+    }
+    
+    [Theory]
+    [InlineData(SocketError.TimedOut)]
+    [InlineData(SocketError.ConnectionRefused)]
+    [InlineData(SocketError.ConnectionReset)]
+    public async Task StartConsumeAsync_WhenNestedTransientSocketExceptionWithRetryEnabled_Retries(SocketError socketError)
+    {
+        // ARRANGE
+        CallCountingHttpMessageHandler handler = new(_ =>
+            throw new HttpRequestException("timed out", new HttpRequestException(string.Empty, new SocketException((int)socketError))));
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
+        });
+
+        // ACT
+        _ = await Record.ExceptionAsync(() => source.StartConsumeAsync(CancellationToken.None));
+
+        // ASSERT
+        Assert.Equal(2, handler.CallCount);
+    }
+    
+    [Theory]
+    [InlineData(SocketError.NotConnected)]
+    [InlineData(SocketError.AccessDenied)]
+    public async Task StartConsumeAsync_WhenNestedNonTransientSocketExceptionWithRetryEnabled_DoesNotRetry(SocketError socketError)
+    {
+        // ARRANGE
+        CallCountingHttpMessageHandler handler = new(_ =>
+            throw new HttpRequestException("timed out", new HttpRequestException(string.Empty, new SocketException((int)socketError))));
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0)
+        });
+
+        // ACT
+        _ = await Record.ExceptionAsync(() => source.StartConsumeAsync(CancellationToken.None));
+
+        // ASSERT
+        Assert.Equal(1, handler.CallCount);
     }
     
     [Fact]

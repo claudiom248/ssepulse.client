@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using SsePulse.Client.Common.Extensions;
 using SsePulse.Client.Common.Models;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
@@ -71,12 +73,18 @@ internal partial class SseConnection
                     {
                         return false;
                     }
-
                     if (hre.Data.Count > 0)
                     {
                         return IsTransientHttpError(hre.Data["HttpStatusCode"] as HttpStatusCode?);
                     }
-                    return hre.InnerException is TimeoutException;
+                    SocketException? socketException = hre.FindInner<SocketException>();
+                    if (socketException is not null)
+                    {
+                        return socketException.SocketErrorCode is SocketError.TimedOut
+                            or SocketError.ConnectionRefused
+                            or SocketError.ConnectionReset;
+                    }
+                    return hre.FindInner<TimeoutException>() is not null;
                 },
                 cancellationToken: cancellationToken
             ).ConfigureAwait(false);
@@ -140,8 +148,6 @@ internal partial class SseConnection
             HttpStatusCode.NotFound
             or HttpStatusCode.InternalServerError
             or HttpStatusCode.BadGateway
-            or HttpStatusCode.ServiceUnavailable
-            or HttpStatusCode.GatewayTimeout
             or HttpStatusCode.Unauthorized
             or HttpStatusCode.Forbidden);
     }
