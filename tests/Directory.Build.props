@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+    <PropertyGroup>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
     <!-- Explicitly reference the .NET Framework reference assemblies for net462 targets.
          Without this, the package is injected implicitly only on Linux/macOS runners,
          making packages.lock.json environment-dependent and breaking locked-mode restore on Windows CI. -->
@@ -9,9 +12,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-    <ItemGroup>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </ItemGroup>
 </Project>
 
