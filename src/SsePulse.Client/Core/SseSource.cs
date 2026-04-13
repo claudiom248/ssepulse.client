@@ -102,7 +102,7 @@ public partial class SseSource : IDisposable, IAsyncDisposable
         {
             throw new InvalidOperationException($"{nameof(SseSource)} already started.");
         }
-        CancellationTokenSource linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+        using CancellationTokenSource linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
             _cts.Token,
             cancellationToken);
 
@@ -125,7 +125,6 @@ public partial class SseSource : IDisposable, IAsyncDisposable
                 StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
                 await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
 #endif
-                
                 _tcs.TrySetResult(true);
                 _connection.SetDisconnected();
                 return;
