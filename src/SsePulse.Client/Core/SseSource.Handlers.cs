@@ -12,8 +12,6 @@ namespace SsePulse.Client.Core;
 public partial class SseSource
 {
     private readonly SseHandlersDictionary _handlers = new();
-
-    internal Action? OnDisposed { get; set; }
     
     /// <summary>
     /// Gets or sets the callback invoked each time the SSE connection is successfully established.
@@ -25,6 +23,7 @@ public partial class SseSource
         set
         {
             AssertNotDisposed();
+            AssertNotStarted();
             field = WrapDefaultHandler(value);
             _connectionHandlers.OnConnectionEstablished = field;
         }
@@ -41,6 +40,7 @@ public partial class SseSource
         set
         {
             AssertNotDisposed();
+            AssertNotStarted();
             field = WrapDefaultHandler(value);
             _connectionHandlers.OnConnectionClosed = field;
         }
@@ -57,6 +57,7 @@ public partial class SseSource
         set
         {
             AssertNotDisposed();
+            AssertNotStarted();
             field = WrapDefaultHandler(value);
             _connectionHandlers.OnConnectionLost = field;
         }
@@ -73,9 +74,12 @@ public partial class SseSource
         set
         {
             AssertNotDisposed();
+            AssertNotStarted();
             field = WrapDefaultHandler(value);
         }
     } = ex => { Console.WriteLine("Error occurred: " + ex.Message + ""); };
+    
+    internal Action? OnDisposed { get; set; }
     
     /// <summary>
     /// Registers a handler for raw <see cref="System.Net.ServerSentEvents.SseItem{T}"/> events with the specified event name.
@@ -86,6 +90,7 @@ public partial class SseSource
     public SseSource OnItem(string eventName, Action<SseItem<string>> handler)
     {
         AssertNotDisposed();
+        AssertNotStarted();
         _handlers.AddHandler(eventName, handler);
         return this;
     }
@@ -117,6 +122,7 @@ public partial class SseSource
     public SseSource OnItem<TEventData>(string eventName, Action<SseItem<TEventData>> handler)
     {
         AssertNotDisposed();
+        AssertNotStarted();
         _handlers.AddStronglyTypedHandler(eventName, handler);
         return this;
     }
@@ -130,6 +136,7 @@ public partial class SseSource
     public SseSource On(string eventName, Action<string> handler)
     {
         AssertNotDisposed();
+        AssertNotStarted();
         _handlers.AddDataHandler(eventName, handler);
         return this;
     }
@@ -160,6 +167,7 @@ public partial class SseSource
     public SseSource On<TEventData>(string eventName, Action<TEventData> handler)
     {
         AssertNotDisposed();
+        AssertNotStarted();
         _handlers.AddStronglyTypedDataHandler(eventName, handler);
         return this;
     }
@@ -198,9 +206,11 @@ public partial class SseSource
     /// <typeparam name="TManager">An <see cref="ISseEventsManager"/> implementation.</typeparam>
     /// <param name="manager">The pre-created manager instance whose handlers will be registered.</param>
     /// <returns>The current <see cref="SseSource"/> for chaining.</returns>
+
     public SseSource Bind<TManager>(TManager manager) where TManager : ISseEventsManager
     {
         AssertNotDisposed();
+        AssertNotStarted();
         
         MethodInfo addDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
         MethodInfo addStronglyTypedDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddStronglyTypedDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
@@ -210,7 +220,7 @@ public partial class SseSource
 
         foreach (MethodInfo method in methods)
         {
-            string eventName = GetEventNameByMethod(method);
+            string eventName = NormalizeEventName(method);
             Type eventDataType = method.GetParameters()[0].ParameterType;
 
             if (eventDataType == typeof(string))
@@ -252,17 +262,17 @@ public partial class SseSource
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private string GetEvenName(string eventName)
+    private string NormalizeEventName(string eventName)
     {
         return eventName.ApplyNamingCasePolicy(_options.DefaultEventNameCasePolicy);
     }
     
-    private string GetEventNameByMethod(MethodInfo method)
+    private string NormalizeEventName(MethodInfo method)
     {
         string methodNameWithoutPrefix = method.Name.Substring(2);
         MapEventNameAttribute? attribute = method.GetCustomAttribute<MapEventNameAttribute>();
         return attribute is not null 
             ? attribute.EventName 
-            : GetEvenName(methodNameWithoutPrefix);
+            : NormalizeEventName(methodNameWithoutPrefix);
     }
 }

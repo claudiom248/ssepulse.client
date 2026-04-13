@@ -170,6 +170,15 @@ public partial class SseSource : IDisposable, IAsyncDisposable
             throw new InvalidOperationException($"{nameof(SseSource)} not started.");
         }
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AssertNotStarted()
+    {
+        if (_started == 1)
+        {
+            throw new InvalidOperationException($"{nameof(SseSource)} already started.");
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertNotDisposed()
