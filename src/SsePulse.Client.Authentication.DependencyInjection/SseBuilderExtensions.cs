@@ -19,16 +19,16 @@ namespace SsePulse.Client.Authentication.DependencyInjection;
 public static class SseBuilderExtensions
 {
     /// <summary>The configuration section name that contains authentication settings (<c>Authentication</c>).</summary>
-    public const string AuthenticationSectionName = "Authentication";
+    private const string AuthenticationSectionName = "Authentication";
 
     /// <summary>The configuration key used to identify the authentication provider type (<c>Provider</c>).</summary>
-    public const string AuthenticationProviderKeyName = "Provider";
+    private const string AuthenticationProviderKeyName = "Provider";
 
     /// <summary>The configuration section name for provider-specific arguments (<c>Args</c>).</summary>
-    public const string AuthenticationProviderArgumentsSectionName = "Args";
+    private const string AuthenticationProviderArgumentsSectionName = "Args";
 
     /// <summary>The configuration key used to identify the token provider type within bearer-token config (<c>TokenProvider</c>).</summary>
-    public const string TokenProviderKeyName = "TokenProvider";
+    private const string TokenProviderKeyName = "TokenProvider";
 
     extension(ISseSourceBuilder builder)
     {
