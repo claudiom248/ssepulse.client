@@ -1,7 +1,3 @@
----
-_layout: landing
----
-
 # SsePulse.Client
 
 **SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate.It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
@@ -15,29 +11,6 @@ _layout: landing
 - **Automatic reconnection** — configurable retry policy and restart-on-abort support.
 - **Multi-framework** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
 
-## Quick start
+## This Package
 
-```csharp
-var client = new HttpClient { BaseAddress = new Uri("https://my-sse-server.example") };
-var options = new SseSourceOptions { Path = "/events" };
-
-await using var source = new SseSource(client, options);
-
-source
-    .On<OrderCreated>((OrderCreated e) => Console.WriteLine($"Order {e.Id} created"))
-    .On<OrderShipped>((OrderShipped e) => Console.WriteLine($"Order {e.Id} shipped"))
-    .OnError(ex => Console.Error.WriteLine(ex));
-
-await source.StartConsumeAsync(CancellationToken.None);
-```
-
-## Navigation
-
-- [Introduction to Server-Sent Events](docs/introduction-to-sse.md)
-- [Getting Started](docs/getting-started.md)
-- [Dependency Injection](docs/dependency-injection.md)
-- [Authentication](docs/authentication.md)
-- [Configuration](docs/configuration.md)
-- [Platform Availability](docs/platform-availability.md)
-- [API Reference](xref:SsePulse.Client.Core.SseSource)
-
+**SsePulse.Client.Authentication** exposes the mutator for applying authentication information to the request `AuthenticationRequestMutator` and authentication providers: `ApiKeyAuthenticationProvider`, `BasicAuthenticationProvider`, and `BearerTokenAuthenticationProvider`. The bearer provider supports static tokens, environment-variable tokens, and OAuth 2.0 client-credentials token refresh out of the box. All providers implement `ISseAuthenticationProvider` and slot into the `IRequestMutator` pipeline exposed by `SsePulse.Client`. Use this package when you need authentication but prefer to wire things up manually, without a dependency-injection container.

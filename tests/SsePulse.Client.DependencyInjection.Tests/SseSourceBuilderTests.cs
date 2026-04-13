@@ -221,7 +221,7 @@ public class SseSourceBuilderTests
         bool clientBuilderCalled = false;
         builder.AddHttpClient(null, clientBuilder =>
         {
-            clientBuilder.ConfigureHttpMessageHandlerBuilder(handlerBuilder =>
+            clientBuilder.ConfigureHttpClient(handlerBuilder =>
             {
                 clientBuilderCalled = true;
             });
