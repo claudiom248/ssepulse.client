@@ -2,8 +2,6 @@
 
 ## Packages
 
-SsePulse is split into small, focused packages so you only take what you need.
-
 | Package | Description |
 |---|---|
 | `SsePulse.Client` | Core SSE client. Contains `SseSource`, handler registration, and all runtime logic. Required by every app. |
@@ -33,7 +31,7 @@ source.On<OrderCreated>(e => Console.WriteLine($"Order {e.Id} created"));
 await source.StartConsumeAsync(CancellationToken.None);
 ```
 
-That's it. `StartConsumeAsync` blocks until the stream ends or the token is cancelled.
+That's it. `StartConsumeAsync` blocks until the stream ends or the token is canceled.
 
 ---
 
@@ -98,7 +96,7 @@ derived event name.
 await source.StartConsumeAsync(CancellationToken.None);
 ```
 
-`StartConsumeAsync` runs until the stream ends, the token is cancelled, or `Stop()`/`StopAsync()` is called.
+`StartConsumeAsync` runs until the stream ends, the token is canceled, or `Stop()`/`StopAsync()` is called.
 
 ---
 

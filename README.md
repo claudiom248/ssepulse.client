@@ -48,21 +48,12 @@ SsePulse handles all of the above through a single, composable API surface, so y
 
 ## Packages
 
-SsePulse is split into focused packages so you only take what you need.
-
 | Package | Version | Downloads | GitHub Packages | Description |
 |:---|:---:|:---:|:---:|:---|
 | [`SsePulse.Client`](https://www.nuget.org/packages/SsePulse.Client) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.svg)](https://www.nuget.org/packages/SsePulse.Client) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.svg)](https://www.nuget.org/packages/SsePulse.Client) | [![GitHub](https://img.shields.io/badge/github-packages-blue?logo=github)](https://github.com/claudiom248/SsePulse.Client/pkgs/nuget/SsePulse.Client) | Core library — `SseSource`, handler registration, retry, and the request-mutator pipeline. Required by every app. |
 | [`SsePulse.Client.DependencyInjection`](https://www.nuget.org/packages/SsePulse.Client.DependencyInjection) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.DependencyInjection) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.DependencyInjection) | [![GitHub](https://img.shields.io/badge/github-packages-blue?logo=github)](https://github.com/claudiom248/SsePulse.Client/pkgs/nuget/SsePulse.Client.DependencyInjection) | `AddSseSource()` extensions on `IServiceCollection`, fluent builder, and `ISseSourceFactory` for named sources. |
 | [`SsePulse.Client.Authentication`](https://www.nuget.org/packages/SsePulse.Client.Authentication) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Authentication.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.Authentication.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication) | [![GitHub](https://img.shields.io/badge/github-packages-blue?logo=github)](https://github.com/claudiom248/SsePulse.Client/pkgs/nuget/SsePulse.Client.Authentication) | Bearer token (with OAuth 2.0 client-credentials), Basic, and API-key authentication providers. |
 | [`SsePulse.Client.Authentication.DependencyInjection`](https://www.nuget.org/packages/SsePulse.Client.Authentication.DependencyInjection) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Authentication.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication.DependencyInjection) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.Authentication.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication.DependencyInjection) | [![GitHub](https://img.shields.io/badge/github-packages-blue?logo=github)](https://github.com/claudiom248/SsePulse.Client/pkgs/nuget/SsePulse.Client.Authentication.DependencyInjection) | `AddAuthentication()` builder extensions that wire auth providers into the DI pipeline. Supports `appsettings.json`-driven configuration. |
-
-```bash
-dotnet add package SsePulse.Client
-dotnet add package SsePulse.Client.DependencyInjection
-dotnet add package SsePulse.Client.Authentication
-dotnet add package SsePulse.Client.Authentication.DependencyInjection
-```
 
 ---
 
@@ -81,7 +72,7 @@ source
 await source.StartConsumeAsync(CancellationToken.None);
 ```
 
-`StartConsumeAsync` continues until the stream ends, the token is cancelled, or `StopAsync()` is called.
+`StartConsumeAsync` continues until the stream ends, the token is canceled, or `StopAsync()` is called.
 
 ---
 
