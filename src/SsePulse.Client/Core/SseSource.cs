@@ -90,7 +90,7 @@ public partial class SseSource : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Starts consuming the SSE stream and dispatches events to registered handlers.
-    /// This method runs until the stream ends, <paramref name="cancellationToken"/> is cancelled,
+    /// This method runs until the stream ends, <paramref name="cancellationToken"/> is canceled,
     /// or <see cref="Stop"/>/<see cref="StopAsync"/> is called.
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the consumption loop from the caller's side.</param>

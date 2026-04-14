@@ -1,5 +1,3 @@
-using System;
-
 namespace SsePulse.Client.Core.Attributes;
 
 /// <summary>

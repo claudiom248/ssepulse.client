@@ -1,6 +1,5 @@
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
