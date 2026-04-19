@@ -1,4 +1,3 @@
-using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Configurations;

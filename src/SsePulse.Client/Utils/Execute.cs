@@ -2,8 +2,19 @@ using SsePulse.Client.Common.Models;
 
 namespace SsePulse.Client.Utils;
 
+/// <summary>
+/// Provides static helpers for executing asynchronous operations with exception suppression
+/// or automatic retry logic.
+/// </summary>
 public static class Execute
 {
+    /// <summary>
+    /// Executes <paramref name="function"/> and swallows any exception it throws.
+    /// The optional <paramref name="onError"/> callback receives the exception before it is discarded.
+    /// </summary>
+    /// <param name="function">The async operation to run.</param>
+    /// <param name="onError">Optional callback invoked with the caught exception.</param>
+    /// <param name="cancellationToken">Cancellation token forwarded to <paramref name="function"/>.</param>
     public static async Task WithIgnoreExceptionAsync(
         Func<CancellationToken, Task> function,
         Action<Exception>? onError = null,
@@ -19,6 +30,17 @@ public static class Execute
         }
     }
 
+    /// <summary>
+    /// Executes <paramref name="func"/> and retries on failure according to <paramref name="options"/>.
+    /// Stops retrying when <paramref name="options"/> max retries are exhausted, the
+    /// <paramref name="shouldRetry"/> predicate returns <see langword="false"/>, or the operation
+    /// is cancelled.
+    /// </summary>
+    /// <param name="func">The async operation to retry.</param>
+    /// <param name="options">Retry policy (strategy, max attempts, delays).</param>
+    /// <param name="onError">Optional callback invoked on each failure before retrying.</param>
+    /// <param name="shouldRetry">Optional predicate; return <see langword="false"/> to stop retrying early.</param>
+    /// <param name="cancellationToken">Cancellation token forwarded to <paramref name="func"/> and delays.</param>
     public static async Task WithRetryAsync(
         Func<CancellationToken, Task> func,
         RetryOptions options,
@@ -38,6 +60,17 @@ public static class Execute
             cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Executes <paramref name="func"/> and retries on failure according to <paramref name="options"/>,
+    /// returning the result of the first successful invocation.
+    /// </summary>
+    /// <typeparam name="TResult">The return type of <paramref name="func"/>.</typeparam>
+    /// <param name="func">The async operation to retry.</param>
+    /// <param name="options">Retry policy (strategy, max attempts, delays).</param>
+    /// <param name="onError">Optional callback invoked on each failure before retrying.</param>
+    /// <param name="shouldRetry">Optional predicate; return <see langword="false"/> to stop retrying early.</param>
+    /// <param name="cancellationToken">Cancellation token forwarded to <paramref name="func"/> and delays.</param>
+    /// <returns>The result produced by <paramref name="func"/> on success.</returns>
     public static async Task<TResult> WithRetryAsync<TResult>(
         Func<CancellationToken, Task<TResult>> func,
         RetryOptions options,

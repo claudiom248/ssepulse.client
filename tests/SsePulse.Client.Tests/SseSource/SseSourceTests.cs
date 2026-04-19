@@ -1,4 +1,3 @@
-using System.Net.Http;
 using SsePulse.Client.Core.Configurations;
 
 namespace SsePulse.Client.Tests.SseSource;

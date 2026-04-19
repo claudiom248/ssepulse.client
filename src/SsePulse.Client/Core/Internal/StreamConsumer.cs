@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
+using SsePulse.Client.Common.Extensions;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.EventHandlers;
@@ -11,7 +12,7 @@ namespace SsePulse.Client.Core.Internal;
 
 internal class StreamConsumer
 {
-    private const string? ConnectionResetExceptionMessage =
+    private const string? ResponseAbortedMessage =
         "SSE stream ended prematurely. This may indicate that the server closed the connection unexpectedly.";
 
     private readonly SseHandlersDictionary _handlers;
@@ -33,7 +34,7 @@ internal class StreamConsumer
         _onError = onError;
         _lastEventIdStore = lastEventIdStore;
     }
-
+    
     public async Task ConsumeAsync(Stream stream, CancellationToken cancellationToken)
     {
         ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock(cancellationToken);
@@ -58,13 +59,13 @@ internal class StreamConsumer
 #if NET8_0_OR_GREATER
         catch (HttpIOException ioEx) when (ioEx.HttpRequestError == HttpRequestError.ResponseEnded)
         {
-            _logger.LogError(ioEx, ConnectionResetExceptionMessage);
+            _logger.LogError(ioEx, ResponseAbortedMessage);
             throw new ResponseAbortedException(ioEx);
         }
 #endif
-        catch (IOException hre) when (hre.InnerException is SocketException {SocketErrorCode: SocketError.ConnectionReset})
+        catch (IOException hre) when (hre.FindInner<SocketException>() is {SocketErrorCode: SocketError.ConnectionReset})
         {
-            _logger.LogError(hre, ConnectionResetExceptionMessage);
+            _logger.LogError(hre, ResponseAbortedMessage);
             throw new ResponseAbortedException(hre);
         }
         finally
