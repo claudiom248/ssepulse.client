@@ -5,44 +5,36 @@
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-informational)](https://claudiom248.github.io/SsePulse.Client/)
 [![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-available-blue?logo=github)](https://github.com/claudiom248/SsePulse.Client/packages)
 
-A .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate. It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
+**SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate.It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
 
----
+## Highlights
 
-## Table of Contents
-
-- [Why SsePulse instead of the raw `SseParser`?](#why-ssepulse-instead-of-the-raw-sseparser)
-- [Packages](#packages)
-- [Quick start](#quick-start)
-- [Handler registration](#handler-registration)
-- [Dependency injection](#dependency-injection)
-- [Authentication](#authentication)
-- [Request mutators](#request-mutators)
-- [Configuration](#configuration)
-- [Supported platforms](#supported-platforms)
-- [Documentation](#documentation)
-- [License](#license)
+- **Zero boilerplate** — declare what events you care about and what to do with them. SsePulse handles the rest.
+- **Your domain, your types** — incoming event data is automatically deserialized into your own C# classes. No manual parsing, no raw strings.
+- **Resilient by default** — built-in retry policies, automatic reconnection on stream abort, and seamless last-event-replay.
+- **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
+- **Scales with your app** — works standalone with a plain `HttpClient`, integrates cleanly with `Microsoft.Extensions.DependencyInjection`, and supports multiple named sources side by side.
+- **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
 
 ---
 
 ## Why SsePulse instead of the raw `SseParser`?
 
-`System.Net.ServerSentEvents.SseParser` is a low-level primitive: given a `Stream`, it parses SSE events into `SseItem<T>` values — and that is all it does. To build a production-ready client on top of it, a significant amount of boilerplate is required to handle connection management, event routing, deserialization, authentication, and more. SsePulse abstracts all of that away behind a single `SseSource` API that you can compose and extend as needed.:
-
-| Concern                                                |                    Raw `SseParser`                    |                 SsePulse                 |
-|:-------------------------------------------------------|:-----------------------------------------------------:|:----------------------------------------:|
-| HTTP connection setup                                  |                       ✍️ manual                       |                ✅ built-in                |
-| Event routing by type to separate handlers             |        ✍️ manual `if`/`switch` per event type         |     ✅ fluent `.On<T>()` registration     |
-| JSON deserialization per event type                    | ✍️ manual `JsonSerializer.Deserialize` per event type |        ✅ automatic via `.On<T>()`        |
-| Concurrent / parallel handler dispatch                 |                       ✍️ manual                       |       ✅ TPL Dataflow `ActionBlock`       |
-| Retry on connection failure                            |                 ✍️ manual retry loop                  |        ✅ `ConnectionRetryOptions`        |
-| Automatic reconnect on stream abort                    |                       ✍️ manual                       |       ✅ `RestartOnConnectionAbort`       |
-| Connection lifetime event handlers                     |                       ✍️ manual                       |  ✅ built-in (ex: `OnConnectionClosed` )  |
-| `Last-Event-ID` replay on reconnect                    |              ✍️ manual header management              |           ✅ `AddLastEventId()`           |
-| Authentication (token refresh, API key, Basic)         |        ✍️ manual header injection per request         | ✅ `ISseAuthenticationProvider` pipeline  |
-| `Microsoft.Extensions.DependencyInjection` integration |       ✍️ manual factory and lifetime management       | ✅ `AddSseSource()` + `ISseSourceFactory` |
-
+`System.Net.ServerSentEvents.SseParser` is the component that parses the stream of events coming from the server. A significant amount of boilerplate is required to handle connection management, event dispatching, deserialization, authentication, and more. SsePulse abstracts all of that away behind a single `SseSource` API.
 SsePulse handles all of the above through a single, composable API surface, so you can focus on writing event handlers rather than the infrastructure surrounding them.
+
+|            |                    Raw `SseParser`                    |             SsePulse.Client             |
+|:-------------------------------------------------------|:-----------------------------------------------------:|:---------------------------------------:|
+| HTTP connection setup                                  |                       ✍️ manual                       |               ✅ built-in                |
+| Event routing by type to separate handlers             |        ✍️ manual `if`/`switch` per event type         |    ✅ fluent `.On<T>()` registration     |
+| JSON deserialization per event type                    | ✍️ manual `JsonSerializer.Deserialize` per event type |       ✅ automatic via `.On<T>()`        |
+| Concurrent / parallel handler dispatch                 |                       ✍️ manual                       |      ✅ TPL Dataflow `ActionBlock`       |
+| Retry on connection failure                            |                 ✍️ manual retry loop                  |       ✅ `ConnectionRetryOptions`        |
+| Automatic reconnect on stream abort                    |                       ✍️ manual                       |      ✅ `RestartOnConnectionAbort`       |
+| Connection lifetime event handlers                     |                       ✍️ manual                       | ✅ built-in (ex: `OnConnectionClosed` )  |
+| `Last-Event-ID` replay on reconnect                    |              ✍️ manual header management              |          ✅ `AddLastEventId()`           |
+| Authentication (token refresh, API key, Basic)         |                 ✍️ manual management                  | ✅ `ISseAuthenticationProvider` pipeline |
+| `Microsoft.Extensions.DependencyInjection` integration |       ✍️ manual factory and lifetime management       | ✅ extdensions for `IServiceCollection`  |
 
 ---
 

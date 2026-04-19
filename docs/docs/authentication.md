@@ -1,6 +1,6 @@
 # Authentication
 
-SsePulse supports four built-in authentication schemes. Each is implemented as an
+SsePulse offers several built-in authentication mechanisms. Each is implemented as an
 `ISseAuthenticationProvider` and applied to every outgoing request before the connection
 is established.
 
@@ -8,8 +8,9 @@ is established.
 
 ## Standalone usage (without DI)
 
-Pass any provider directly to the `SseSource` request pipeline. Use this when you are
-not using `IServiceCollection`.
+Setup an `AuthenticationRequestMutator` instance, pass the provider and add it to the
+request mutators pipeline when creating the `SseSource`. Use this approach when you don't
+use DI.
 
 ### API key
 

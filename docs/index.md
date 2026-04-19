@@ -8,12 +8,12 @@ _layout: landing
 
 ## Highlights
 
-- **Fluent handler registration** — chain `.On()`, `.OnItem()`, and `.Bind()` calls before starting the stream.
-- **Strongly-typed events** — deserialize SSE data directly into your own types via `.On<T>()`.
-- **Pluggable authentication** — API key, Bearer token (with refresh), Basic Auth, or roll your own `ISseAuthenticationProvider`.
-- **Last-event-id resumption** — automatically replays the last received `id` on reconnect.
-- **Automatic reconnection** — configurable retry policy and restart-on-abort support.
-- **Multi-framework** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
+- **Zero boilerplate** — declare what events you care about and what to do with them. SsePulse handles the rest.
+- **Your domain, your types** — incoming event data is automatically deserialized into your own C# classes. No manual parsing, no raw strings.
+- **Resilient by default** — built-in retry policies, automatic reconnection on stream abort, and seamless last-event-replay.
+- **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
+- **Scales with your app** — works standalone with a plain `HttpClient`, integrates cleanly with `Microsoft.Extensions.DependencyInjection`, and supports multiple named sources side by side.
+- **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
 
 ## Quick start
 
