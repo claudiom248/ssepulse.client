@@ -1,8 +1,6 @@
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using NSubstitute;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.DependencyInjection.Abstractions;
@@ -221,7 +219,7 @@ public class SseSourceBuilderTests
         bool clientBuilderCalled = false;
         builder.AddHttpClient(null, clientBuilder =>
         {
-            clientBuilder.ConfigureHttpMessageHandlerBuilder(handlerBuilder =>
+            clientBuilder.ConfigureHttpClient(handlerBuilder =>
             {
                 clientBuilderCalled = true;
             });

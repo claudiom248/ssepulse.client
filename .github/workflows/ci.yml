@@ -1,0 +1,101 @@
+name: ci
+on:
+  pull_request:
+    branches: [ main, feature/*, hotfix/* ]
+  push:
+    branches: [ main, feature/*, hotfix/*, release/* ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        tfm: [net10.0, net9.0, net8.0]
+        include:
+          - os: windows-latest
+            tfm: net462
+            
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        ref: ${{github.event.pull_request.head.ref}}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        lfs: true
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
+          
+    - name: Restore tools
+      run: dotnet tool restore
+
+    - name: Restore packages
+      run: dotnet restore --locked-mode
+
+    - name: Build
+      run: dotnet build -c Release --maxcpucount --binaryLogger
+      shell: bash
+
+    - name: Run Tests
+      run: >
+        dotnet test -c Release 
+        --framework ${{ matrix.tfm }} 
+        --no-build 
+        --logger "trx;LogFileName=${{ matrix.tfm }}.trx" 
+        --consoleLoggerParameters:"Summary;Verbosity=Minimal"
+      id: dotnet-test
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure() 
+      with:
+        name: .NET Tests - ${{ matrix.os }} - ${{ matrix.tfm }}
+        path: '**/${{ matrix.tfm }}.trx'
+        reporter: dotnet-trx
+        fail-on-error: 'false'
+
+    - name: Generate Documentation
+      run: dotnet tool run docfx docs/docfx.json
+      if: matrix.os == 'ubuntu-latest' && matrix.tfm == 'net10.0'
+
+    - name: Upload Documentation
+      uses: actions/upload-pages-artifact@v4
+      if: matrix.os == 'ubuntu-latest' && matrix.tfm == 'net10.0'
+      with:
+        path: docs/_site
+
+    - name: Upload Logs
+      uses: actions/upload-artifact@v7
+      if: ${{ !cancelled() }}
+      with:
+        name: logs-${{ matrix.os }}-${{ matrix.tfm }}
+        path: |
+          msbuild.binlog
+          **/*.trx
+        
+
+  publish-docs:
+    if: > 
+      github.event_name == 'push' 
+      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+    needs: [build]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    steps:
+    - id: deployment
+      uses: actions/deploy-pages@v4
+        

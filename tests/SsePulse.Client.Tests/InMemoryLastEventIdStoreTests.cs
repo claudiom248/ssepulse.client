@@ -1,4 +1,4 @@
-using SsePulse.Client.Core.Internal;
+using SsePulse.Client.Core;
 
 namespace SsePulse.Client.Tests;
 

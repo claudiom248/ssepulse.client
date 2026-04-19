@@ -2,15 +2,13 @@
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <LangVersion>14</LangVersion>
-        <Configurations>Debug;Release;Test</Configurations>
-        <Platforms>AnyCPU</Platforms>
-        <DebugType>embedded</DebugType>
-        <EmbedAllSources>True</EmbedAllSources>
+        <PackageId>SsePulse.Client</PackageId>
+        <Description>SsePulse.Client is a .NET library for consuming Server-Sent Events (SSE) streams, providing a simple and efficient way to handle real-time data updates from servers.</Description>
+        <PackageTags>server-sent-event;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,12 +21,16 @@
     
     <ItemGroup>
         <InternalsVisibleTo Include="SsePulse.Client.Tests" />
-        <InternalsVisibleTo Include="SsePulse.Client.Authentication" />
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection" />
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection.Tests" />
-        <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection" />
-        <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection.Tests" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Update="icon-128x128.png">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>14</LangVersion>
-        <DebugType>embedded</DebugType>
-        <EmbedAllSources>True</EmbedAllSources>
+        <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
+        <PackageId>SsePulse.Client.DependencyInjection</PackageId>
+        <Description>Extension methods for registering SsePulse.Client services and dependencies using Microsoft.Extensions.DependencyInjection.</Description>
+        <PackageTags>dependency-injection;server-sent-event;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,7 +19,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SsePulse.Client\SsePulse.Client.csproj"/>
-        <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection"/>
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection.Tests"/>
         <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection.Tests"/>
     </ItemGroup>

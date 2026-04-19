@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Common.NamingPolicies;
+using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Attributes;
 using SsePulse.Client.Core.Configurations;
