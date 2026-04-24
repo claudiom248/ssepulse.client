@@ -38,13 +38,15 @@ if ($Project) {
     }
 }
 
-$buildArgs = @("build", "-c", $Configuration, "--maxcpucount", "--binaryLogger")
+$buildArgs = @("build", "-c", $Configuration, "--no-restore", "--maxcpucount", "--binaryLogger")
 if ($resolvedProject) {
     $buildArgs += $resolvedProject
 }
+
 if ($Framework) {
-    $buildArgs += "--framework"
-    $buildArgs += $Framework
+    # Use TargetFrameworks filter so single-target projects (e.g., netstandard2.0) keep working.
+    $buildArgs += "-p:TargetFrameworks=$Framework"
+    Write-Host "Applying framework filter for build: $Framework (via TargetFrameworks property)" -ForegroundColor Gray
 }
 
 dotnet @buildArgs
@@ -62,6 +64,7 @@ $testArgs = @(
     "test",
     "-c", $Configuration,
     "--no-build",
+    "--no-restore",
     "--results-directory", $testResultsPath,
     "--logger", "trx",
     "--consoleLoggerParameters:Summary;Verbosity=Minimal"

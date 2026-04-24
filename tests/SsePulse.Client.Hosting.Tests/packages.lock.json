@@ -965,8 +965,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )",
-          "Microsoft.Extensions.Options": "[10.0.5, )",
-          "System.Threading.Tasks.DataFlow": "[10.0.5, )"
+          "Microsoft.Extensions.Options": "[10.0.5, )"
         }
       },
       "ssepulse.client.dependencyinjection": {
@@ -1082,12 +1081,6 @@
           "Microsoft.Extensions.Options": "10.0.5",
           "Microsoft.Extensions.Primitives": "10.0.5"
         }
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.5, )",
-        "resolved": "10.0.5",
-        "contentHash": "A1c6dQc0irYTkdM3fEXBD36MzUWbq6cu7Xsa259wmbzucGOfTXUE++acxxdjfsAEKHvKmn3SX11wts5A3hJlqA=="
       },
       "xunit.abstractions": {
         "type": "CentralTransitive",
