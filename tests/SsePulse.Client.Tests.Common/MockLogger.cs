@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SsePulse.Client.Tests.Mocks;
+namespace SsePulse.Client.Tests.Common;
 
 /// <summary>
 /// Mock logger that captures log entries for testing purposes

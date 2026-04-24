@@ -17,7 +17,7 @@ namespace SsePulse.Client.Core;
 /// <c>On</c> / <c>OnItem</c> / <c>Bind</c> methods defined in the partial handler file.
 /// The source can be reset and reused after completion via <see cref="Reset"/>.
 /// </remarks>
-public partial class SseSource : IDisposable, IAsyncDisposable
+public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposable
 {
     private readonly SseSourceOptions _options;
     private readonly ILogger<SseSource> _logger;

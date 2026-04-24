@@ -4,6 +4,8 @@
   href: getting-started.md
 - name: Dependency Injection
   href: dependency-injection.md
+- name: Hosted Services
+  href: hosted-services.md
 - name: Authentication
   href: authentication.md
 - name: Request Mutators

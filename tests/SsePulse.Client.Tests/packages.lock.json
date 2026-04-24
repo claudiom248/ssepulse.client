@@ -272,6 +272,12 @@
           "System.Threading.Tasks.DataFlow": "[10.0.5, )"
         }
       },
+      "ssepulse.client.tests.common": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )"
+        }
+      },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
         "requested": "[10.0.5, )",
@@ -431,6 +437,12 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )",
           "Microsoft.Extensions.Options": "[10.0.5, )",
           "System.Threading.Tasks.DataFlow": "[10.0.5, )"
+        }
+      },
+      "ssepulse.client.tests.common": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
@@ -594,6 +606,12 @@
           "System.Net.ServerSentEvents": "[10.0.5, )",
           "System.Text.Json": "[10.0.5, )",
           "System.Threading.Tasks.DataFlow": "[10.0.5, )"
+        }
+      },
+      "ssepulse.client.tests.common": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
@@ -773,6 +791,12 @@
           "System.Net.ServerSentEvents": "[10.0.5, )",
           "System.Text.Json": "[10.0.5, )",
           "System.Threading.Tasks.DataFlow": "[10.0.5, )"
+        }
+      },
+      "ssepulse.client.tests.common": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
