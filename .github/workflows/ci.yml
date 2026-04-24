@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-latest, ubuntu-latest ]
+        os: [ ubuntu-latest ]
         tfm: [ net10.0, net9.0, net8.0 ]
         include:
           - os: windows-latest
