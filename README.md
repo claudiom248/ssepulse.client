@@ -242,16 +242,17 @@ Authentication and last-event-id tracking are themselves implemented as built-in
 
 ## [Configuration](docs/docs/configuration.md)
 
-All runtime behaviour is controlled through `SseSourceOptions`:
+Basic behaviour of `SseSource` is controlled through `SseSourceOptions`.
 
-| Property | Default | Description |
-|:---|:---:|:---|
-| `Path` | `/sse` | Relative or absolute URL of the SSE endpoint |
-| `MaxDegreeOfParallelism` | `1` | Maximum concurrent event handler invocations |
-| `DefaultEventNameCasePolicy` | `PascalCase` | Maps C# type names to SSE event names (`PascalCase`, `CamelCase`, `SnakeCase`, `KebabCase`) |
-| `ConnectionRetryOptions` | `RetryOptions.None` | Retry policy for connection failures — set to `null` to disable |
-| `ThrowWhenNoEventHandlerFound` | `false` | Throws `HandlerNotFoundException` for unregistered events when `true`; logs a warning and skips when `false` |
-| `RestartOnConnectionAbort` | `true` | Automatically restarts the connection loop after a `ResponseAbortedException` |
+| Property                       |                                  Default                                   | Description |
+|:-------------------------------|:--------------------------------------------------------------------------:|:---|
+| `Path`                         |                                   `/sse`                                   | Relative or absolute URL of the SSE endpoint |
+| `MaxDegreeOfParallelism`       |                                    `1`                                     | Maximum concurrent event handler invocations |
+| `DefaultEventNameCasePolicy`   |                                `PascalCase`                                | Maps C# type names to SSE event names (`PascalCase`, `CamelCase`, `SnakeCase`, `KebabCase`) |
+| `ConnectionRetryOptions`       |                            `RetryOptions.None`                             | Retry policy for connection failures — set to `null` to disable |
+| `ThrowWhenNoEventHandlerFound` |                                  `false`                                   | Throws `HandlerNotFoundException` for unregistered events when `true`; logs a warning and skips when `false` |
+| `RestartOnConnectionAbort`     |                                   `true`                                   | Automatically restarts the connection loop after a `ResponseAbortedException` |
+| `JsonSerializerOptions`        | A default `JsonSerializerOptions` instance that ignores property name case | Allow to set the options used by the JSON serializer when deserializaing event data.                                      |
 
 See the [Configuration guide](docs/docs/configuration.md) for the full reference including naming case policies and retry strategies.
 
@@ -279,6 +280,7 @@ Full guides and API reference are available in the [`docs/`](docs/) folder:
 - [Introduction to Server-Sent Events](docs/docs/introduction-to-sse.md)
 - [Getting Started](docs/docs/getting-started.md)
 - [Dependency Injection](docs/docs/dependency-injection.md)
+- [JSON Serializer Options](docs/docs/json-serializer-options.md)
 - [Authentication](docs/docs/authentication.md)
 - [Request Mutators](docs/docs/request-mutators.md)
 - [Configuration](docs/docs/configuration.md)

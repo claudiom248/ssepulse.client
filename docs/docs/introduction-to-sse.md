@@ -39,7 +39,7 @@ data: {"id":"abc-123","total":49.99}
 
 - **`event`** — the name of the event. Your app uses this to decide which handler to run.
 - **`data`** — the payload. It can be any text; JSON is the most common format.
-- An **empty line** marks the end of the event (like pressing Enter twice).
+- An **empty line** marks the end of the event.
 
 A stream can carry many different event types mixed together:
 

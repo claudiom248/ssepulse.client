@@ -36,9 +36,9 @@ await source.StartConsumeAsync(CancellationToken.None);
 - [Introduction to Server-Sent Events](docs/introduction-to-sse.md)
 - [Getting Started](docs/getting-started.md)
 - [Dependency Injection](docs/dependency-injection.md)
+- [JSON Serializer Options](docs/json-serializer-options.md)
 - [Hosted Services](docs/hosted-services.md)
 - [Authentication](docs/authentication.md)
 - [Configuration](docs/configuration.md)
 - [Platform Availability](docs/platform-availability.md)
 - [API Reference](xref:SsePulse.Client.Core.SseSource)
-

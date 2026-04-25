@@ -116,6 +116,29 @@ services
     .UseHttpClient("shared-client");
 ```
 
+### Configure JSON serializer options
+
+Use `WithSerializerOptions(...)` when this source needs custom JSON behavior.
+
+```csharp
+JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+{
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+};
+
+services
+    .AddSseSource(options => options.Path = "/events")
+    .AddHttpClient(client => client.BaseAddress = new Uri("https://my-server.example"))
+    .WithSerializerOptions(serializerOptions);
+```
+
+`WithSerializerOptions(...)` is a convenience method that sets the property `SseSourceOptions.JsonSerializerOptions`.
+You can also set the property directly on `SseSourceOptions` when not using the builder.
+
+For advanced scenarios (custom converters and per-source settings), see
+[JSON Serializer Options](json-serializer-options.md).
+
 ---
 
 ## Registering handlers
@@ -240,4 +263,3 @@ public class MyWorker(ISseSourceFactory factory)
     }
 }
 ```
-

@@ -1,17 +1,18 @@
 # Configuration
 
-All behaviour of `SseSource` is controlled through `SseSourceOptions`.
+Basic behaviour of `SseSource` is controlled through `SseSourceOptions`.
 
 ## SseSourceOptions reference
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `Path` | `string` | `/sse` | Relative or absolute URL of the SSE endpoint. |
-| `MaxDegreeOfParallelism` | `int` | `1` | Maximum number of event handlers that run concurrently. |
-| `DefaultEventNameCasePolicy` | `NameCasePolicy` | `PascalCase` | Naming policy used when deriving event names from C# type names or `On*` method names. |
-| `ConnectionRetryOptions` | `RetryOptions?` | `RetryOptions.None` | Retry policy for connection failures. Set to `null` or `RetryOptions.None` to disable. |
-| `ThrowWhenNoEventHandlerFound` | `bool` | `false` | When `true`, throws `HandlerNotFoundException` for events with no registered handler; otherwise logs a warning and skips. |
-| `RestartOnConnectionAbort` | `bool` | `true` | Automatically restarts the connection loop after a `ResponseAbortedException`. |
+| Property                       | Type                    | Default                                                                      | Description                                                                                                               |
+|--------------------------------|-------------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `Path`                         | `string`                | `/sse`                                                                       | Relative or absolute URL of the SSE endpoint.                                                                             |
+| `MaxDegreeOfParallelism`       | `int`                   | `1`                                                                          | Maximum number of event handlers that run concurrently.                                                                   |
+| `DefaultEventNameCasePolicy`   | `NameCasePolicy`        | `PascalCase`                                                                 | Naming policy used when deriving event names from C# type names or `On*` method names.                                    |
+| `ConnectionRetryOptions`       | `RetryOptions?`         | `RetryOptions.None`                                                          | Retry policy for connection failures. Set to `null` or `RetryOptions.None` to disable.                                    |
+| `ThrowWhenNoEventHandlerFound` | `bool`                  | `false`                                                                      | When `true`, throws `HandlerNotFoundException` for events with no registered handler; otherwise logs a warning and skips. |
+| `RestartOnConnectionAbort`     | `bool`                  | `true`                                                                       | Automatically restarts the connection loop after a `ResponseAbortedException`.                                            |
+| `JsonSerializerOptions`        | `JsonSerializerOptions` | A default `JsonSerializerOptions` instance that ignores properties name case | Allow to set the options used by the JSON serializer when deserializaing event data.                                      |
 
 ---
 
@@ -25,6 +26,24 @@ The `DefaultEventNameCasePolicy` property controls how C# identifiers are conver
 | `CamelCase` | `OrderCreated` | `orderCreated` |
 | `SnakeCase` | `OrderCreated` | `order_created` |
 | `KebabCase` | `OrderCreated` | `order-created` |
+
+---
+
+## JsonSerializerOptions
+
+```csharp
+var options = new SseSourceOptions
+{
+    Path = "/events",
+    JsonSerializerOptions = new JsonSerializerOptions
+    {
+        IgnoreNullValues = true,
+        PropertyNameCaseInsensitive = false
+    }
+};
+```
+
+See the [JsonSerializerOptions](json-serializer-options.md) page for the full reference.
 
 ---
 
