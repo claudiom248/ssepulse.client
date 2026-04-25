@@ -4,6 +4,7 @@ using NSubstitute;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client.Core.Internal;
 using SsePulse.Client.DependencyInjection.Extensions;
 
 namespace SsePulse.Client.DependencyInjection.Tests;
@@ -318,6 +319,93 @@ public class DefaultSseSourceFactoryTests
 
         // ASSERT
         httpClientFactory.Received(1).CreateClient("TestSource");
+    }
+
+    [Fact]
+    public void CreateSseSource_WhenLastEventIdIsEnabled_StoreIsSharedBetweenSourceAndMutator()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        services.AddSseSource("TestSource")
+            .AddLastEventId();
+        ServiceProvider provider = services.BuildServiceProvider();
+        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
+
+        // ACT
+        SseSource source = factory.CreateSseSource("TestSource");
+
+        // ASSERT
+        ILastEventIdStore sourceStore = GetSourceStore(source);
+        ILastEventIdStore mutatorStore = GetMutatorStore(source);
+
+        Assert.Same(sourceStore, mutatorStore);
+    }
+
+    [Fact]
+    public void CreateSseSource_WhenTransientStoreIsRegisteredForMultipleSources_EachSourceGetsItsOwnStore()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        services.AddTransient<TransientLastEventIdStore>();
+        services.AddSseSource("SourceA")
+            .AddLastEventId<TransientLastEventIdStore>();
+        services.AddSseSource("SourceB")
+            .AddLastEventId<TransientLastEventIdStore>();
+        ServiceProvider provider = services.BuildServiceProvider();
+        ISseSourceFactory factory = provider.GetRequiredService<ISseSourceFactory>();
+
+        // ACT
+        SseSource sourceA = factory.CreateSseSource("SourceA");
+        SseSource sourceB = factory.CreateSseSource("SourceB");
+
+        // ASSERT
+        ILastEventIdStore sourceAStore = GetSourceStore(sourceA);
+        ILastEventIdStore sourceBStore = GetSourceStore(sourceB);
+
+        Assert.NotSame(sourceAStore, sourceBStore);
+        Assert.Same(sourceAStore, GetMutatorStore(sourceA));
+        Assert.Same(sourceBStore, GetMutatorStore(sourceB));
+    }
+
+    private static ILastEventIdStore GetSourceStore(SseSource source)
+    {
+        object? store = typeof(SseSource)
+            .GetField("_lastEventIdStore", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?.GetValue(source);
+
+        return Assert.IsAssignableFrom<ILastEventIdStore>(store);
+    }
+
+    private static ILastEventIdStore GetMutatorStore(SseSource source)
+    {
+        object? connection = typeof(SseSource)
+            .GetField("_connection", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?.GetValue(source);
+
+        object? mutators = connection?.GetType()
+            .GetField("_requestMutators", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?.GetValue(connection);
+
+        IRequestMutator lastEventMutator = Assert.Single(Assert.IsAssignableFrom<IReadOnlyCollection<IRequestMutator>>(mutators));
+        LastEventIdRequestMutator typedMutator = Assert.IsType<LastEventIdRequestMutator>(lastEventMutator);
+
+        object? store = typeof(LastEventIdRequestMutator)
+            .GetField("_lastEventIdStore", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?.GetValue(typedMutator);
+
+        return Assert.IsAssignableFrom<ILastEventIdStore>(store);
+    }
+
+    private class TransientLastEventIdStore : ILastEventIdStore
+    {
+        public string? LastEventId { get; private set; }
+
+        public void Set(string eventId)
+        {
+            LastEventId = eventId;
+        }
     }
 }
 
