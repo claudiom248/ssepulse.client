@@ -1,8 +1,22 @@
 
 ## [unreleased]
 
+### 🚀 Features
+
+- **`hosting`** — Add support to hosted services for automating the consumption from SSE sources
+- **`serialization`** — Add support to custom JSON serializer options
+
+### 📚 Documentation
+
+- **`hosting`** — Add description for package `SsePulse.Client.Hosting` in packages lists
+- **`serialization`** — Add documentation guides and references for the new JSON Serializer
+
 ### 🔧 Maintenance
 
+- **`ci`** — Remove Windows from CI workflow matrix for speeding up builds
+- **`ci`** — Update CI workflow to produce GitHub Packages
+- **`release`** — Add automatic release notes generation
+- **`release`** — Add prepare-release workflow for GitHub releases
 - Add CHANGELOG.md
 ## What's Changed in 1.0.0
 
