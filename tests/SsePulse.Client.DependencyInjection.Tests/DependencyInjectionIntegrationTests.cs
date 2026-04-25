@@ -1,8 +1,11 @@
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SsePulse.Client.Abstractions;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Extensions;
 
@@ -234,6 +237,29 @@ public class DependencyInjectionIntegrationTests
         // Assert
         SseSource? source = provider.GetService<SseSource>();
         Assert.NotNull(source);
+    }
+    
+    [Fact]
+    public void WithJsonSerializerOptions_SetsSerializerOptions()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder builder = new SseSourceBuilder(services);
+        JsonSerializerOptions customOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        // ACT
+        builder.WithSerializerOptions(customOptions);
+
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        SseSourceOptions options = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceOptions>>()
+            .Get("DefaultSseSource");
+
+        Assert.Equal(customOptions, options.JsonSerializerOptions);
     }
 }
 

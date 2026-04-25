@@ -72,6 +72,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         ILogger<SseSource>? logger = null)
     {
         _options = options;
+        _handlers = new SseHandlersDictionary(options.JsonSerializerOptions);
         _logger = logger ?? NullLogger<SseSource>.Instance;
         _lastEventIdStore = lastEventIdStore;
         _connectionHandlers = new ConnectionHandlers

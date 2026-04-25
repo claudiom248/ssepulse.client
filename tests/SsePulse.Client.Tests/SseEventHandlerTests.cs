@@ -1,45 +1,46 @@
 using System.Net.ServerSentEvents;
 using SsePulse.Client.EventHandlers;
+using SsePulse.Client.Serialization;
 
 namespace SsePulse.Client.Tests;
 
 public class TestMessage
 {
-    public string UserName { get; set; } = string.Empty;  // PascalCase in C#
+    public string UserName { get; set; } = string.Empty; 
     public int MessageId { get; set; }
 }
 
 public class SseEventHandlerTests
 {
     [Fact]
-    public void WithCamelCaseJson_DeserializesToPascalCaseProperties()
+    public void Invoke_WithCamelCaseJsonProperties_DeserializesToPascalCaseProperties()
     {
-        // Arrange
+        // ARRANGE
         SseItem<TestMessage>? receivedItem = null;
-        SseEventHandler<TestMessage> handler = new(item => receivedItem = item);
+        SseEventHandler<TestMessage> handler = new(item => receivedItem = item, SerializationOptions.DefaultJsonSerializerOptions);
         SseItem<string> jsonItem = new("{\"userName\":\"John\",\"messageId\":123}", "test-event");
 
-        // Act
+        // ACT
         handler.Invoke(jsonItem);
 
-        // Assert
+        // ARRANGE
         Assert.NotNull(receivedItem);
         Assert.Equal("John", receivedItem.Value.Data.UserName);
         Assert.Equal(123, receivedItem.Value.Data.MessageId);
     }
 
     [Fact]
-    public void PreservesEventType()
+    public void Invoke_PreservesEventType()
     {
-        // Arrange
+        // ARRANGE
         SseItem<TestMessage>? receivedItem = null;
-        SseEventHandler<TestMessage> handler = new(item => receivedItem = item);
+        SseEventHandler<TestMessage> handler = new(item => receivedItem = item, SerializationOptions.DefaultJsonSerializerOptions);
         SseItem<string> jsonItem = new("{\"userName\":\"John\",\"messageId\":123}", "user-message");
 
         // Act
         handler.Invoke(jsonItem);
 
-        // Assert
+        // ASSERT
         Assert.NotNull(receivedItem);
         Assert.Equal("user-message", receivedItem.Value.EventType);
     }

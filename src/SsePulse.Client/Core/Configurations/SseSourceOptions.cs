@@ -1,5 +1,7 @@
+using System.Text.Json;
 using SsePulse.Client.Common.Models;
 using SsePulse.Client.Common.NamingPolicies;
+using SsePulse.Client.Serialization;
 
 namespace SsePulse.Client.Core.Configurations;
 
@@ -47,4 +49,10 @@ public class SseSourceOptions
     /// Defaults to <see langword="true"/>.
     /// </summary>
     public bool RestartOnConnectionAbort { get; set; } = SseSourceOptionsDefaults.RestartOnConnectionAbort;
+
+
+    /// <summary>
+    /// Gets or sets the <see cref="JsonSerializerOptions"/> used to deserialize event data.
+    /// </summary>
+    public JsonSerializerOptions JsonSerializerOptions { get; set; } = SerializationOptions.DefaultJsonSerializerOptions;
 }

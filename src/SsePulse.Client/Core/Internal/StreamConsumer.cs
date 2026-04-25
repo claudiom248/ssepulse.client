@@ -87,7 +87,6 @@ internal class StreamConsumer
         return dispatcherBlock;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Dispatch(SseItem<string> @event)
     {
         string eventType = @event.EventType;
