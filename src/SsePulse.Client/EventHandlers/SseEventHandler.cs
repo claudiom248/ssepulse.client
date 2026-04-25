@@ -27,15 +27,20 @@ internal class SseEventHandler : ISseEventHandler
 internal class SseEventHandler<TEventData> : ISseEventHandler
 {
     private readonly Action<SseItem<TEventData>> _handler;
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-    public SseEventHandler(Action<SseItem<TEventData>> handler)
+
+    public SseEventHandler(Action<SseItem<TEventData>> handler, JsonSerializerOptions jsonSerializerOptions)
     {
         _handler = handler;
+        _jsonSerializerOptions = jsonSerializerOptions;
     }
 
     public void Invoke(SseItem<string> item)
     {
-        TEventData message = JsonSerializer.Deserialize<TEventData>(item.Data, SerializationOptions.EventDataJsonSerializerOptions)!;
+        TEventData message = JsonSerializer.Deserialize<TEventData>(
+            item.Data, 
+            _jsonSerializerOptions)!;
         SseItem<TEventData> adaptedItem = new(message, item.EventType);
         _handler.Invoke(adaptedItem);
     }
