@@ -29,8 +29,8 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
         name ??= Constants.DefaultSourceName;
         SseSourceOptions options = _sourceOptions.Get(name);
         SseSourceFactoryOptions sourceFactoryOptions = _sourceFactoryOptions.Get(name);
-        IReadOnlyCollection<IRequestMutator> mutators = BuildMutators();
         ILastEventIdStore? store = sourceFactoryOptions.LastEventIdStoreFactory?.Invoke(_serviceProvider);
+        IReadOnlyCollection<IRequestMutator> mutators = BuildMutators();
         ILoggerFactory? loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
         SseSource source = new(
             _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(sourceFactoryOptions.ClientName ?? name), 

@@ -6,6 +6,10 @@
 - **`hosting`** — Add support to hosted services for automating the consumption from SSE sources
 - **`serialization`** — Add support to custom JSON serializer options
 
+### 🐛 Bug Fixes
+
+- **`dependency-injection`** — Fixed a bug where the configured ILastEventIdStore was not shared between SseSource and LastEventIdRequestMutator when registering using the builder
+
 ### 📚 Documentation
 
 - **`hosting`** — Add description for package `SsePulse.Client.Hosting` in packages lists

@@ -26,12 +26,20 @@ public static class SseSourceBuilderExtensions
     {
         builder.Services.TryAddTransient<InMemoryLastEventIdStore>();
         builder.Services.TryAddTransient<ILastEventIdStore>(sp => sp.GetRequiredService<InMemoryLastEventIdStore>());
+        builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(builder.Name, (sp, _) => new LastEventIdStoreProvider(sp.GetRequiredService<ILastEventIdStore>()));
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.LastEventIdStoreFactory = sp => sp.GetRequiredService<InMemoryLastEventIdStore>();
+            options.LastEventIdStoreFactory = sp =>
+            {
+                LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+                return provider.Provide();
+            };
         });
-        builder.Services.TryAddTransient<LastEventIdRequestMutator>();
-        builder.AddRequestMutator<LastEventIdRequestMutator>();
+        builder.AddRequestMutator(sp =>
+        {
+            LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+            return new  LastEventIdRequestMutator(provider.Provide());
+        });
         return builder;
     }
 
@@ -46,11 +54,22 @@ public static class SseSourceBuilderExtensions
     public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder)
         where TEventIdStore : class, ILastEventIdStore
     {
+        builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(
+            builder.Name,
+            (sp, _) => new LastEventIdStoreProvider(sp.GetRequiredService<TEventIdStore>()));
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.LastEventIdStoreFactory = sp => sp.GetRequiredService<TEventIdStore>();
+            options.LastEventIdStoreFactory = sp =>
+            {
+                LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+                return provider.Provide();
+            };
         });
-        builder.AddRequestMutator(sp => new LastEventIdRequestMutator(sp.GetRequiredService<TEventIdStore>()));
+        builder.AddRequestMutator(sp =>
+        {
+            LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+            return new  LastEventIdRequestMutator(provider.Provide());
+        });
         return builder;
     }
 
