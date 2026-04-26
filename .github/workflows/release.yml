@@ -78,19 +78,6 @@ jobs:
           done
         shell: bash
 
-      - name: Publish .snupkg to NuGet symbols feed
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          find .artifacts/release-assets -maxdepth 1 -type f -name '*.snupkg' -print0 |
-          while IFS= read -r -d '' symbols; do
-            dotnet nuget push "$symbols" \
-              --source "https://api.nuget.org/v3/index.json" \
-              --api-key "$NUGET_API_KEY" \
-              --skip-duplicate
-          done
-        shell: bash
-
   docs-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
