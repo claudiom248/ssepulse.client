@@ -287,7 +287,7 @@ Full guides and API reference are available in the [`docs/`](docs/) folder:
 - [Configuration](docs/docs/configuration.md)
 - [Platform Availability](docs/docs/platform-availability.md)
 
-A rendered version with full API reference is hosted on [GitHub Pages](https://claudiom248.github.io/SsePulse.Client/).
+A rendered version with full API reference is hosted on [GitHub Pages](https://claudiom248.github.io/ssepulse.client/).
 
 ---
 
