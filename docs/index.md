@@ -41,4 +41,4 @@ await source.StartConsumeAsync(CancellationToken.None);
 - [Authentication](docs/authentication.md)
 - [Configuration](docs/configuration.md)
 - [Platform Availability](docs/platform-availability.md)
-- [API Reference](xref:SsePulse.Client.Core.SseSource)
+- [API Reference](https://claudiom248.github.io/ssepulse.client/api/SsePulse.Client.Abstractions.html)
