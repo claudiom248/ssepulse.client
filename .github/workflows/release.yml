@@ -53,8 +53,7 @@ jobs:
           gh release download "${{ steps.tag.outputs.tag }}" \
             --repo "${{ github.repository }}" \
             --dir .artifacts/release-assets \
-            --pattern "*.nupkg" \
-            --pattern "*.snupkg"
+            --pattern "*.nupkg"
         shell: bash
 
       - name: Verify release assets
