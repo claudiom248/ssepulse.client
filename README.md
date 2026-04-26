@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/claudiom248/SsePulse.Client/actions/workflows/ci.yml/badge.svg)](https://github.com/claudiom248/SsePulse.Client/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-informational)](https://claudiom248.github.io/SsePulse.Client/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-informational)](https://claudiom248.github.io/ssepulse.client/)
 
 **SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate.It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
 
