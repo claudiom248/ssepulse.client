@@ -1,5 +1,5 @@
 
-## [unreleased]
+## [1.1.0] - 2026-04-26
 
 ### 🚀 Features
 
@@ -19,10 +19,11 @@
 
 - **`ci`** — Remove Windows from CI workflow matrix for speeding up builds
 - **`ci`** — Update CI workflow to produce GitHub Packages
+- **`release`** — Add release workflow to push packages to nuget and automate docs build and deployment
 - **`release`** — Add automatic release notes generation
 - **`release`** — Add prepare-release workflow for GitHub releases
 - Add CHANGELOG.md
-## What's Changed in 1.0.0
+## [1.0.0] - 2026-04-19
 
 ### <!-- 0 -->🚀 Features
 
