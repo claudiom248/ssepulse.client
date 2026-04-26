@@ -1,0 +1,142 @@
+name: release
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g. v1.2.3 or v1.2.3-rc.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: release-${{ github.event.release.tag_name || inputs.tag }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ inputs.tag }}"
+          fi
+
+          if [ -z "$TAG" ]; then
+            echo "Tag is required."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Using tag: $TAG"
+        shell: bash
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p .artifacts/release-assets
+          gh release download "${{ steps.tag.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --dir .artifacts/release-assets \
+            --pattern "*.nupkg" \
+            --pattern "*.snupkg"
+        shell: bash
+
+      - name: Verify release assets
+        run: |
+          if ! find .artifacts/release-assets -maxdepth 1 -type f \( -name '*.nupkg' -o -name '*.snupkg' \) | grep -q .; then
+            echo "No NuGet packages found in the release assets for tag ${{ steps.tag.outputs.tag }}"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Publish .nupkg to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          find .artifacts/release-assets -maxdepth 1 -type f -name '*.nupkg' ! -name '*.symbols.nupkg' -print0 |
+          while IFS= read -r -d '' package; do
+            dotnet nuget push "$package" \
+              --source "https://api.nuget.org/v3/index.json" \
+              --api-key "$NUGET_API_KEY" \
+              --skip-duplicate
+          done
+        shell: bash
+
+      - name: Publish .snupkg to NuGet symbols feed
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          find .artifacts/release-assets -maxdepth 1 -type f -name '*.snupkg' -print0 |
+          while IFS= read -r -d '' symbols; do
+            dotnet nuget push "$symbols" \
+              --source "https://api.nuget.org/v3/index.json" \
+              --api-key "$NUGET_API_KEY" \
+              --skip-duplicate
+          done
+        shell: bash
+
+  docs-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [publish]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          lfs: true
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Restore tools
+        run: dotnet tool restore
+        shell: bash
+
+      - name: Generate documentation
+        run: dotnet tool run docfx docs/docfx.json
+        shell: bash
+
+      - name: Upload documentation artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/_site
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [docs-build]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
