@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Configurations;
 using SsePulse.Client.Core.Internal;
+using SsePulse.Client.Tests.Common;
 using SsePulse.Client.Tests.Mocks;
 
 namespace SsePulse.Client.Tests.SseSource;

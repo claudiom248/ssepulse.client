@@ -34,8 +34,8 @@ branches:
     mode: ContinuousDeployment
     tag: alpha
     increment: Inherit
-    prevent-increment-of-merged-branch-version: false
-    track-merge-target: true
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
     source-branches: [ ]
     tracks-release-branches: true
     is-release-branch: false
@@ -57,6 +57,18 @@ branches:
     regex: ^features?[/-]
     mode: ContinuousDelivery
     tag: useBranchName
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    source-branches: [ 'develop', 'main', 'release', 'feature', 'support', 'hotfix' ]
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 30000
+  ci:
+    regex: ^ci$
+    mode: ContinuousDelivery
+    tag: ci
     increment: Inherit
     prevent-increment-of-merged-branch-version: false
     track-merge-target: false

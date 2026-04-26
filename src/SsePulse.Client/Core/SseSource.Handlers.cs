@@ -11,7 +11,7 @@ namespace SsePulse.Client.Core;
 
 public partial class SseSource
 {
-    private readonly SseHandlersDictionary _handlers = new();
+    private readonly SseHandlersDictionary _handlers;
     
     /// <summary>
     /// Gets or sets the callback invoked each time the SSE connection is successfully established.

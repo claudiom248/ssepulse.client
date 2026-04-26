@@ -4,6 +4,10 @@
   href: getting-started.md
 - name: Dependency Injection
   href: dependency-injection.md
+- name: JSON Serializer Options
+  href: json-serializer-options.md
+- name: Hosted Services
+  href: hosted-services.md
 - name: Authentication
   href: authentication.md
 - name: Request Mutators

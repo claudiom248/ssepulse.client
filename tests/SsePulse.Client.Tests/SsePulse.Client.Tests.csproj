@@ -7,6 +7,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\SsePulse.Client\SsePulse.Client.csproj" />
+    <ProjectReference Include="..\SsePulse.Client.Tests.Common\SsePulse.Client.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

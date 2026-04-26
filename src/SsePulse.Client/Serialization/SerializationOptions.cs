@@ -4,7 +4,7 @@ namespace SsePulse.Client.Serialization;
 
 internal static class SerializationOptions
 {
-    public static readonly JsonSerializerOptions EventDataJsonSerializerOptions = new()
+    public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };

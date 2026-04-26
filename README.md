@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/claudiom248/SsePulse.Client/actions/workflows/ci.yml/badge.svg)](https://github.com/claudiom248/SsePulse.Client/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-informational)](https://claudiom248.github.io/SsePulse.Client/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-informational)](https://claudiom248.github.io/ssepulse.client/)
 
 **SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate.It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
 
@@ -11,8 +11,8 @@
 - **Zero boilerplate** — declare what events you care about and what to do with them. SsePulse handles the rest.
 - **Your domain, your types** — incoming event data is automatically deserialized into your own C# classes. No manual parsing, no raw strings.
 - **Resilient by default** — built-in retry policies, automatic reconnection on stream abort, and seamless last-event-replay.
-- **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
 - **Scales with your app** — works standalone with a plain `HttpClient`, integrates cleanly with `Microsoft.Extensions.DependencyInjection`, and supports multiple named sources side by side.
+- **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
 - **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
 
 ---
@@ -43,6 +43,7 @@ SsePulse handles all of the above through a single, composable API surface, so y
 |:---|:---:|:---:|:---|
 | [`SsePulse.Client`](https://www.nuget.org/packages/SsePulse.Client) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.svg)](https://www.nuget.org/packages/SsePulse.Client) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.svg)](https://www.nuget.org/packages/SsePulse.Client) | Core library — `SseSource`, handler registration, retry, and the request-mutator pipeline. Required by every app. |
 | [`SsePulse.Client.DependencyInjection`](https://www.nuget.org/packages/SsePulse.Client.DependencyInjection) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.DependencyInjection) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.DependencyInjection) | `AddSseSource()` extensions on `IServiceCollection`, fluent builder, and `ISseSourceFactory` for named sources. |
+| [`SsePulse.Client.Hosting`](https://www.nuget.org/packages/SsePulse.Client.Hosting) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Hosting.svg)](https://www.nuget.org/packages/SsePulse.Client.Hosting) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.Hosting.svg)](https://www.nuget.org/packages/SsePulse.Client.Hosting) | `Microsoft.Extensions.Hosting` integration — registers SSE consumers as host-managed background services, with support for single-source and multi-source scenarios. |
 | [`SsePulse.Client.Authentication`](https://www.nuget.org/packages/SsePulse.Client.Authentication) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Authentication.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.Authentication.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication) | Bearer token (with OAuth 2.0 client-credentials), Basic, and API-key authentication providers. |
 | [`SsePulse.Client.Authentication.DependencyInjection`](https://www.nuget.org/packages/SsePulse.Client.Authentication.DependencyInjection) | [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Authentication.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication.DependencyInjection) | [![Downloads](https://img.shields.io/nuget/dt/SsePulse.Client.Authentication.DependencyInjection.svg)](https://www.nuget.org/packages/SsePulse.Client.Authentication.DependencyInjection) | `AddAuthentication()` builder extensions that wire auth providers into the DI pipeline. Supports `appsettings.json`-driven configuration. |
 
@@ -241,16 +242,17 @@ Authentication and last-event-id tracking are themselves implemented as built-in
 
 ## [Configuration](docs/docs/configuration.md)
 
-All runtime behaviour is controlled through `SseSourceOptions`:
+Basic behaviour of `SseSource` is controlled through `SseSourceOptions`.
 
-| Property | Default | Description |
-|:---|:---:|:---|
-| `Path` | `/sse` | Relative or absolute URL of the SSE endpoint |
-| `MaxDegreeOfParallelism` | `1` | Maximum concurrent event handler invocations |
-| `DefaultEventNameCasePolicy` | `PascalCase` | Maps C# type names to SSE event names (`PascalCase`, `CamelCase`, `SnakeCase`, `KebabCase`) |
-| `ConnectionRetryOptions` | `RetryOptions.None` | Retry policy for connection failures — set to `null` to disable |
-| `ThrowWhenNoEventHandlerFound` | `false` | Throws `HandlerNotFoundException` for unregistered events when `true`; logs a warning and skips when `false` |
-| `RestartOnConnectionAbort` | `true` | Automatically restarts the connection loop after a `ResponseAbortedException` |
+| Property                       |                                  Default                                   | Description |
+|:-------------------------------|:--------------------------------------------------------------------------:|:---|
+| `Path`                         |                                   `/sse`                                   | Relative or absolute URL of the SSE endpoint |
+| `MaxDegreeOfParallelism`       |                                    `1`                                     | Maximum concurrent event handler invocations |
+| `DefaultEventNameCasePolicy`   |                                `PascalCase`                                | Maps C# type names to SSE event names (`PascalCase`, `CamelCase`, `SnakeCase`, `KebabCase`) |
+| `ConnectionRetryOptions`       |                            `RetryOptions.None`                             | Retry policy for connection failures — set to `null` to disable |
+| `ThrowWhenNoEventHandlerFound` |                                  `false`                                   | Throws `HandlerNotFoundException` for unregistered events when `true`; logs a warning and skips when `false` |
+| `RestartOnConnectionAbort`     |                                   `true`                                   | Automatically restarts the connection loop after a `ResponseAbortedException` |
+| `JsonSerializerOptions`        | A default `JsonSerializerOptions` instance that ignores property name case | Allow to set the options used by the JSON serializer when deserializaing event data.                                      |
 
 See the [Configuration guide](docs/docs/configuration.md) for the full reference including naming case policies and retry strategies.
 
@@ -278,6 +280,8 @@ Full guides and API reference are available in the [`docs/`](docs/) folder:
 - [Introduction to Server-Sent Events](docs/docs/introduction-to-sse.md)
 - [Getting Started](docs/docs/getting-started.md)
 - [Dependency Injection](docs/docs/dependency-injection.md)
+- [JSON Serializer Options](docs/docs/json-serializer-options.md)
+- [Hosted Services](docs/hosted-services.md)
 - [Authentication](docs/docs/authentication.md)
 - [Request Mutators](docs/docs/request-mutators.md)
 - [Configuration](docs/docs/configuration.md)

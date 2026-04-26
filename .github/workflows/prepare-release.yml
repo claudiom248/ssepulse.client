@@ -1,0 +1,88 @@
+name: prepare-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Build
+        run: ./.scripts/build-and-test.ps1 -Configuration Release
+        shell: pwsh
+
+      - name: Resolve version
+        id: version
+        run: |
+          $ref = "${{ github.ref }}"
+
+          $version      = "${{ github.ref_name }}".Substring(1)
+            $tagName      = "${{ github.ref_name }}"
+            $isPrerelease = $version.Contains("-")
+            $cliffArgs    = "--latest"
+
+          "version=$version"                                    | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "tag_name=$tagName"                                   | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "is_prerelease=$($isPrerelease.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "cliff_args=$cliffArgs"                               | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Version: $version | Tag: $tagName | PreRelease: $isPrerelease | CliffArgs: $cliffArgs"
+        shell: pwsh
+
+      - name: Pack
+        run: ./.scripts/pack.ps1 -Configuration Release -Version "${{ steps.version.outputs.version }}"
+        shell: pwsh
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Generate release notes
+        run: |
+          mkdir -p .artifacts
+          git cliff --config cliff.release.toml ${{ steps.version.outputs.cliff_args }} --strip all --output .artifacts/release-notes.md
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure tag exists
+        # Pre-push the tag so the release action finds an existing ref instead of creating
+        # a new one, which avoids the spurious "Error creating policy" from the GitHub
+        # rulesets API on repositories that do not have tag protection rules enabled.
+        run: |
+          git tag "${{ steps.version.outputs.tag_name }}" --force
+          git push origin "${{ steps.version.outputs.tag_name }}" --force
+        shell: pwsh
+
+      - name: Create draft GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag_name }}
+          name: SsePulse.Client v${{ steps.version.outputs.version }}
+          body_path: .artifacts/release-notes.md
+          draft: true
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
+          files: |
+            .artifacts/nuget/Release/${{ steps.version.outputs.version }}/*.nupkg
+            .artifacts/nuget/Release/${{ steps.version.outputs.version }}/*.snupkg

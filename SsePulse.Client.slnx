@@ -1,9 +1,4 @@
 <Solution>
-  <Configurations>
-    <BuildType Name="Debug" />
-    <BuildType Name="Release" />
-    <BuildType Name="Test" />
-  </Configurations>
   <Folder Name="/Solution Items/">
     <File Path=".config/dotnet-tools.json" />
     <File Path=".gitignore" />
@@ -16,12 +11,15 @@
     <Project Path="src/SsePulse.Client.Authentication/SsePulse.Client.Authentication.csproj" />
     <Project Path="src/SsePulse.Client.Authentication.DependencyInjection/SsePulse.Client.Authentication.DependencyInjection.csproj" />
     <Project Path="src/SsePulse.Client.DependencyInjection/SsePulse.Client.DependencyInjection.csproj" />
+    <Project Path="src/SsePulse.Client.Hosting/SsePulse.Client.Hosting.csproj" />
     <Project Path="src/SsePulse.Client/SsePulse.Client.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SsePulse.Client.Authentication.DependencyInjection.Tests/SsePulse.Client.Authentication.DependencyInjection.Tests.csproj" />
     <Project Path="tests/SsePulse.Client.Authentication.Tests/SsePulse.Client.Authentication.Tests.csproj" />
     <Project Path="tests/SsePulse.Client.DependencyInjection.Tests/SsePulse.Client.DependencyInjection.Tests.csproj" />
+    <Project Path="tests/SsePulse.Client.Hosting.Tests/SsePulse.Client.Hosting.Tests.csproj" />
+    <Project Path="tests/SsePulse.Client.Tests.Common/SsePulse.Client.Tests.Common.csproj" />
     <Project Path="tests/SsePulse.Client.Tests/SsePulse.Client.Tests.csproj" />
   </Folder>
 </Solution>

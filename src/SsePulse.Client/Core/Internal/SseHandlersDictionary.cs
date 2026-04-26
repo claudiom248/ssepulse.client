@@ -1,36 +1,38 @@
 using System.Net.ServerSentEvents;
-using System.Runtime.CompilerServices;
+using System.Text.Json;
 using SsePulse.Client.EventHandlers;
 
 namespace SsePulse.Client.Core.Internal;
 
 internal class SseHandlersDictionary : Dictionary<string, List<ISseEventHandler>>
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
+
+    public SseHandlersDictionary(JsonSerializerOptions jsonSerializerOptions)
+    {
+        _jsonSerializerOptions = jsonSerializerOptions;
+    }
+    
     public void AddHandler(string eventName, Action<SseItem<string>> handler)
     {
         AddHandlerCore(eventName, new SseEventHandler(handler));
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddStronglyTypedHandler<TEventData>(string eventName, Action<SseItem<TEventData>> handler)
     {
-        AddHandlerCore(eventName, new SseEventHandler<TEventData>(handler));
+        AddHandlerCore(eventName, new SseEventHandler<TEventData>(handler, _jsonSerializerOptions));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddDataHandler(string eventName, Action<string> handler)
     {
         AddHandlerCore(eventName, new SseEventDataHandler(handler));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddStronglyTypedDataHandler<TEventData>(string eventName, Action<TEventData> handler)
     {
-        AddHandlerCore(eventName, new SseEventDataHandler<TEventData>(handler));
+        AddHandlerCore(eventName, new SseEventDataHandler<TEventData>(handler, _jsonSerializerOptions));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddHandlerCore(string eventName, ISseEventHandler handler)
     {
         if (!TryGetValue(eventName, out List<ISseEventHandler>? handlers))
