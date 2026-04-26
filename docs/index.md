@@ -11,8 +11,8 @@ _layout: landing
 - **Zero boilerplate** — declare what events you care about and what to do with them. SsePulse handles the rest.
 - **Your domain, your types** — incoming event data is automatically deserialized into your own C# classes. No manual parsing, no raw strings.
 - **Resilient by default** — built-in retry policies, automatic reconnection on stream abort, and seamless last-event-replay.
-- **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
 - **Scales with your app** — works standalone with a plain `HttpClient`, integrates cleanly with `Microsoft.Extensions.DependencyInjection`, and supports multiple named sources side by side.
+- **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
 - **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
 
 ## Quick start

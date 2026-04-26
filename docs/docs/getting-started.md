@@ -6,18 +6,18 @@
 |---|---|
 | `SsePulse.Client` | Core SSE client. Contains `SseSource`, handler registration, and all runtime logic. Required by every app. |
 | `SsePulse.Client.DependencyInjection` | Integrates `SseSource` with `IServiceCollection`. Provides the `AddSseSource()` fluent builder and `ISseSourceFactory` for named sources. |
+| `SsePulse.Client.Hosting` | `Microsoft.Extensions.Hosting` integration — registers SSE consumers as host-managed background services, with support for single-source and multi-source scenarios. |
 | `SsePulse.Client.Authentication` | Authentication providers (Bearer token, Basic, API key). Usable standalone or with DI. |
 | `SsePulse.Client.Authentication.DependencyInjection` | Plugs the authentication providers into the DI builder via `AddAuthentication()` extension methods. |
-| `SsePulse.Client.Hosting` | `Microsoft.Extensions.Hosting` integration — registers SSE consumers as host-managed background services, with support for single-source and multi-source scenarios. |
 
 Install only what your project needs:
 
 ```bash
 dotnet add package SsePulse.Client
 dotnet add package SsePulse.Client.DependencyInjection
+dotnet add package SsePulse.Client.Hosting
 dotnet add package SsePulse.Client.Authentication
 dotnet add package SsePulse.Client.Authentication.DependencyInjection
-dotnet add package SsePulse.Client.Hosting
 ```
 
 ---
