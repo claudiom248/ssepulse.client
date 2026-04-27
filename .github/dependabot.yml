@@ -13,4 +13,20 @@ updates:
     commit-message:
       prefix: "chore(dependencies)"
     labels:
+        - "dependencies"
+
+  - package-ecosystem: "nuget"
+    directories:
+      - "/"
+      - "/src"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+    commit-message:
+      prefix: "chore(dependencies)"
+    labels:
       - "dependencies"
