@@ -12,6 +12,11 @@ namespace SsePulse.Client.Core.Configurations;
 public class SseSourceOptions
 {
     /// <summary>
+    /// Gets or sets the name of the SSE source. Defaults to a new GUID.
+    /// </summary>
+    public string Name { get; set; } = Guid.NewGuid().ToString();
+    
+    /// <summary>
     /// Gets or sets the relative or absolute URL path of the SSE endpoint.
     /// Defaults to <c>/sse</c>.
     /// </summary>

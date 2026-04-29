@@ -39,6 +39,7 @@ internal partial class SseConnection
     {
         try
         {
+            _logger.LogDebug("Establishing a connection with the SSE endpoint...");
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
@@ -46,9 +47,6 @@ internal partial class SseConnection
                     HttpResponseMessage response = await SendRequestAsync(request).ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)
                     {
-                        _logger.LogError(
-                            "Error while establishing a connection with SSE endpoint. Response StatusCode does not indicate success: {StatusCode}",
-                            response.StatusCode);
                         throw new HttpRequestException($"HTTP error occurred: {response.StatusCode}")
                         {
                             Data =
@@ -91,6 +89,7 @@ internal partial class SseConnection
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while establishing a connection with the SSE endpoint. Exception message: {Message}", ex.Message);
             SetDisconnected(ex);
             throw;
         }
@@ -105,6 +104,7 @@ internal partial class SseConnection
 
         async Task TryApplyMutators(HttpRequestMessage request)
         {
+            _logger.LogDebug("Applying request mutators...");
             foreach (IRequestMutator requestMutator in _requestMutators)
             {
                 try
@@ -134,7 +134,7 @@ internal partial class SseConnection
             catch (HttpRequestException hre)
             {
                 _logger.LogError(hre,
-                    "Error while establishing a connection with SSE endpoint. Unexpected exception thrown {Message}",
+                    "Error while establishing a connection with the SSE endpoint. Exception message: {Message}",
                     hre.Message);
                 throw;
             }

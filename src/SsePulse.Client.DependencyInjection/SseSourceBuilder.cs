@@ -34,7 +34,11 @@ public class SseSourceBuilder : ISseSourceBuilder
     public SseSourceBuilder(string name, IServiceCollection services, Action<SseSourceOptions> configureOptions)
         : this(name, services)
     {
-        Services.Configure(Name, configureOptions);
+        Services.Configure<SseSourceOptions>(Name, options =>
+        {
+            options.Name = Name;
+            configureOptions(options);
+        });
     }
 
     /// <summary>
@@ -72,7 +76,7 @@ public class SseSourceBuilder : ISseSourceBuilder
         Name = name;
 
         Services.AddOptions<SseSourceFactoryOptions>(Name);
-
+        services.Configure<SseSourceOptions>(Name, options => { options.Name = Name; });
         if (Configuration is not null)
         {
             Services.AddOptions<SseSourceOptions>(Name)
@@ -98,8 +102,7 @@ public class SseSourceBuilder : ISseSourceBuilder
     {
         IHttpClientBuilder builder = Services.AddHttpClient(Name, configureClient ?? (_ => { }));
         clientBuilder?.Invoke(builder);
-        Services.Configure<SseSourceFactoryOptions>(Name,
-            options => { options.ClientName = Name; });
+        Services.Configure<SseSourceFactoryOptions>(Name, options => { options.ClientName = Name; });
         return this;
     }
 
@@ -142,7 +145,7 @@ public class SseSourceBuilder : ISseSourceBuilder
             options => { options.EventManagerFactories.Add(managerFactory); });
         return this;
     }
-    
+
     /// <inheritdoc/>
     public ISseSourceBuilder AddRequestMutator(IRequestMutator mutator)
     {
