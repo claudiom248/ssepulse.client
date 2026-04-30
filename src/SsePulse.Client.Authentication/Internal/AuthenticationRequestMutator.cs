@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Authentication.Abstractions;
 using SsePulse.Client.Core.Abstractions;
 
@@ -16,6 +18,7 @@ namespace SsePulse.Client.Authentication.Internal;
 public class AuthenticationRequestMutator : IRequestMutator
 {
     private readonly ISseAuthenticationProvider _authenticationProvider;
+    private readonly ILogger<AuthenticationRequestMutator> _logger;
 
     /// <summary>
     /// Initializes a new <see cref="AuthenticationRequestMutator"/> with the given authentication provider.
@@ -24,14 +27,21 @@ public class AuthenticationRequestMutator : IRequestMutator
     /// The provider responsible for authenticating outgoing requests.
     /// It is invoked once per connection attempt, just before the request is sent.
     /// </param>
-    public AuthenticationRequestMutator(ISseAuthenticationProvider authenticationProvider)
+    /// <param name="logger">Optional logger. Falls back to <see cref="Microsoft.Extensions.Logging.Abstractions.NullLogger{T}"/> when omitted.</param>
+    public AuthenticationRequestMutator(ISseAuthenticationProvider authenticationProvider,
+        ILogger<AuthenticationRequestMutator>? logger = null)
     {
         _authenticationProvider = authenticationProvider;
+        _logger = logger ?? NullLogger<AuthenticationRequestMutator>.Instance;
     }
 
     /// <inheritdoc/>
     public ValueTask ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken)
     {
+        using IDisposable? _ = _logger.BeginScope(
+            "AuthenticationProviderType={AuthenticationProviderType}",
+            _authenticationProvider.GetType().Name);
+        _logger.LogDebug("Applying authentication to outgoing SSE request...");
         return _authenticationProvider.ApplyAsync(message, cancellationToken);
     }
 }

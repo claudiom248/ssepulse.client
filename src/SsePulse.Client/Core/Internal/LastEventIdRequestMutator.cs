@@ -17,6 +17,7 @@ internal class LastEventIdRequestMutator : IRequestMutator
 
     public ValueTask ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Checking for Last-Event-ID to resume SSE stream...");
         string? lastEventId = _lastEventIdStore.LastEventId;
         if (!string.IsNullOrEmpty(lastEventId))
         {
