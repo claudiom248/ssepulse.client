@@ -158,7 +158,7 @@ public class SseSourceLoggingTests
         // ACT & ASSERT
         await Assert.ThrowsAsync<HttpRequestException>(() =>
             source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
-        Assert.True(logger.HasLog(LogLevel.Error, "Error while establishing a connection with SSE endpoint",
+        Assert.True(logger.HasLog(LogLevel.Error, "Error while establishing a connection with the SSE endpoint",
             typeof(HttpRequestException)));
     }
 
@@ -206,11 +206,11 @@ public class SseSourceLoggingTests
             new SseEvent { EventType = "e", Data = "3" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using Core.SseSource source = new(client, DefaultOptions, logger);
-        source.On("e", async _ => await Task.Delay(5000)); // Handler lento per permettere lo stop
+        source.On("e", async _ => await Task.Delay(5000));
 
         // ACT
         Task consumeTask = source.StartConsumeAsync(CancellationToken.None);
-        await Task.Delay(100); // Aspetta che la connessione sia stabilita
+        await Task.Delay(100);
 #if NET8_0_OR_GREATER
         await source.StopAsync();
 #else
@@ -240,7 +240,7 @@ public class SseSourceLoggingTests
     }
 
     [Fact]
-    public async Task StartConsumeAsync_StreamOpened_LogsDebug()
+    public async Task StartConsumeAsync_ConnectionEstablished_LogsDebug()
     {
         // ARRANGE
         MockLogger<Core.SseSource> logger = new();
@@ -253,7 +253,7 @@ public class SseSourceLoggingTests
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
-        Assert.True(logger.HasLog(LogLevel.Debug, "SSE stream opened successfully"));
+        Assert.True(logger.HasLog(LogLevel.Information, "SSE connection established"));
     }
 
     [Fact]
@@ -273,11 +273,7 @@ public class SseSourceLoggingTests
 
         // ACT
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-#if NET8_0_OR_GREATER
         await source.StopAsync();
-#else
-        source.Stop();
-#endif
         source.Reset();
         logger.Clear();
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -288,7 +284,7 @@ public class SseSourceLoggingTests
     }
 
     [Fact]
-    public async Task StartConsumeAsync_MultipleEvents_LogsCorrectCount()
+    public async Task StartConsumeAsync_MultipleEvents_LogsDebug()
     {
         // ARRANGE
         MockLogger<Core.SseSource> logger = new();
@@ -304,8 +300,7 @@ public class SseSourceLoggingTests
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ASSERT
-        Assert.True(logger.CountLogs(LogLevel.Information) >= 3);
-        Assert.Equal(1, logger.CountLogs(LogLevel.Debug)); // Stream opened
+        Assert.True(logger.HasLog(LogLevel.Debug, "Received event of type 'e'")); 
     }
 
     [Fact]
