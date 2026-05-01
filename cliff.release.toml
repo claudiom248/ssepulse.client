@@ -20,10 +20,11 @@ body = """
 ### {{ group | striptags | trim | upper_first }}
 {% for commit in commits
     | filter(attribute="scope")
+    | unique(attribute="message")
     | sort(attribute="scope") %}
     {{ self::print_commit(commit=commit) }}
 {%- endfor %}
-{% for commit in commits %}
+{% for commit in commits | unique(attribute="message") %}
     {%- if not commit.scope -%}
         {{ self::print_commit(commit=commit) }}
     {% endif -%}
