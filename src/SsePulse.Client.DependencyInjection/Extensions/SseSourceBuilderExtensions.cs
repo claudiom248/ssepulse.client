@@ -83,6 +83,8 @@ public static class SseSourceBuilderExtensions
     /// Enables last-event-ID tracking for this SSE source using <see cref="FileLastEventIdStore"/>,
     /// which persists the last received event ID to a local file so that the SSE stream can be
     /// resumed after a process restart.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id.html"/>
     /// </summary>
     /// <remarks>
     /// <para>
