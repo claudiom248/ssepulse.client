@@ -4,12 +4,15 @@
 ### 🚀 Features
 
 - **`core/runtime`** — Add `FileLastEventIdStore` for persisting last event ID to a file
+- **`core/runtime`** — Enhance logging by including contextual information about the `SseSource`, and logged more operations (establishing connection, applying mutators, etc)
 - **`dependency-injection`** — Add `AddFileLastEventIdStore` method for registering the file based last event ID store
+- **`mutators`** — Enhance logging in request mutators
 
 ### 📚 Documentation
 
 - **`core/runtime`** — Add documentation for Last-Event-ID resumption and file-based store
 - **`dependency-injection`** — Document how to register `FileLastEventIdStore` using the builder
+- Add a logo to the website and change website template
 
 ### 🔧 Maintenance
 
