@@ -50,25 +50,6 @@ public class SseSourceBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddLastEventId_OptionsRequestMutatorsFactories_HasExactlyOneEntry()
-    {
-        // ARRANGE
-        ServiceCollection services = new();
-        ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
-
-        // ACT
-        builder.AddLastEventId();
-
-        // ASSERT
-        ServiceProvider provider = services.BuildServiceProvider();
-        SseSourceFactoryOptions options = provider
-            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
-            .Get("MySource");
-
-        Assert.Single(options.RequestMutatorsFactories);
-    }
-
-    [Fact]
     public void AddLastEventId_RequestMutatorFactory_ProvidesLastEventIdRequestMutator()
     {
         // ARRANGE
@@ -157,6 +138,72 @@ public class SseSourceBuilderExtensionsTests
 
         // ACT
         builder.AddLastEventId<CustomLastEventIdStore>();
+
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        SseSourceFactoryOptions options = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
+            .Get("MySource");
+
+        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider);
+        Assert.IsType<LastEventIdRequestMutator>(mutator);
+    }
+
+    [Fact]
+    public void AddFileLastEventIdStore_FileLastEventIdStore_IsResolvable()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
+
+        // ACT
+        builder.AddFileLastEventIdStore(options =>
+        {
+            options.FilePath = "path";
+        });
+
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        ILastEventIdStore store = provider.GetRequiredKeyedService<FileLastEventIdStore>("MySource");
+
+        Assert.IsType<FileLastEventIdStore>(store);
+    }
+    
+    [Fact]
+    public void AddFileLastEventIdStore_OptionsLastEventIdStoreFactory_ProvidesFileLastEventIdStore()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
+
+        // ACT
+        builder.AddFileLastEventIdStore(options =>
+        {
+            options.FilePath = "path";
+        });
+        // ASSERT
+        ServiceProvider provider = services.BuildServiceProvider();
+        SseSourceFactoryOptions options = provider
+            .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
+            .Get("MySource");
+
+        Assert.NotNull(options.LastEventIdStoreFactory);
+        ILastEventIdStore store = options.LastEventIdStoreFactory!(provider);
+        Assert.IsType<FileLastEventIdStore>(store);
+    }
+    
+    [Fact]
+    public void AddFileLastEventIdStore_RequestMutatorFactory_ProvidesLastEventIdRequestMutator()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        ISseSourceBuilder builder = new SseSourceBuilder("MySource", services);
+
+        // ACT
+        builder.AddFileLastEventIdStore(options =>
+        {
+            options.FilePath = "path";
+        });
 
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
