@@ -38,7 +38,7 @@ public static class SseSourceBuilderExtensions
         builder.AddRequestMutator(sp =>
         {
             LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-            return new  LastEventIdRequestMutator(provider.Provide());
+            return ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, provider.Provide());
         });
         return builder;
     }
@@ -68,7 +68,7 @@ public static class SseSourceBuilderExtensions
         builder.AddRequestMutator(sp =>
         {
             LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-            return new  LastEventIdRequestMutator(provider.Provide());
+            return ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, provider.Provide());
         });
         return builder;
     }

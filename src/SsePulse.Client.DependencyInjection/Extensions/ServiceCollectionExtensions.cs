@@ -71,7 +71,8 @@ public static partial class ServiceCollectionExtensions
         return services.AddSseSourceCore(name, configureOptions: configureOptions);
     }
 
-    private static SseSourceBuilder AddSseSourceCore(this IServiceCollection services, string name,
+    private static SseSourceBuilder AddSseSourceCore(this IServiceCollection services, 
+        string name,
         IConfiguration? configuration = null,
         Action<SseSourceOptions>? configureOptions = null)
     {

@@ -75,8 +75,9 @@ public static class SseBuilderExtensions
     public static ISseSourceBuilder AddAuthentication<TAuthenticationProvider>(this ISseSourceBuilder builder)
         where TAuthenticationProvider : ISseAuthenticationProvider
     {
-        return builder.AddRequestMutator(sp =>
-            new AuthenticationRequestMutator(sp.GetRequiredService<TAuthenticationProvider>()));
+        return builder.AddRequestMutator(sp => ActivatorUtilities.CreateInstance<AuthenticationRequestMutator>(
+            sp, 
+            sp.GetRequiredService<TAuthenticationProvider>()));
     }
 
     /// <summary>
@@ -88,7 +89,7 @@ public static class SseBuilderExtensions
     /// <returns>The same builder for chaining.</returns>
     public static ISseSourceBuilder AddAuthentication(this ISseSourceBuilder builder, Func<IServiceProvider, ISseAuthenticationProvider> authProviderFactory)
     {
-        return builder.AddRequestMutator(sp => new AuthenticationRequestMutator(authProviderFactory(sp)));
+        return builder.AddRequestMutator(sp => ActivatorUtilities.CreateInstance<AuthenticationRequestMutator>(sp, authProviderFactory(sp)));
     }
 
     /// <summary>
