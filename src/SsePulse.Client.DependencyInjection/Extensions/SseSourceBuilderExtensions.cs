@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Configurations;
@@ -26,19 +27,20 @@ public static class SseSourceBuilderExtensions
     {
         builder.Services.TryAddTransient<InMemoryLastEventIdStore>();
         builder.Services.TryAddTransient<ILastEventIdStore>(sp => sp.GetRequiredService<InMemoryLastEventIdStore>());
-        builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(builder.Name, (sp, _) => new LastEventIdStoreProvider(sp.GetRequiredService<ILastEventIdStore>()));
+        builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(builder.Name,
+            (sp, _) => new LastEventIdStoreProvider(sp.GetRequiredService<ILastEventIdStore>()));
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
             options.LastEventIdStoreFactory = sp =>
             {
-                LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+                LastEventIdStoreProvider provider = sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
                 return provider.Provide();
             };
         });
         builder.AddRequestMutator(sp =>
         {
-            LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-            return new  LastEventIdRequestMutator(provider.Provide());
+            LastEventIdStoreProvider provider = sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+            return new LastEventIdRequestMutator(provider.Provide());
         });
         return builder;
     }
@@ -50,27 +52,63 @@ public static class SseSourceBuilderExtensions
     /// </summary>
     /// <typeparam name="TEventIdStore">The custom store type that persists the last-event-ID.</typeparam>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
+    /// <param name="fromKeyed"></param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder)
+    public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder,
+        bool fromKeyed = false)
         where TEventIdStore : class, ILastEventIdStore
     {
         builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(
             builder.Name,
-            (sp, _) => new LastEventIdStoreProvider(sp.GetRequiredService<TEventIdStore>()));
+            (sp, _) => fromKeyed
+                ? new LastEventIdStoreProvider(sp.GetRequiredKeyedService<TEventIdStore>(builder.Name))
+                : new LastEventIdStoreProvider(sp.GetRequiredService<TEventIdStore>()));
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
             options.LastEventIdStoreFactory = sp =>
             {
-                LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+                LastEventIdStoreProvider provider = sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
                 return provider.Provide();
             };
         });
         builder.AddRequestMutator(sp =>
         {
-            LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-            return new  LastEventIdRequestMutator(provider.Provide());
+            LastEventIdStoreProvider provider = sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
+            return new LastEventIdRequestMutator(provider.Provide());
         });
         return builder;
+    }
+
+    /// <summary>
+    /// Enables last-event-ID tracking for this SSE source using <see cref="FileLastEventIdStore"/>,
+    /// which persists the last received event ID to a local file so that the SSE stream can be
+    /// resumed after a process restart.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The store is registered as a keyed singleton scoped to this source's name. Use
+    /// <paramref name="configureOptions"/> to set the file path and choose a flush strategy:
+    /// </para>
+    /// <para>
+    /// <b>Resolving multiple instances of the same <see cref="SseSource"/> with this store will share the same file.
+    /// You should instantiate only one instance per source.</b>
+    /// </para>
+    /// </remarks>
+    /// <param name="builder">The builder for configuring the <see cref="SseSource"/>.</param>
+    /// <param name="configureOptions">
+    /// A delegate that configures <see cref="FileLastEventIdStoreOptions"/>.
+    /// </param>
+    /// <returns>The same builder for chaining.</returns>
+    public static ISseSourceBuilder AddFileLastEventIdStore(this ISseSourceBuilder builder,
+        Action<FileLastEventIdStoreOptions> configureOptions)
+    {
+        builder.Services.Configure(builder.Name, configureOptions);
+        builder.Services.TryAddKeyedSingleton<FileLastEventIdStore>(
+            builder.Name,
+            (sp, _) => ActivatorUtilities.CreateInstance<FileLastEventIdStore>(
+                sp,
+                sp.GetRequiredService<IOptionsMonitor<FileLastEventIdStoreOptions>>().Get(builder.Name)));
+        return builder.AddLastEventId<FileLastEventIdStore>(fromKeyed: true);
     }
 
     /// <summary>
@@ -82,10 +120,7 @@ public static class SseSourceBuilderExtensions
     /// <returns>The same builder for chaining.</returns>
     public static ISseSourceBuilder WithSerializerOptions(this ISseSourceBuilder builder, JsonSerializerOptions options)
     {
-        builder.Services.Configure<SseSourceOptions>(builder.Name, opts =>
-        {
-            opts.JsonSerializerOptions = options;
-        });
+        builder.Services.Configure<SseSourceOptions>(builder.Name, opts => { opts.JsonSerializerOptions = options; });
         return builder;
     }
 }
