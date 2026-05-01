@@ -1,4 +1,19 @@
 
+## [unreleased]
+
+### 🚀 Features
+
+- **`core/runtime`** — Add `FileLastEventIdStore` for persisting last event ID to a file
+- **`dependency-injection`** — Add `AddFileLastEventIdStore` method for registering the file based last event ID store
+
+### 📚 Documentation
+
+- **`core/runtime`** — Add documentation for Last-Event-ID resumption and file-based store
+- **`dependency-injection`** — Document how to register `FileLastEventIdStore` using the builder
+
+### 🔧 Maintenance
+
+- **`dependencies`** — Bump .NET packages versions from 10.0.5 to 10.0.7
 ## [1.1.0] - 2026-04-26
 
 ### 🚀 Features
