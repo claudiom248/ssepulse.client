@@ -8,6 +8,8 @@ namespace SsePulse.Client.Core;
 /// <summary>
 /// Persists the last event ID to a file so that the SSE connection can be resumed after a
 /// process restart.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id.html"/>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -17,7 +19,7 @@ namespace SsePulse.Client.Core;
 /// <list type="bullet">
 ///   <item><see cref="FlushMode.EverySet"/> (default) — safest; writes on every received event ID.</item>
 ///   <item><see cref="FlushMode.AfterCount"/> — writes every N events; reduces I/O at the cost of
-///     potentially losing a few IDs on an unexpected crash.</item>
+///     potentially losing a few IDs on an unexpected crash. The pending writes is always flushed on dispose.</item>
 ///   <item><see cref="FlushMode.AfterInterval"/> — writes on a timer; lowest I/O but the most
 ///     events may be lost on crash. The pending write is always flushed on dispose.</item>
 /// </list>
