@@ -43,7 +43,8 @@ internal class StreamConsumer
             await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
             {
                 using IDisposable? _ = _logger.BeginScope("EventType: {EventType}", sseItem.EventType);
-                _logger.LogDebug("Received event of type '{EventType}' and Data {Data}", sseItem.EventType, sseItem.Data);
+                _logger.LogDebug("Received event of type '{EventType}' and Data {Data}", sseItem.EventType,
+                    sseItem.Data);
                 if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
                 {
                     _logger.LogDebug("Set last event ID to '{EventId}'", sseItem.EventId);
@@ -52,7 +53,8 @@ internal class StreamConsumer
 
                 if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
                 {
-                    _logger.LogTrace("Dispatcher block is in a faulted state. Throwing exception to stop processing incoming events.");
+                    _logger.LogTrace(
+                        "Dispatcher block is in a faulted state. Throwing exception to stop processing incoming events.");
                     throw dispatcherBlock.Completion.Exception;
                 }
 
@@ -71,6 +73,10 @@ internal class StreamConsumer
         {
             _logger.LogError(hre, ResponseAbortedMessage);
             throw new ResponseAbortedException(hre);
+        }
+        catch (Exception ex) when (IsResponseAborted(ex))
+        {
+            throw new ResponseAbortedException(ex);
         }
         finally
         {
@@ -91,6 +97,25 @@ internal class StreamConsumer
                 });
         }
     }
+    
+    private bool IsResponseAborted(Exception ex)
+    {
+        if (_options.IsResponseAborted?.Invoke(ex) == true)
+        {
+            return true;
+        }
+
+        switch (ex)
+        {
+#if NET8_0_OR_GREATER
+            case HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded }:
+#endif
+            case IOException hre when 
+                hre.FindInner<SocketException>() is { SocketErrorCode: SocketError.ConnectionReset }:
+                return true;
+            default:
+                return false;
+        } }
 
     private void Dispatch(SseItem<string> @event)
     {

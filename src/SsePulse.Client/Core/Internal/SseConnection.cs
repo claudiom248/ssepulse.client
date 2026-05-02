@@ -67,13 +67,18 @@ internal partial class SseConnection
                 _options.ConnectionRetryOptions ?? RetryOptions.None,
                 shouldRetry: exception =>
                 {
+                    if (_options.IsTransientConnectionFailure is not null)
+                    {
+                        return _options.IsTransientConnectionFailure.Invoke(exception);
+                    }
+                    //Default logic to determine if an exception is due to a transient connection failure
                     if (exception is not HttpRequestException hre)
                     {
                         return false;
                     }
-                    if (hre.Data.Count > 0)
+                    if (hre.Data.Contains("HttpStatusCode"))
                     {
-                        return IsTransientHttpError(hre.Data["HttpStatusCode"] as HttpStatusCode?);
+                        return !_options.NonTransientStatusCodes.Contains((HttpStatusCode)hre.Data["HttpStatusCode"]!);
                     }
                     SocketException? socketException = hre.FindInner<SocketException>();
                     if (socketException is not null)
@@ -139,17 +144,6 @@ internal partial class SseConnection
                 throw;
             }
         }
-    }
-
-    private static bool IsTransientHttpError(HttpStatusCode? statusCode)
-    {
-        if (statusCode is null) return false;
-        return statusCode is not (
-            HttpStatusCode.NotFound
-            or HttpStatusCode.InternalServerError
-            or HttpStatusCode.BadGateway
-            or HttpStatusCode.Unauthorized
-            or HttpStatusCode.Forbidden);
     }
 
 

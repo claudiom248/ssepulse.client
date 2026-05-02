@@ -137,9 +137,9 @@ public class SseCrashHandler(bool failImmediately) : HttpMessageHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (failImmediately)
-            throw new HttpRequestException("Server non raggiungibile.");
+            throw new HttpRequestException("Server unreachable.");
 
-        HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK)
+        HttpResponseMessage response = new(HttpStatusCode.OK)
         {
             Content = new StreamContent(new NetworkFailureStream())
         };
@@ -159,7 +159,6 @@ public class CallCountingHttpMessageHandler(Func<int, Task<HttpResponseMessage>>
 {
     private int _callCount;
 
-    /// <summary>Gets the number of times <see cref="SendAsync"/> has been called.</summary>
     public int CallCount => _callCount;
 
     protected override Task<HttpResponseMessage> SendAsync(
