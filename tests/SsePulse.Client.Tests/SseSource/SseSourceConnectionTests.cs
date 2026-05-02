@@ -165,7 +165,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
     {
         // ARRANGE
         string? received = null;
-        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "hello" });
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
         CallCountingHttpMessageHandler handler = new(callIndex =>
         {
             if (callIndex == 1)
@@ -191,7 +191,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
 
         // ASSERT
         Assert.Equal(2, handler.CallCount);
-        Assert.Equal("hello", received);
+        Assert.Equal("message", received);
     }
     
     [Fact]
@@ -199,7 +199,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
     {
         // ARRANGE
         string? received = null;
-        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "hello" });
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
         CallCountingHttpMessageHandler handler = new(callIndex =>
         {
             HttpResponseMessage response;
@@ -238,7 +238,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
 
         // ASSERT
         Assert.Equal(2, handler.CallCount);
-        Assert.Equal("hello", received);
+        Assert.Equal("message", received);
     }
     
     [Fact]
@@ -246,7 +246,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
     {
         // ARRANGE
         string? received = null;
-        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "hello" });
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
         CallCountingHttpMessageHandler handler = new(callIndex =>
         {
             HttpResponseMessage response;
@@ -284,7 +284,211 @@ public class SseSourceConnectionTests : SseSourceTestBase
         // ACT & ASSERT
         await Assert.ThrowsAsync<ResponseAbortedException>(() => source.StartConsumeAsync(CancellationToken.None));
         Assert.Equal(1, handler.CallCount);
-        Assert.Equal("hello", received);
+        Assert.Equal("message", received);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.GatewayTimeout)]
+    [InlineData(HttpStatusCode.RequestTimeout)]
+    public async Task StartConsumeAsync_WhenNonTransientHttpStatusCodesAreSet_AndServerReturnsNonTransientErrorCode_ThrowsHttpRequestException(HttpStatusCode statusCode)
+    {
+        // ARRANGE
+        using HttpClient client = new(new FixedStatusHttpMessageHandler(statusCode));
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(
+            client, 
+            new SseSourceOptions
+            {
+                Path = "/sse",
+                NonTransientStatusCodes = [HttpStatusCode.GatewayTimeout, HttpStatusCode.RequestTimeout]
+            });
+
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<HttpRequestException>(() =>
+            source.StartConsumeAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StartConsumeAsync_WhenIsTransientConnectionFailureIsSet_AndExceptionSatisfiesThePredicate_RetriesAndCompletesNormally()
+    {
+        // ARRANGE
+        string? received = null;
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
+        CallCountingHttpMessageHandler handler = new(callIndex =>
+        {
+            if (callIndex == 1)
+                throw new Exception("transient exception");
+
+            HttpResponseMessage response = new(HttpStatusCode.OK)
+            {
+                Content = new StringContent(sseData, Encoding.UTF8, "text/event-stream")
+            };
+            return Task.FromResult(response);
+        });
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.Fixed(maxRetries: 1, delayInMilliseconds: 0),
+            IsTransientConnectionFailure = ex => ex.Message == "transient exception"
+        });
+        source.On("e", data => received = data);
+
+        // ACT
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+
+        // ASSERT
+        Assert.Equal(2, handler.CallCount);
+        Assert.Equal("message", received);
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenIsTransientConnectionFailureIsSet_AndExceptionDoesNotSatisfyThePredicate_ThrowsHttpRequestException()
+    {
+        //ARRANGE
+        using HttpClient client = new(new FixedStatusHttpMessageHandler(HttpStatusCode.GatewayTimeout));
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            IsTransientConnectionFailure = ex => ex.Message == "transient exception"
+        });
+        
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<HttpRequestException>(() => source.StartConsumeAsync(CancellationToken.None));
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenIsResponseAbortedIsSet_AndConnectionSuddenlyDrops_AndExceptionsSatisfiesThePredicate_AttemptsReconnection()
+    {
+        // ARRANGE
+        string? received = null;
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
+        CallCountingHttpMessageHandler handler = new(callIndex =>
+        {
+            HttpResponseMessage response;
+            if (callIndex == 1)
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new NetworkFailureStream(new Exception("response aborted"),
+                        sseData))
+                };
+            }
+            else
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(sseData, Encoding.UTF8, "text/event-stream")
+                };
+            }
+            
+            return Task.FromResult(response);
+        });
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.None,
+            IsResponseAborted = exception => exception.Message == "response aborted"
+        });
+        source.On("e", data => received = data);
+
+        // ACT
+        await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
+        
+        // ASSERT
+        Assert.Equal(2, handler.CallCount);
+        Assert.Equal("message", received);
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenIsResponseAbortedIsSet_AndConnectionSuddenlyDrops_AndExceptionsSatisfiesThePredicate_AndORestartOnConnectionAbortIsFalse_AttemptsReconnection()
+    {
+        // ARRANGE
+        string? received = null;
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
+        CallCountingHttpMessageHandler handler = new(callIndex =>
+        {
+            HttpResponseMessage response;
+            if (callIndex == 1)
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new NetworkFailureStream(new Exception("response aborted"),
+                        sseData))
+                };
+            }
+            else
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(sseData, Encoding.UTF8, "text/event-stream")
+                };
+            }
+            
+            return Task.FromResult(response);
+        });
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.None,
+            IsResponseAborted = exception => exception.Message == "response aborted",
+            RestartOnConnectionAbort = false
+        });
+        source.On("e", data => received = data);
+        
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<ResponseAbortedException>(() => source.StartConsumeAsync(CancellationToken.None));
+        Assert.Equal(1, handler.CallCount);
+        Assert.Equal("message", received);
+    }
+    
+    [Fact]
+    public async Task StartConsumeAsync_WhenIsResponseAbortedIsSet_AndConnectionSuddenlyDrops_AndExceptionsSatisfiesThePredicate_NotAttemptsReconnection()
+    {
+        // ARRANGE
+        string? received = null;
+        string sseData = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "message" });
+        CallCountingHttpMessageHandler handler = new(callIndex =>
+        {
+            HttpResponseMessage response;
+            if (callIndex == 1)
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new NetworkFailureStream(new Exception("response not aborted"),
+                        sseData))
+                };
+            }
+            else
+            {
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(sseData, Encoding.UTF8, "text/event-stream")
+                };
+            }
+            
+            return Task.FromResult(response);
+        });
+        using HttpClient client = new(handler);
+        client.BaseAddress = new Uri("https://example.com");
+        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        {
+            Path = "/sse",
+            ConnectionRetryOptions = RetryOptions.None,
+            IsResponseAborted = exception => exception.Message == "response aborted"
+        });
+        source.On("e", data => received = data);
+
+        // ACT & ASSERT
+        await Assert.ThrowsAsync<Exception>(() => source.StartConsumeAsync(CancellationToken.None));
+        Assert.Equal(1, handler.CallCount);
+        Assert.Equal("message", received);
     }
 }
 

@@ -7,14 +7,7 @@ namespace SsePulse.Client.Core;
 /// </summary>
 public sealed class ResponseAbortedException : Exception
 {
-#if NET8_0_OR_GREATER
-    internal ResponseAbortedException(HttpIOException ioEx) : base(ioEx.Message, ioEx)
-    {
-            
-    }
-#endif
-
-    internal ResponseAbortedException(IOException ioEx) : base(ioEx.Message, ioEx)
+    internal ResponseAbortedException(Exception ex) : base(ex.Message, ex)
     {
             
     }
