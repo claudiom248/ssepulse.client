@@ -9,6 +9,8 @@ namespace SsePulse.Client.Core.Configurations;
 /// <summary>
 /// Configuration options for a <see cref="SsePulse.Client.Core.SseSource"/> instance.
 /// All properties default to the values defined in <see cref="SseSourceOptionsDefaults"/>.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/configuration.html"/>
 /// </summary>
 public class SseSourceOptions
 {
