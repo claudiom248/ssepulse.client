@@ -150,7 +150,7 @@ public class SseSourceBuilder : ISseSourceBuilder
     public ISseSourceBuilder AddRequestMutator(IRequestMutator mutator)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
-            options => { options.RequestMutatorsFactories.Add(_ => mutator); });
+            options => { options.RequestMutatorsFactories.Add((_, _) => mutator); });
         return this;
     }
 
@@ -158,7 +158,7 @@ public class SseSourceBuilder : ISseSourceBuilder
     public ISseSourceBuilder AddRequestMutator<TRequestMutator>() where TRequestMutator : IRequestMutator
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
-            options => { options.RequestMutatorsFactories.Add(sp => sp.GetRequiredService<TRequestMutator>()); });
+            options => { options.RequestMutatorsFactories.Add((sp, _) => sp.GetRequiredService<TRequestMutator>()); });
         return this;
     }
 
@@ -166,7 +166,7 @@ public class SseSourceBuilder : ISseSourceBuilder
     public ISseSourceBuilder AddRequestMutator(Func<IServiceProvider, IRequestMutator> mutatorFactory)
     {
         Services.Configure<SseSourceFactoryOptions>(Name,
-            options => { options.RequestMutatorsFactories.Add(mutatorFactory); });
+            options => { options.RequestMutatorsFactories.Add((sp, _) => mutatorFactory(sp)); });
         return this;
     }
 }

@@ -20,6 +20,8 @@ public static class SseSourceBuilderExtensions
     /// Enables last-event-ID tracking for this SSE source using the built-in in-memory store.
     /// When a reconnection occurs, the <c>Last-Event-ID</c> header is automatically included
     /// so the server can resume from where it left off.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id.html"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
@@ -27,20 +29,14 @@ public static class SseSourceBuilderExtensions
     {
         builder.Services.TryAddTransient<InMemoryLastEventIdStore>();
         builder.Services.TryAddTransient<ILastEventIdStore>(sp => sp.GetRequiredService<InMemoryLastEventIdStore>());
-        builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(builder.Name,
-            (sp, _) => new LastEventIdStoreProvider(sp.GetRequiredService<ILastEventIdStore>()));
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.LastEventIdStoreFactory = sp =>
-            {
-                LastEventIdStoreProvider provider = sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-                return provider.Provide();
-            };
+            options.LastEventIdStoreFactory = sp => sp.GetRequiredService<InMemoryLastEventIdStore>();
         });
-        builder.AddRequestMutator(sp =>
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-            return ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, provider.Provide());
+            options.RequestMutatorsFactories.Add((sp, ctx) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, ctx.LastEventIdStore!));
         });
         return builder;
     }
@@ -49,34 +45,16 @@ public static class SseSourceBuilderExtensions
     /// Enables last-event-ID tracking for this SSE source using a custom <see cref="ILastEventIdStore"/>
     /// implementation resolved from the DI container. Register <typeparamref name="TEventIdStore"/>
     /// in the container before calling this method.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id.html"/>
     /// </summary>
     /// <typeparam name="TEventIdStore">The custom store type that persists the last-event-ID.</typeparam>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
-    /// <param name="fromKeyed"></param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder,
-        bool fromKeyed = false)
+    public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder)
         where TEventIdStore : class, ILastEventIdStore
     {
-        builder.Services.AddKeyedSingleton<LastEventIdStoreProvider>(
-            builder.Name,
-            (sp, _) => fromKeyed
-                ? new LastEventIdStoreProvider(sp.GetRequiredKeyedService<TEventIdStore>(builder.Name))
-                : new LastEventIdStoreProvider(sp.GetRequiredService<TEventIdStore>()));
-        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
-        {
-            options.LastEventIdStoreFactory = sp =>
-            {
-                LastEventIdStoreProvider provider = sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-                return provider.Provide();
-            };
-        });
-        builder.AddRequestMutator(sp =>
-        {
-            LastEventIdStoreProvider provider =  sp.GetRequiredKeyedService<LastEventIdStoreProvider>(builder.Name);
-            return ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, provider.Provide());
-        });
-        return builder;
+        return AddLastEventIdCore<TEventIdStore>(builder, fromKeyed: false);
     }
 
     /// <summary>
@@ -110,7 +88,7 @@ public static class SseSourceBuilderExtensions
             (sp, _) => ActivatorUtilities.CreateInstance<FileLastEventIdStore>(
                 sp,
                 sp.GetRequiredService<IOptionsMonitor<FileLastEventIdStoreOptions>>().Get(builder.Name)));
-        return builder.AddLastEventId<FileLastEventIdStore>(fromKeyed: true);
+        return AddLastEventIdCore<FileLastEventIdStore>(builder, true);
     }
 
     /// <summary>
@@ -125,6 +103,23 @@ public static class SseSourceBuilderExtensions
         builder.Services.Configure<SseSourceOptions>(builder.Name, opts =>
         {
             opts.JsonSerializerOptions = options;
+        });
+        return builder;
+    }
+    
+    private static ISseSourceBuilder AddLastEventIdCore<TEventIdStore>(ISseSourceBuilder builder, bool fromKeyed = false)
+        where TEventIdStore : class, ILastEventIdStore
+    {
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
+        {
+            options.LastEventIdStoreFactory = fromKeyed
+                ? sp => sp.GetRequiredKeyedService<TEventIdStore>(builder.Name)
+                : sp => sp.GetRequiredService<TEventIdStore>();
+        });
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
+        {
+            options.RequestMutatorsFactories.Add((sp, ctx) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, ctx.LastEventIdStore!));
         });
         return builder;
     }

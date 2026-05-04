@@ -270,6 +270,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
     [Fact]
     public async Task StartConsumeAsync_WithLastEventIdMutator_UpdatesInternalState()
     {
+        // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(
             new SseEvent { Id = "123", EventType = "e", Data = "1" },
             new SseEvent { Id = "456", EventType = "e", Data = "2" });
@@ -282,15 +283,13 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             inMemoryLastEventIdStore);
         source.On("e", _ => { });
 
+        // ACT
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
-#if NET10_0_OR_GREATER
         await source.StopAsync();
-#else
-        source.Stop();
-#endif
         source.Reset();
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
+        // ASSERT
         Assert.Equal("456", handler.LastEventIdSent);
     }
 

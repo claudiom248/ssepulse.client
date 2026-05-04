@@ -65,7 +65,9 @@ public class SseSourceBuilderExtensionsTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider);
+        ILastEventIdStore store = options.LastEventIdStoreFactory!(provider);
+        SseSourceCreationContext context = new(store);
+        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider, context);
         Assert.IsType<LastEventIdRequestMutator>(mutator);
     }
 
@@ -145,7 +147,9 @@ public class SseSourceBuilderExtensionsTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider);
+        ILastEventIdStore store = options.LastEventIdStoreFactory!(provider);
+        SseSourceCreationContext context = new(store);
+        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider, context);
         Assert.IsType<LastEventIdRequestMutator>(mutator);
     }
 
@@ -211,7 +215,9 @@ public class SseSourceBuilderExtensionsTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider);
+        ILastEventIdStore store = options.LastEventIdStoreFactory!(provider);
+        SseSourceCreationContext context = new(store);
+        IRequestMutator mutator = options.RequestMutatorsFactories[0](provider, context);
         Assert.IsType<LastEventIdRequestMutator>(mutator);
     }
     
