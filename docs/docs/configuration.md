@@ -4,18 +4,18 @@ Basic behaviour of `SseSource` is controlled through `SseSourceOptions`.
 
 ## SseSourceOptions reference
 
-| Property                       | Type                    | Default                                                                      | Description                                                                                                               |
-|--------------------------------|-------------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| `Path`                         | `string`                | `/sse`                                                                       | Relative or absolute URL of the SSE endpoint.                                                                             |
-| `MaxDegreeOfParallelism`       | `int`                   | `1`                                                                          | Maximum number of event handlers that run concurrently.                                                                   |
-| `DefaultEventNameCasePolicy`   | `NameCasePolicy`        | `PascalCase`                                                                 | Naming policy used when deriving event names from C# type names or `On*` method names.                                    |
-| `ConnectionRetryOptions`       | `RetryOptions?`         | `RetryOptions.None`                                                          | Retry policy for connection failures. Set to `null` or `RetryOptions.None` to disable.                                    |
-| `ThrowWhenNoEventHandlerFound` | `bool`                  | `false`                                                                      | When `true`, throws `HandlerNotFoundException` for events with no registered handler; otherwise logs a warning and skips. |
-| `RestartOnConnectionAbort`     | `bool`                  | `true`                                                                       | Automatically restarts the connection loop after a `ResponseAbortedException`.                                            |
-| `NonTransientStatusCodes`      | `ICollection<HttpStatusCode>` | `NotFound`, `InternalServerError`, `BadGateway`, `Unauthorized`, `Forbidden` | HTTP status codes treated as permanent failures. When the server responds with one of these codes, no retry is attempted regardless of `ConnectionRetryOptions`. |
-| `IsTransientConnectionFailure` | `Predicate<Exception>?` | `null`                                                                       | Custom predicate that decides whether a connection-phase exception is transient and should trigger a retry. Overrides the built-in transient detection logic when set. |
-| `IsResponseAborted`            | `Predicate<Exception>?` | `null`                                                                       | Custom predicate that decides whether a stream-phase exception represents a connection abort. When set and returns `true`, the source treats the exception as a `ResponseAbortedException` and honours `RestartOnConnectionAbort`. |
-| `JsonSerializerOptions`        | `JsonSerializerOptions` | A default `JsonSerializerOptions` instance that ignores properties name case | Allow to set the options used by the JSON serializer when deserializaing event data.                                      |
+| Property                       | Type                          | Default                                                                      | Description                                                                                                                                                                                                                        |
+|--------------------------------|-------------------------------|------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Path`                         | `string`                      | `/sse`                                                                       | Relative or absolute URL of the SSE endpoint.                                                                                                                                                                                      |
+| `MaxDegreeOfParallelism`       | `int`                         | `1`                                                                          | Maximum number of event handlers that run concurrently.                                                                                                                                                                            |
+| `DefaultEventNameCasePolicy`   | `NameCasePolicy`              | `PascalCase`                                                                 | Naming policy used when deriving event names from C# type names or `On*` method names.                                                                                                                                             |
+| `ConnectionRetryOptions`       | `RetryOptions?`               | `RetryOptions.None`                                                          | Retry policy for connection failures. Set to `null` or `RetryOptions.None` to disable.                                                                                                                                             |
+| `ThrowWhenNoEventHandlerFound` | `bool`                        | `false`                                                                      | When `true`, throws `HandlerNotFoundException` for events with no registered handler; otherwise logs a warning and skips.                                                                                                          |
+| `RestartOnConnectionAbort`     | `bool`                        | `true`                                                                       | Automatically restarts the connection loop after a `ResponseAbortedException`.                                                                                                                                                     |
+| `NonTransientStatusCodes`      | `ICollection<HttpStatusCode>` | `NotFound`, `InternalServerError`, `BadGateway`, `Unauthorized`, `Forbidden` | HTTP status codes treated as permanent failures. When the server responds with one of these codes, no retry is attempted regardless of `ConnectionRetryOptions`.                                                                   |
+| `IsTransientConnectionFailure` | `Predicate<Exception>?`       | `null`                                                                       | Custom predicate that decides whether a connection-phase exception is transient and should trigger a retry. Overrides the built-in transient detection logic when set.                                                             |
+| `IsResponseAborted`            | `Predicate<Exception>?`       | `null`                                                                       | Custom predicate that decides whether a stream-phase exception represents a connection abort. When set and returns `true`, the source treats the exception as a `ResponseAbortedException` and honours `RestartOnConnectionAbort`. |
+| `JsonSerializerOptions`        | `JsonSerializerOptions`       | A default `JsonSerializerOptions` instance that ignores properties name case | Allow to set the options used by the JSON serializer when deserializaing event data.                                                                                                                                               |
 
 ---
 
@@ -23,12 +23,12 @@ Basic behaviour of `SseSource` is controlled through `SseSourceOptions`.
 
 The `DefaultEventNameCasePolicy` property controls how C# identifiers are converted to SSE event names.
 
-| Policy | Example input | Example output |
-|---|---|---|
-| `PascalCase` | `OrderCreated` | `OrderCreated` |
-| `CamelCase` | `OrderCreated` | `orderCreated` |
-| `SnakeCase` | `OrderCreated` | `order_created` |
-| `KebabCase` | `OrderCreated` | `order-created` |
+| Policy       | Example input  | Example output  |
+|--------------|----------------|-----------------|
+| `PascalCase` | `OrderCreated` | `OrderCreated`  |
+| `CamelCase`  | `OrderCreated` | `orderCreated`  |
+| `SnakeCase`  | `OrderCreated` | `order_created` |
+| `KebabCase`  | `OrderCreated` | `order-created` |
 
 ---
 
@@ -73,8 +73,10 @@ Set `ConnectionRetryOptions` to `null` or `RetryOptions.None` to disable retries
 
 SsePulse distinguishes between two kinds of failures:
 
-- **Connection-phase failures** – exceptions raised while establishing the HTTP connection (e.g. DNS errors, TCP timeouts, non-2xx responses).
-- **Stream-phase aborts** – exceptions raised while reading an already-open response stream (e.g. the server closes the socket mid-stream).
+- **Connection-phase failures** – exceptions raised while establishing the HTTP connection (e.g. DNS errors, TCP
+  timeouts, non-2xx responses).
+- **Stream-phase aborts** – exceptions raised while reading an already-open response stream (e.g. the server closes the
+  socket mid-stream).
 
 Both kinds can be customised through `SseSourceOptions`.
 
@@ -84,7 +86,8 @@ When the server returns an HTTP error response, SsePulse inspects the status cod
 Status codes listed in `NonTransientStatusCodes` are treated as permanent failures – no retry is attempted,
 regardless of the `ConnectionRetryOptions` setting.
 
-The default set of non-transient codes is: `404 Not Found`, `500 Internal Server Error`, `502 Bad Gateway`, `401 Unauthorized`, and `403 Forbidden`.
+The default set of non-transient codes is: `404 Not Found`, `500 Internal Server Error`, `502 Bad Gateway`,
+`401 Unauthorized`, and `403 Forbidden`.
 
 ```csharp
 var options = new SseSourceOptions

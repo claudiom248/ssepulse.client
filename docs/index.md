@@ -35,6 +35,7 @@ await source.StartConsumeAsync(CancellationToken.None);
 
 - [Introduction to Server-Sent Events](docs/introduction-to-sse.md)
 - [Getting Started](docs/getting-started.md)
+- [Architecture & Implementation](docs/architecture.md)
 - [Dependency Injection](docs/dependency-injection.md)
 - [JSON Serializer Options](docs/json-serializer-options.md)
 - [Hosted Services](docs/hosted-services.md)

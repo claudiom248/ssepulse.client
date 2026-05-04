@@ -2,6 +2,8 @@
   href: introduction-to-sse.md
 - name: Getting Started
   href: getting-started.md
+- name: Architecture & Implementation
+  href: architecture.md
 - name: Dependency Injection
   href: dependency-injection.md
 - name: JSON Serializer Options

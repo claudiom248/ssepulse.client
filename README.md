@@ -279,6 +279,7 @@ Full guides and API reference are available in the [`docs/`](docs/) folder:
 
 - [Introduction to Server-Sent Events](docs/docs/introduction-to-sse.md)
 - [Getting Started](docs/docs/getting-started.md)
+- [Architecture & Implementation](docs/docs/architecture.md)
 - [Dependency Injection](docs/docs/dependency-injection.md)
 - [JSON Serializer Options](docs/docs/json-serializer-options.md)
 - [Hosted Services](docs/docs/hosted-services.md)
