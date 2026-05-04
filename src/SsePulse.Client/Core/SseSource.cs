@@ -252,11 +252,8 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
 
         _logger.LogDebug("Resetting the source to initial state.");
         _cts.Dispose();
-#pragma warning disable CS1587 // XML comment is not placed on a valid language element
-        /// TODO: set TaskCreationOptions.RunContinuationsAsynchronously when creating the TaskCompletionSource to avoid potential deadlocks in synchronous continuations after reset
-#pragma warning restore CS1587 // XML comment is not placed on a valid language element
         _cts = new CancellationTokenSource();
-        _tcs = new TaskCompletionSource<bool>();
+        _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         _started = 0;
     }
 
