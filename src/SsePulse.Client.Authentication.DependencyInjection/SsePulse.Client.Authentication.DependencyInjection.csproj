@@ -4,7 +4,7 @@
         <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
         <PackageId>SsePulse.Client.Authentication.DependencyInjection</PackageId>
         <Description>Extension methods for registering SsePulse.Client.Authentication services and dependencies using Microsoft.Extensions.DependencyInjection.</Description>
-        <PackageTags>dependency-injection;authentication;bearer-token;api-key;security;oauth;server-sent-event;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <PackageTags>dependency-injection;authentication;bearer-token;api-key;security;oauth;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>

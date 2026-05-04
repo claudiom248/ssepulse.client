@@ -4,7 +4,7 @@
         <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
         <PackageId>SsePulse.Client.Authentication</PackageId>
         <Description>Provides authentication handlers for SsePulse.Client, enabling support for various authentication mechanisms such as Bearer Token and API Key when consuming Server-Sent Events (SSE) streams.</Description>
-        <PackageTags>authentication;bearer-token;api-key;security;oauth;server-sent-event;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <PackageTags>authentication;bearer-token;api-key;security;oauth;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
