@@ -5,7 +5,7 @@ namespace SsePulse.Client.DependencyInjection.Internal;
 
 internal class SseSourceFactoryOptions
 {
-    internal List<Func<IServiceProvider, IRequestMutator>> RequestMutatorsFactories
+    internal List<Func<IServiceProvider, SseSourceCreationContext, IRequestMutator>> RequestMutatorsFactories
     {
         get;
     } = [];

@@ -3,6 +3,8 @@ namespace SsePulse.Client.Authentication.Providers.TokenProviders.Configurations
 /// <summary>
 /// Supplies Bearer tokens used by <see cref="SsePulse.Client.Authentication.Providers.BearerTokenAuthenticationProvider"/>.
 /// Implement this interface to provide custom token acquisition logic (e.g. caching, refresh).
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public interface ITokenProvider
 {

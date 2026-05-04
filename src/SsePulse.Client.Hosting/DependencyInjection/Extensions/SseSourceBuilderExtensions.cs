@@ -9,13 +9,15 @@ namespace SsePulse.Client.Hosting.DependencyInjection.Extensions;
 
 /// <summary>
 /// Extension methods to add hosted-service registrations for the current <see cref="SseSource"/> registration.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
 /// </summary>
 public static class SseSourceBuilderExtensions
 {
     /// <summary>
     /// Registers the default <see cref="SseSourceHostedService"/> for the current <see cref="SseSource"/> registration.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/SsePulse.Client/docs/hosted-services.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
@@ -34,7 +36,7 @@ public static class SseSourceBuilderExtensions
     /// <summary>
     /// Registers a custom hosted service type for the current <see cref="SseSource"/> registration.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/SsePulse.Client/docs/hosted-services.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
     /// </summary>
     /// <typeparam name="THostedService">The hosted service type to create through dependency injection.</typeparam>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
@@ -58,7 +60,7 @@ public static class SseSourceBuilderExtensions
     /// <summary>
     /// Registers a custom hosted service factory for the current <see cref="SseSource"/> registration.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/SsePulse.Client/docs/hosted-services.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
     /// </summary>
     /// <typeparam name="THostedService">The hosted service type returned by <paramref name="factory"/>.</typeparam>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>

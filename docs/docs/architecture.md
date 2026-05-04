@@ -234,8 +234,8 @@ source.Dispose();  // Synchronous: cancels the loop but does not wait
 ```
 
 **Note**: Calling `Dispose` or `DisposeAsync` while `StartConsumeAsync` is running cancels the internal
-`CancellationTokenSource`, which causes the consumption loop to detect cancellation and complete `Completion` as *
-*success** (not as cancelled).
+`CancellationTokenSource`, which causes the consumption loop to detect cancellation and complete `Completion` as
+*success* (not as cancelled).
 
 ---
 

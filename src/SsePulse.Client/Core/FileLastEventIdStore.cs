@@ -21,7 +21,7 @@ namespace SsePulse.Client.Core;
 ///   <item><see cref="FlushMode.AfterCount"/> — writes every N events; reduces I/O at the cost of
 ///     potentially losing a few IDs on an unexpected crash. The pending writes is always flushed on dispose.</item>
 ///   <item><see cref="FlushMode.AfterInterval"/> — writes on a timer; lowest I/O but the most
-///     events may be lost on crash. The pending write is always flushed on dispose.</item>
+///     events may be lost on a crash. The pending write is always flushed on disposal.</item>
 /// </list>
 /// </remarks>
 public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable

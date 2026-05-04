@@ -16,6 +16,8 @@ namespace SsePulse.Client.Authentication.DependencyInjection;
 /// <summary>
 /// Extension methods on <see cref="ISseSourceBuilder"/> for configuring SSE authentication.
 /// Supports bearer-token, Basic, API-key, and custom authentication providers.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
 /// </summary>
 public static class SseBuilderExtensions
 {
@@ -37,6 +39,8 @@ public static class SseBuilderExtensions
     /// resolved from configuration; otherwise, <see cref="AuthenticationRequestMutator"/> is registered
     /// without a pre-configured provider — register an <see cref="ISseAuthenticationProvider"/> in the
     /// DI container separately before the source is resolved.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
@@ -48,7 +52,7 @@ public static class SseBuilderExtensions
             builder = builder.AddAuthentication(configurationSection);
             return builder;
         }
-            
+
         builder.Services.AddTransient<AuthenticationRequestMutator>();
         builder.AddRequestMutator<AuthenticationRequestMutator>();
         return builder;
@@ -56,11 +60,14 @@ public static class SseBuilderExtensions
 
     /// <summary>
     /// Adds authentication using a pre-constructed <see cref="ISseAuthenticationProvider"/> instance.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="provider">The authentication provider to apply to every outgoing request.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddAuthentication(this ISseSourceBuilder builder, ISseAuthenticationProvider provider)
+    public static ISseSourceBuilder AddAuthentication(this ISseSourceBuilder builder,
+        ISseAuthenticationProvider provider)
     {
         return builder.AddRequestMutator(_ => new AuthenticationRequestMutator(provider));
     }
@@ -68,6 +75,8 @@ public static class SseBuilderExtensions
     /// <summary>
     /// Adds authentication using an <see cref="ISseAuthenticationProvider"/> resolved from the DI container.
     /// Register <typeparamref name="TAuthenticationProvider"/> in the container before calling this method.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <typeparam name="TAuthenticationProvider">The authentication provider type to resolve.</typeparam>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
@@ -76,25 +85,31 @@ public static class SseBuilderExtensions
         where TAuthenticationProvider : ISseAuthenticationProvider
     {
         return builder.AddRequestMutator(sp => ActivatorUtilities.CreateInstance<AuthenticationRequestMutator>(
-            sp, 
+            sp,
             sp.GetRequiredService<TAuthenticationProvider>()));
     }
 
     /// <summary>
     /// Adds authentication using a factory delegate that constructs the <see cref="ISseAuthenticationProvider"/>
     /// from the <see cref="IServiceProvider"/>.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="authProviderFactory">Factory receiving the DI container and returning the provider.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddAuthentication(this ISseSourceBuilder builder, Func<IServiceProvider, ISseAuthenticationProvider> authProviderFactory)
+    public static ISseSourceBuilder AddAuthentication(this ISseSourceBuilder builder,
+        Func<IServiceProvider, ISseAuthenticationProvider> authProviderFactory)
     {
-        return builder.AddRequestMutator(sp => ActivatorUtilities.CreateInstance<AuthenticationRequestMutator>(sp, authProviderFactory(sp)));
+        return builder.AddRequestMutator(sp =>
+            ActivatorUtilities.CreateInstance<AuthenticationRequestMutator>(sp, authProviderFactory(sp)));
     }
 
     /// <summary>
     /// Adds authentication from a configuration section. The <c>Provider</c> key selects
     /// the authentication scheme (<c>Bearer</c>, <c>Basic</c>, or <c>ApiKey</c>).
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="authConfiguration">The configuration section containing the provider type and its arguments.</param>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
@@ -115,6 +130,8 @@ public static class SseBuilderExtensions
     /// <summary>
     /// Adds Bearer-token authentication using an <see cref="SsePulse.Client.Authentication.Providers.BearerTokenAuthenticationProvider"/>
     /// registered in the DI container. Register the provider and its <see cref="SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider"/> dependency separately.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
@@ -125,23 +142,31 @@ public static class SseBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Bearer-token authentication using a pre-constructed <see cref="SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider"/> instance.
+    /// Adds Bearer-token authentication using a pre-constructed <see cref="SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider"/>
+    /// instance.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="tokenProvider">The token provider supplying Bearer tokens.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddBearerTokenAuthentication(this ISseSourceBuilder builder, ITokenProvider tokenProvider)
+    public static ISseSourceBuilder AddBearerTokenAuthentication(this ISseSourceBuilder builder,
+        ITokenProvider tokenProvider)
     {
         return AddBearerTokenAuthentication(builder, _ => tokenProvider);
     }
 
     /// <summary>
-    /// Adds Bearer-token authentication using a factory that resolves the <see cref="SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider"/> from the DI container.
+    /// Adds Bearer-token authentication using a factory that resolves the <see cref="SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider"/>
+    /// from the DI container.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="tokenProviderFactory">Factory receiving the <see cref="IServiceProvider"/> and returning a token provider.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddBearerTokenAuthentication(this ISseSourceBuilder builder, Func<IServiceProvider, ITokenProvider> tokenProviderFactory)
+    public static ISseSourceBuilder AddBearerTokenAuthentication(this ISseSourceBuilder builder,
+        Func<IServiceProvider, ITokenProvider> tokenProviderFactory)
     {
         return builder.AddAuthentication(sp => new BearerTokenAuthenticationProvider(tokenProviderFactory.Invoke(sp)));
     }
@@ -150,13 +175,17 @@ public static class SseBuilderExtensions
     /// Adds Bearer-token authentication configured from a configuration section.
     /// The <c>TokenProvider</c> key within <c>Args</c> selects the token acquisition strategy
     /// (<c>Static</c>, <c>ClientCredentials</c>, or <c>EnvironmentVariable</c>).
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="authConfiguration">The authentication configuration section.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddBearerTokenAuthentication(this ISseSourceBuilder builder, IConfiguration authConfiguration)
+    public static ISseSourceBuilder AddBearerTokenAuthentication(this ISseSourceBuilder builder,
+        IConfiguration authConfiguration)
     {
-        ConfigurationSection argsSection = (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
+        ConfigurationSection argsSection =
+            (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
         ITokenProviderConfiguration config =
             argsSection.GetValue<string>(TokenProviderKeyName) switch
             {
@@ -174,6 +203,8 @@ public static class SseBuilderExtensions
     /// <summary>
     /// Adds Basic authentication using a <see cref="SsePulse.Client.Authentication.Providers.BasicAuthenticationProvider"/>
     /// registered in the DI container. Register the provider and its <see cref="SsePulse.Client.Authentication.Common.Credentials.BasicCredentials"/> dependency separately.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
@@ -186,11 +217,14 @@ public static class SseBuilderExtensions
     /// <summary>
     /// Adds Basic authentication and configures the credentials through a delegate.
     /// The credentials are named and resolved from the DI options system.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="configureOptions">Delegate that populates <see cref="SsePulse.Client.Authentication.Common.Credentials.BasicCredentials"/>.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddBasicAuthentication(this ISseSourceBuilder builder, Action<BasicCredentials> configureOptions)
+    public static ISseSourceBuilder AddBasicAuthentication(this ISseSourceBuilder builder,
+        Action<BasicCredentials> configureOptions)
     {
         builder.Services.Configure(builder.Name, configureOptions);
         return builder.AddAuthentication(sp => new BasicAuthenticationProvider(
@@ -199,11 +233,14 @@ public static class SseBuilderExtensions
 
     /// <summary>
     /// Adds Basic authentication using a pre-built <see cref="SsePulse.Client.Authentication.Common.Credentials.BasicCredentials"/> instance.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="configuration">The username/password credentials to use.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddBasicAuthentication(this ISseSourceBuilder builder, BasicCredentials configuration)
+    public static ISseSourceBuilder AddBasicAuthentication(this ISseSourceBuilder builder,
+        BasicCredentials configuration)
     {
         return builder.AddAuthentication(_ => new BasicAuthenticationProvider(configuration));
     }
@@ -211,15 +248,19 @@ public static class SseBuilderExtensions
     /// <summary>
     /// Adds Basic authentication from a configuration section. Expects <see cref="SsePulse.Client.Authentication.Common.Credentials.BasicCredentials"/>
     /// to be bindable from the <c>Args</c> sub-section.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="authConfiguration">The authentication configuration section.</param>
     /// <returns>The same builder for chaining.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the <c>Args</c> section cannot be bound to <see cref="SsePulse.Client.Authentication.Common.Credentials.BasicCredentials"/>.</exception>
-    public static ISseSourceBuilder AddBasicAuthentication(this ISseSourceBuilder builder, IConfiguration authConfiguration)
+    public static ISseSourceBuilder AddBasicAuthentication(this ISseSourceBuilder builder,
+        IConfiguration authConfiguration)
     {
-        ConfigurationSection argsSection = (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
-        BasicCredentials basicCredentials = 
+        ConfigurationSection argsSection =
+            (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
+        BasicCredentials basicCredentials =
             argsSection.Get<BasicCredentials>() ??
             throw new InvalidOperationException("Invalid configuration for Basic Authentication");
         return builder.AddAuthentication(_ => new BasicAuthenticationProvider(basicCredentials));
@@ -228,6 +269,8 @@ public static class SseBuilderExtensions
     /// <summary>
     /// Adds API-key authentication using an <see cref="SsePulse.Client.Authentication.Providers.ApiKeyAuthenticationProvider"/>
     /// registered in the DI container. Register the provider and its configuration dependency separately.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
@@ -239,11 +282,14 @@ public static class SseBuilderExtensions
 
     /// <summary>
     /// Adds API-key authentication and configures the key/header through a delegate.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="configureOptions">Delegate that populates <see cref="SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration"/>.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddApiKeyAuthentication(this ISseSourceBuilder builder, Action<ApiKeyAuthenticationProviderConfiguration> configureOptions)
+    public static ISseSourceBuilder AddApiKeyAuthentication(this ISseSourceBuilder builder,
+        Action<ApiKeyAuthenticationProviderConfiguration> configureOptions)
     {
         builder.Services.Configure(builder.Name, configureOptions);
         return builder.AddAuthentication(sp => new ApiKeyAuthenticationProvider(
@@ -251,12 +297,16 @@ public static class SseBuilderExtensions
     }
 
     /// <summary>
-    /// Adds API-key authentication using a pre-built <see cref="SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration"/> instance.
+    /// Adds API-key authentication using a pre-built <see cref="SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration"/>
+    /// instance.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="configuration">The API key and target header name.</param>
     /// <returns>The same builder for chaining.</returns>
-    public static ISseSourceBuilder AddApiKeyAuthentication(this ISseSourceBuilder builder, ApiKeyAuthenticationProviderConfiguration configuration)
+    public static ISseSourceBuilder AddApiKeyAuthentication(this ISseSourceBuilder builder,
+        ApiKeyAuthenticationProviderConfiguration configuration)
     {
         builder = builder.AddAuthentication(_ => new ApiKeyAuthenticationProvider(configuration));
         return builder;
@@ -266,14 +316,18 @@ public static class SseBuilderExtensions
     /// Adds API-key authentication from a configuration section. Expects
     /// <see cref="SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration"/>
     /// to be bindable from the <c>Args</c> sub-section.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html#dependency-injection"/>
     /// </summary>
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <param name="authConfiguration">The authentication configuration section.</param>
     /// <returns>The same builder for chaining.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the <c>Args</c> section cannot be bound to <see cref="SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration"/>.</exception>
-    public static ISseSourceBuilder AddApiKeyAuthentication(this ISseSourceBuilder builder, IConfiguration authConfiguration)
+    public static ISseSourceBuilder AddApiKeyAuthentication(this ISseSourceBuilder builder,
+        IConfiguration authConfiguration)
     {
-        ConfigurationSection argsSection = (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
+        ConfigurationSection argsSection =
+            (ConfigurationSection)authConfiguration.GetSection(AuthenticationProviderArgumentsSectionName);
         ApiKeyAuthenticationProviderConfiguration configuration =
             argsSection.Get<ApiKeyAuthenticationProviderConfiguration>() ??
             throw new InvalidOperationException("Invalid configuration for API Key Authentication");

@@ -5,6 +5,8 @@ namespace SsePulse.Client.Authentication.Providers.TokenProviders;
 /// <summary>
 /// An <see cref="ITokenProvider"/> that acquires a Bearer token by posting an OAuth 2.0
 /// client-credentials request to the configured token endpoint.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public class ClientCredentialsTokenProvider : ITokenProvider
 {
@@ -12,6 +14,8 @@ public class ClientCredentialsTokenProvider : ITokenProvider
 
     /// <summary>
     /// Initializes a new <see cref="ClientCredentialsTokenProvider"/> with the supplied configuration.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="configuration">Contains the token endpoint URI and client credentials.</param>
     public ClientCredentialsTokenProvider(ClientCredentialsTokenProviderConfiguration configuration)

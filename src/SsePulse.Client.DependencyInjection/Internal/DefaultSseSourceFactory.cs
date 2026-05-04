@@ -30,6 +30,7 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
         SseSourceOptions options = _sourceOptions.Get(name);
         SseSourceFactoryOptions sourceFactoryOptions = _sourceFactoryOptions.Get(name);
         ILastEventIdStore? store = sourceFactoryOptions.LastEventIdStoreFactory?.Invoke(_serviceProvider);
+        SseSourceCreationContext context = new(store);
         IReadOnlyCollection<IRequestMutator> mutators = BuildMutators();
         ILoggerFactory? loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
         SseSource source = new(
@@ -40,11 +41,12 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
             loggerFactory?.CreateLogger<SseSource>());
         BindEventsManagers();
         sourceFactoryOptions.RegisterHandlersAction?.Invoke(_serviceProvider, source);
+        
         return source;
 
         IReadOnlyCollection<IRequestMutator> BuildMutators() =>
             sourceFactoryOptions.RequestMutatorsFactories
-                .Select(registration => registration.Invoke(_serviceProvider))
+                .Select(registration => registration.Invoke(_serviceProvider, context))
                 .ToList()
                 .AsReadOnly();
 

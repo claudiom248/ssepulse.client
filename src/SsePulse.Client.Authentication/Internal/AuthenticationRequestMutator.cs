@@ -8,6 +8,8 @@ namespace SsePulse.Client.Authentication.Internal;
 /// <summary>
 /// An <see cref="IRequestMutator"/> that applies authentication to every outgoing SSE request
 /// by delegating to a configured <see cref="ISseAuthenticationProvider"/>.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -22,6 +24,8 @@ public class AuthenticationRequestMutator : IRequestMutator
 
     /// <summary>
     /// Initializes a new <see cref="AuthenticationRequestMutator"/> with the given authentication provider.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="authenticationProvider">
     /// The provider responsible for authenticating outgoing requests.

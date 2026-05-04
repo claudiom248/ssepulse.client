@@ -7,11 +7,15 @@ namespace SsePulse.Client.Authentication.Providers.TokenProviders;
 /// Supports <see cref="Configurations.ClientCredentialsTokenProviderConfiguration"/>,
 /// <see cref="Configurations.StaticTokenProviderConfiguration"/>, and
 /// <see cref="Configurations.EnvironmentVariableTokenProviderConfiguration"/>.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public static class TokenProviderFactory
 {
     /// <summary>
     /// Instantiates the appropriate <see cref="ITokenProvider"/> for the supplied <paramref name="configuration"/>.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="configuration">The provider configuration that drives which implementation is created.</param>
     /// <returns>A ready-to-use <see cref="ITokenProvider"/>.</returns>

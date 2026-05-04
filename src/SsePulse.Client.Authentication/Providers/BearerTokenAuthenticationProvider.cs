@@ -7,6 +7,8 @@ namespace SsePulse.Client.Authentication.Providers;
 /// <summary>
 /// Authenticates SSE requests using a Bearer token obtained from an <see cref="ITokenProvider"/>.
 /// The token is fetched on every request.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public class BearerTokenAuthenticationProvider : ISseAuthenticationProvider
 {
@@ -14,6 +16,8 @@ public class BearerTokenAuthenticationProvider : ISseAuthenticationProvider
 
     /// <summary>
     /// Initializes a new <see cref="BearerTokenAuthenticationProvider"/> with the supplied token provider.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="tokenProvider">Source of Bearer tokens (static, client-credentials, env-var, or custom).</param>
     public BearerTokenAuthenticationProvider(ITokenProvider tokenProvider)
