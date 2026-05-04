@@ -261,7 +261,7 @@ Writes are controlled by a configurable **flush strategy** set via `FlushMode`:
 ```
 
 > [!IMPORTANT]
-> With `AfterInterval`, the pending write is flushed when the store is disposed. Dispose the
+> With `AfterCount` and `AfterInterval`, the pending write is flushed when the store is disposed. Dispose the
 > `SseSource` or let the .NET host shut down normally to guarantee the file is written before
 > the process exits.
 

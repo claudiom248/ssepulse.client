@@ -10,6 +10,8 @@ namespace SsePulse.Client.DependencyInjection.Extensions;
 
 /// <summary>
 /// Extension methods on <see cref="IServiceCollection"/> for registering SSE sources.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
 /// </summary>
 public static partial class ServiceCollectionExtensions
 {
@@ -17,6 +19,8 @@ public static partial class ServiceCollectionExtensions
     /// Registers a default-named SSE source with no initial configuration.
     /// Call methods on the returned <see cref="ISseSourceBuilder"/> to configure the HTTP client,
     /// event handlers, and other components.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
     /// </summary>
     /// <param name="services">The service collection to add the SSE source to.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
@@ -27,6 +31,8 @@ public static partial class ServiceCollectionExtensions
 
     /// <summary>
     /// Registers a default-named SSE source and binds its options from <paramref name="configuration"/>.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
     /// </summary>
     /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="configuration">Configuration section containing <see cref="SseSourceOptions"/> values.</param>
@@ -38,6 +44,8 @@ public static partial class ServiceCollectionExtensions
 
     /// <summary>
     /// Registers a named SSE source and optionally binds its options from <paramref name="configuration"/>.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
     /// </summary>
     /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
@@ -50,6 +58,8 @@ public static partial class ServiceCollectionExtensions
 
     /// <summary>
     /// Registers a default-named SSE source and configures its options using <paramref name="configureOptions"/>.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
     /// </summary>
     /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
@@ -61,6 +71,8 @@ public static partial class ServiceCollectionExtensions
 
     /// <summary>
     /// Registers a named SSE source and configures its options using <paramref name="configureOptions"/>.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
     /// </summary>
     /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="name">Unique name for this SSE source.</param>

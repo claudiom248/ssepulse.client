@@ -12,6 +12,8 @@ namespace SsePulse.Client.Core;
 /// Connects to a Server-Sent Events (SSE) endpoint, streams events, and dispatches them
 /// to registered handlers. Supports connection retries, bearer/basic/API-key authentication,
 /// last-event-id resumption, and parallel event processing.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/architecture.html"/>
 /// </summary>
 /// <remarks>
 /// Register handlers before calling <see cref="StartConsumeAsync"/> using the fluent

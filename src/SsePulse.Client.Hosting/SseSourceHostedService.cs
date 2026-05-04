@@ -9,7 +9,7 @@ namespace SsePulse.Client.Hosting;
 /// <summary>
 /// Background service that starts consuming SSE events from a <see cref="SseSource"/>.
 /// <br/><br/>
-/// <b>DOCS:</b> <see href="https://claudiom248.github.io/SsePulse.Client/docs/hosted-services.html"/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
 /// </summary>
 public class SseSourceHostedService : BackgroundService
 {

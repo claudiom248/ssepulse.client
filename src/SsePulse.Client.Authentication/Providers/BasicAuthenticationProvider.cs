@@ -9,6 +9,8 @@ namespace SsePulse.Client.Authentication.Providers;
 /// Authenticates SSE requests using the HTTP Basic authentication scheme (RFC 7617).
 /// Encodes <see cref="BasicCredentials.Username"/> and <see cref="BasicCredentials.Password"/>
 /// as a Base64 <c>Authorization</c> header.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public class BasicAuthenticationProvider : ISseAuthenticationProvider
 {
@@ -16,6 +18,8 @@ public class BasicAuthenticationProvider : ISseAuthenticationProvider
 
     /// <summary>
     /// Initializes a new <see cref="BasicAuthenticationProvider"/> with the supplied credentials.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="credentials">The username/password pair to encode.</param>
     public BasicAuthenticationProvider(BasicCredentials credentials)

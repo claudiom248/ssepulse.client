@@ -39,15 +39,15 @@ restart. The file is read back automatically during construction.
 
 Writes to disk are controlled by a configurable **flush strategy**:
 
-| `FlushMode` | When the file is updated |
-|---|---|---|
-| `EverySet` *(default)* | On every received event ID |
-| `AfterCount` | Every *N* received event IDs |
-| `AfterInterval` | On a repeating timer |
+| `FlushMode`            | When the file is updated     |
+|------------------------|------------------------------|
+| `EverySet` *(default)* | On every received event ID   |
+| `AfterCount`           | Every *N* received event IDs |
+| `AfterInterval`        | On a repeating timer         |
 
 > [!IMPORTANT]
-> Dispose the `SseSource` (or let the .NET host shut down normally) to guarantee that any pending
-> `AfterInterval` flush is written before the process exits.
+> Dispose the `SseSource` to guarantee that any pending
+> `AfteCount` and `AfterInterval` flush is written before the process exits.
 
 **Register on the builder:**
 
