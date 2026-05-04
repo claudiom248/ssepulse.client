@@ -5,6 +5,8 @@ namespace SsePulse.Client.Authentication.Providers.TokenProviders;
 /// <summary>
 /// An <see cref="ITokenProvider"/> that delegates token retrieval to a caller-supplied async function.
 /// Useful when you have a simple lambda or method that produces a token, without needing a full class.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public class DelegatingTokenProvider : ITokenProvider
 {
@@ -12,6 +14,8 @@ public class DelegatingTokenProvider : ITokenProvider
 
     /// <summary>
     /// Initializes a new <see cref="DelegatingTokenProvider"/> with the supplied delegate.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="tokenProvider">Async function that returns the token string.</param>
     public DelegatingTokenProvider(Func<CancellationToken, ValueTask<string>> tokenProvider)

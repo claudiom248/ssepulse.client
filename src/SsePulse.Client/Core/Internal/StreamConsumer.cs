@@ -1,6 +1,5 @@
 using System.Net.ServerSentEvents;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using SsePulse.Client.Common.Extensions;
@@ -34,22 +33,28 @@ internal class StreamConsumer
         _onError = onError;
         _lastEventIdStore = lastEventIdStore;
     }
-    
+
     public async Task ConsumeAsync(Stream stream, CancellationToken cancellationToken)
     {
-        ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock(cancellationToken);
+        ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock();
         SseParser<string> parser = SseParser.Create(stream);
         try
         {
             await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
             {
+                using IDisposable? _ = _logger.BeginScope("EventType: {EventType}", sseItem.EventType);
+                _logger.LogDebug("Received event of type '{EventType}' and Data {Data}", sseItem.EventType,
+                    sseItem.Data);
                 if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
                 {
+                    _logger.LogDebug("Set last event ID to '{EventId}'", sseItem.EventId);
                     _lastEventIdStore.Set(sseItem.EventId!);
                 }
 
                 if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
                 {
+                    _logger.LogTrace(
+                        "Dispatcher block is in a faulted state. Throwing exception to stop processing incoming events.");
                     throw dispatcherBlock.Completion.Exception;
                 }
 
@@ -63,29 +68,54 @@ internal class StreamConsumer
             throw new ResponseAbortedException(ioEx);
         }
 #endif
-        catch (IOException hre) when (hre.FindInner<SocketException>() is {SocketErrorCode: SocketError.ConnectionReset})
+        catch (IOException hre) when (hre.FindInner<SocketException>() is
+                                          { SocketErrorCode: SocketError.ConnectionReset })
         {
             _logger.LogError(hre, ResponseAbortedMessage);
             throw new ResponseAbortedException(hre);
+        }
+        catch (Exception ex) when (IsResponseAborted(ex))
+        {
+            throw new ResponseAbortedException(ex);
         }
         finally
         {
             dispatcherBlock.Complete();
             await dispatcherBlock.Completion.ConfigureAwait(false);
         }
-    }
 
-    private ActionBlock<SseItem<string>> CreateDispatcherBlock(CancellationToken cancellationToken)
-    {
-        ActionBlock<SseItem<string>> dispatcherBlock = new(
-            Dispatch,
-            new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism,
-                CancellationToken = cancellationToken
-            });
-        return dispatcherBlock;
+        return;
+
+        ActionBlock<SseItem<string>> CreateDispatcherBlock()
+        {
+            return new ActionBlock<SseItem<string>>(
+                Dispatch,
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism,
+                    CancellationToken = cancellationToken
+                });
+        }
     }
+    
+    private bool IsResponseAborted(Exception ex)
+    {
+        if (_options.IsResponseAborted?.Invoke(ex) == true)
+        {
+            return true;
+        }
+
+        switch (ex)
+        {
+#if NET8_0_OR_GREATER
+            case HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded }:
+#endif
+            case IOException hre when 
+                hre.FindInner<SocketException>() is { SocketErrorCode: SocketError.ConnectionReset }:
+                return true;
+            default:
+                return false;
+        } }
 
     private void Dispatch(SseItem<string> @event)
     {

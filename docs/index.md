@@ -35,10 +35,13 @@ await source.StartConsumeAsync(CancellationToken.None);
 
 - [Introduction to Server-Sent Events](docs/introduction-to-sse.md)
 - [Getting Started](docs/getting-started.md)
+- [Architecture & Implementation](docs/architecture.md)
 - [Dependency Injection](docs/dependency-injection.md)
 - [JSON Serializer Options](docs/json-serializer-options.md)
 - [Hosted Services](docs/hosted-services.md)
+- [Last-Event-ID Resumption](docs/last-event-id.md)
 - [Authentication](docs/authentication.md)
+- [Request Mutators](docs/request-mutators.md)
 - [Configuration](docs/configuration.md)
 - [Platform Availability](docs/platform-availability.md)
 - [API Reference](https://claudiom248.github.io/ssepulse.client/api/SsePulse.Client.Abstractions.html)

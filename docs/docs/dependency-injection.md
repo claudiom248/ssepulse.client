@@ -200,8 +200,13 @@ services
 
 ## Last-event-ID resumption
 
-When the connection drops and reconnects, the `Last-Event-ID` header tells the server where
-to resume. Call `AddLastEventId()` on the builder to enable this with the built-in in-memory store.
+When the connection drops and reconnects, the `Last-Event-ID` header tells the server where to
+resume. SsePulse attaches the header automatically once a store is registered on the builder.
+
+### In-memory store
+
+The simplest option. The last event ID is held in memory and lost when the process restarts.
+Suitable when replay across restarts is not required.
 
 ```csharp
 services
@@ -210,18 +215,70 @@ services
     .AddLastEventId();
 ```
 
-### Custom store
+### File-based store
 
-Provide your own `ILastEventIdStore` for distributed or persistent scenarios (e.g. Redis).
+`AddPersistentLastEventIdStore` registers `FileLastEventIdStore`, which writes the last event ID
+to a local file so the stream can be resumed even after a process restart.
 
 ```csharp
-services.AddSingleton<ILastEventIdStore, RedisLastEventIdStore>();
+services
+    .AddSseSource(options => options.Path = "/events")
+    .AddHttpClient(client => client.BaseAddress = new Uri("https://my-server.example"))
+    .AddPersistentLastEventIdStore(opts =>
+    {
+        opts.FilePath = "/var/app/last-event-id.txt";
+    });
+```
+
+Writes are controlled by a configurable **flush strategy** set via `FlushMode`:
+
+| `FlushMode` | Behaviour | Trade-off |
+|---|---|---|
+| `EverySet` *(default)* | Written on every received event ID | Safest — no data loss on crash; highest I/O |
+| `AfterCount` | Written every *N* received event IDs | Fewer writes; may lose the last *N−1* IDs on crash |
+| `AfterInterval` | Written on a repeating timer | Lowest I/O; pending write always flushed on dispose |
+
+**`AfterCount` example** — flush every 20 events:
+
+```csharp
+.AddPersistentLastEventIdStore(opts =>
+{
+    opts.FilePath = "/var/app/last-event-id.txt";
+    opts.FlushMode = FlushMode.AfterCount;
+    opts.FlushAfterCount = 20;
+});
+```
+
+**`AfterInterval` example** — flush every 5 seconds:
+
+```csharp
+.AddPersistentLastEventIdStore(opts =>
+{
+    opts.FilePath = "/var/app/last-event-id.txt";
+    opts.FlushMode = FlushMode.AfterInterval;
+    opts.FlushInterval = TimeSpan.FromSeconds(5);
+});
+```
+
+> [!IMPORTANT]
+> With `AfterCount` and `AfterInterval`, the pending write is flushed when the store is disposed. Dispose the
+> `SseSource` or let the .NET host shut down normally to guarantee the file is written before
+> the process exits.
+
+### Custom store
+
+Implement `ILastEventIdStore` for any other persistence strategy (Redis, database, etc.).
+
+```csharp
+services.AddSingleton<RedisLastEventIdStore>();
 
 services
     .AddSseSource(options => options.Path = "/events")
     .AddHttpClient(client => client.BaseAddress = new Uri("https://my-server.example"))
     .AddLastEventId<RedisLastEventIdStore>();
 ```
+
+For a full reference on all store options see [Last-Event-ID Resumption](last-event-id.md).
 
 ---
 

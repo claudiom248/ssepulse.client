@@ -2,12 +2,16 @@
   href: introduction-to-sse.md
 - name: Getting Started
   href: getting-started.md
+- name: Architecture & Implementation
+  href: architecture.md
 - name: Dependency Injection
   href: dependency-injection.md
 - name: JSON Serializer Options
   href: json-serializer-options.md
 - name: Hosted Services
   href: hosted-services.md
+- name: Last-Event-ID Resumption
+  href: last-event-id.md
 - name: Authentication
   href: authentication.md
 - name: Request Mutators

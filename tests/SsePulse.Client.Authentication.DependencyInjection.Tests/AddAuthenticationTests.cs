@@ -61,7 +61,7 @@ public class AddAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class AddAuthenticationTests
         builder.AddAuthentication();
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        IRequestMutator requestMutator = options.RequestMutatorsFactories[0](provider);
+        IRequestMutator requestMutator = options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null));
         HttpRequestMessage request = new(HttpMethod.Get, "https://localhost/sse");
         await requestMutator.ApplyAsync(request, CancellationToken.None);
 
@@ -175,7 +175,7 @@ public class AddAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class AddAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
     }
 
     [Fact]
@@ -212,7 +212,7 @@ public class AddAuthenticationTests
 
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
-        GetOptions(provider, "MySource").RequestMutatorsFactories[0](provider);
+        GetOptions(provider, "MySource").RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null));
         Assert.Same(provider, capturedProvider);
     }
 
@@ -229,7 +229,7 @@ public class AddAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
     }
 
     private static SseSourceFactoryOptions BuildAndGetOptions(ServiceCollection services, string sourceName)

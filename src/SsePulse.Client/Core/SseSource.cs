@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,12 +12,15 @@ namespace SsePulse.Client.Core;
 /// Connects to a Server-Sent Events (SSE) endpoint, streams events, and dispatches them
 /// to registered handlers. Supports connection retries, bearer/basic/API-key authentication,
 /// last-event-id resumption, and parallel event processing.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/architecture.html"/>
 /// </summary>
 /// <remarks>
 /// Register handlers before calling <see cref="StartConsumeAsync"/> using the fluent
 /// <c>On</c> / <c>OnItem</c> / <c>Bind</c> methods defined in the partial handler file.
 /// The source can be reset and reused after completion via <see cref="Reset"/>.
 /// </remarks>
+[DebuggerDisplay("{DebuggerDisplay(),nq}")]
 public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposable
 {
     private readonly SseSourceOptions _options;
@@ -37,7 +41,15 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
     /// either successfully, due to cancellation, or with an exception.
     /// </summary>
     public Task Completion => _tcs.Task;
-
+    
+    private string DebuggerDisplay()
+    {
+        string text = $"SseSource: Path={_options.Path}";
+        text += $", IsConnected={IsConnected}";
+        text += $", Started={Convert.ToBoolean(_started)}";
+        return text;
+    } 
+    
     private readonly ILastEventIdStore? _lastEventIdStore;
 
     /// <summary>
@@ -98,6 +110,12 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
     /// <exception cref="InvalidOperationException">Thrown if the source has already been started.</exception>
     public async Task StartConsumeAsync(CancellationToken cancellationToken)
     {
+        using IDisposable? _ = _logger.BeginScope(
+            "SourceName= {SourceName}, Path= {Path}, ConnectionId= {ConnectionId}",   
+            _options.Name, 
+            _options.Path, 
+            Guid.NewGuid().ToString());
+        
         AssertNotDisposed();
         if (Interlocked.CompareExchange(ref _started, 1, 0) == 1)
         {
@@ -107,9 +125,9 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
             _cts.Token,
             cancellationToken);
 
+        _logger.LogInformation("Starting SSE consumption.");
         while (true)
         {
-            _logger.LogInformation("Starting SSE consumption from {Path}", _options.Path);
             try
             {
 #if NET8_0_OR_GREATER
@@ -122,7 +140,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
                 }
 #else
                 using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
-                _logger.LogDebug("SSE stream opened successfully");
                 StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
                 await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
 #endif
@@ -147,6 +164,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
                 // When the connection is closed prematurely, we will restart the connection-consume loop.
                 if (_options.RestartOnConnectionAbort)
                 {
+                    _logger.LogDebug("This source has been configured to restart when a connection abort is detected. Restarting SSE consumption.");
                     continue;
                 }
                 _tcs.TrySetException(rae);
@@ -232,9 +250,10 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
             throw new InvalidOperationException($"{nameof(SseSource)} can be reset only after completion.");
         }
 
+        _logger.LogDebug("Resetting the source to initial state.");
         _cts.Dispose();
         _cts = new CancellationTokenSource();
-        _tcs = new TaskCompletionSource<bool>();
+        _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         _started = 0;
     }
 

@@ -6,6 +6,8 @@ namespace SsePulse.Client.Authentication.Providers;
 /// <summary>
 /// Authenticates SSE requests by adding an API key to a configurable HTTP request header.
 /// Configure the key and header name via <see cref="ApiKeyAuthenticationProviderConfiguration"/>.
+/// <br/><br/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
 /// </summary>
 public class ApiKeyAuthenticationProvider : ISseAuthenticationProvider
 {
@@ -13,6 +15,8 @@ public class ApiKeyAuthenticationProvider : ISseAuthenticationProvider
 
     /// <summary>
     /// Initializes a new <see cref="ApiKeyAuthenticationProvider"/> with the supplied configuration.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/authentication.html"/>
     /// </summary>
     /// <param name="configuration">The API key and target header name.</param>
     public ApiKeyAuthenticationProvider(ApiKeyAuthenticationProviderConfiguration configuration)

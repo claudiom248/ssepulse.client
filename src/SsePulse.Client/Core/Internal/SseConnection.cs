@@ -39,6 +39,7 @@ internal partial class SseConnection
     {
         try
         {
+            _logger.LogDebug("Establishing a connection with the SSE endpoint...");
             return await Execute.WithRetryAsync(
                 async _ =>
                 {
@@ -46,9 +47,6 @@ internal partial class SseConnection
                     HttpResponseMessage response = await SendRequestAsync(request).ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)
                     {
-                        _logger.LogError(
-                            "Error while establishing a connection with SSE endpoint. Response StatusCode does not indicate success: {StatusCode}",
-                            response.StatusCode);
                         throw new HttpRequestException($"HTTP error occurred: {response.StatusCode}")
                         {
                             Data =
@@ -69,13 +67,18 @@ internal partial class SseConnection
                 _options.ConnectionRetryOptions ?? RetryOptions.None,
                 shouldRetry: exception =>
                 {
+                    if (_options.IsTransientConnectionFailure is not null)
+                    {
+                        return _options.IsTransientConnectionFailure.Invoke(exception);
+                    }
+                    //Default logic to determine if an exception is due to a transient connection failure
                     if (exception is not HttpRequestException hre)
                     {
                         return false;
                     }
-                    if (hre.Data.Count > 0)
+                    if (hre.Data.Contains("HttpStatusCode"))
                     {
-                        return IsTransientHttpError(hre.Data["HttpStatusCode"] as HttpStatusCode?);
+                        return !_options.NonTransientStatusCodes.Contains((HttpStatusCode)hre.Data["HttpStatusCode"]!);
                     }
                     SocketException? socketException = hre.FindInner<SocketException>();
                     if (socketException is not null)
@@ -91,6 +94,7 @@ internal partial class SseConnection
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while establishing a connection with the SSE endpoint. Exception message: {Message}", ex.Message);
             SetDisconnected(ex);
             throw;
         }
@@ -105,6 +109,7 @@ internal partial class SseConnection
 
         async Task TryApplyMutators(HttpRequestMessage request)
         {
+            _logger.LogDebug("Applying request mutators...");
             foreach (IRequestMutator requestMutator in _requestMutators)
             {
                 try
@@ -134,22 +139,11 @@ internal partial class SseConnection
             catch (HttpRequestException hre)
             {
                 _logger.LogError(hre,
-                    "Error while establishing a connection with SSE endpoint. Unexpected exception thrown {Message}",
+                    "Error while establishing a connection with the SSE endpoint. Exception message: {Message}",
                     hre.Message);
                 throw;
             }
         }
-    }
-
-    private static bool IsTransientHttpError(HttpStatusCode? statusCode)
-    {
-        if (statusCode is null) return false;
-        return statusCode is not (
-            HttpStatusCode.NotFound
-            or HttpStatusCode.InternalServerError
-            or HttpStatusCode.BadGateway
-            or HttpStatusCode.Unauthorized
-            or HttpStatusCode.Forbidden);
     }
 
 

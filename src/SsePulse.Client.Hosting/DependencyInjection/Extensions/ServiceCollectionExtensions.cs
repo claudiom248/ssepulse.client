@@ -11,14 +11,14 @@ namespace SsePulse.Client.Hosting.DependencyInjection.Extensions;
 /// <summary>
 /// Extension methods for registering SSE hosted services on <see cref="IServiceCollection"/>.
 /// <br/><br/>
-/// <b>DOCS:</b> <see href="https://claudiom248.github.io/SsePulse.Client/docs/hosted-services.html"/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
 /// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers one <see cref="IHostedService"/> per configured SSE source so that each source starts consuming on host startup.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/SsePulse.Client/docs/hosted-services.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/hosted-services.html"/>
     /// </summary>
     /// <param name="services">The service collection that already contains one or more SSE source registrations.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>

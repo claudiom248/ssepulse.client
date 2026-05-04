@@ -4,7 +4,7 @@
         <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
         <PackageId>SsePulse.Client.Hosting</PackageId>
         <Description>Provides a hosted service for consuming events from SseSource, and extension methods for registering it.</Description>
-        <PackageTags>hosting;dependency-injection;server-sent-event;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <PackageTags>hosting;dependency-injection;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
