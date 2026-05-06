@@ -35,8 +35,8 @@ public static class SseSourceBuilderExtensions
         });
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.RequestMutatorsFactories.Add((sp, ctx) =>
-                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, ctx.LastEventIdStore!));
+            options.RequestMutatorsFactories.Add((sp) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, sp.GetRequiredService<ILastEventIdStore>()));
         });
         return builder;
     }
@@ -110,16 +110,17 @@ public static class SseSourceBuilderExtensions
     private static ISseSourceBuilder AddLastEventIdCore<TEventIdStore>(ISseSourceBuilder builder, bool fromKeyed = false)
         where TEventIdStore : class, ILastEventIdStore
     {
+        Func<IServiceProvider, ILastEventIdStore>? getStore = fromKeyed
+            ? sp => sp.GetRequiredKeyedService<TEventIdStore>(builder.Name)
+            : sp => sp.GetRequiredService<TEventIdStore>();
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.LastEventIdStoreFactory = fromKeyed
-                ? sp => sp.GetRequiredKeyedService<TEventIdStore>(builder.Name)
-                : sp => sp.GetRequiredService<TEventIdStore>();
+            options.LastEventIdStoreFactory = getStore;
         });
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.RequestMutatorsFactories.Add((sp, ctx) =>
-                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, ctx.LastEventIdStore!));
+            options.RequestMutatorsFactories.Add((sp) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, getStore(sp)));
         });
         return builder;
     }

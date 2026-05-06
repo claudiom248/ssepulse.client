@@ -11,8 +11,6 @@ namespace SsePulse.Client.DependencyInjection.Tests;
 
 public class SseSourceBuilderTests
 {
-    private static readonly SseSourceCreationContext EmptyContext = new(null);
-
     [Fact]
     public void AddRequestMutator_WithInstance_OptionsContainOneFactory()
     {
@@ -50,7 +48,7 @@ public class SseSourceBuilderTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        IRequestMutator resolved = options.RequestMutatorsFactories[0](provider, EmptyContext);
+        IRequestMutator resolved = options.RequestMutatorsFactories[0](provider);
         Assert.Same(mutator, resolved);
     }
 
@@ -71,7 +69,7 @@ public class SseSourceBuilderTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        IRequestMutator resolved = options.RequestMutatorsFactories[0](provider, EmptyContext);
+        IRequestMutator resolved = options.RequestMutatorsFactories[0](provider);
         Assert.IsType<FakeRequestMutator>(resolved);
     }
 
@@ -97,7 +95,7 @@ public class SseSourceBuilderTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        options.RequestMutatorsFactories[0](provider, EmptyContext);
+        options.RequestMutatorsFactories[0](provider);
         Assert.Same(provider, capturedProvider);
     }
     
@@ -123,8 +121,8 @@ public class SseSourceBuilderTests
             .GetRequiredService<IOptionsMonitor<SseSourceFactoryOptions>>()
             .Get("MySource");
 
-        IRequestMutator m1 = options1.RequestMutatorsFactories[0](provider, EmptyContext);
-        IRequestMutator m2 = options2.RequestMutatorsFactories[0](provider, EmptyContext);
+        IRequestMutator m1 = options1.RequestMutatorsFactories[0](provider);
+        IRequestMutator m2 = options2.RequestMutatorsFactories[0](provider);
         Assert.Same(m1, m2);
     }
 
@@ -148,8 +146,8 @@ public class SseSourceBuilderTests
             .Get("MySource");
 
         Assert.Equal(2, options.RequestMutatorsFactories.Count);
-        Assert.Same(first, options.RequestMutatorsFactories[0](provider, EmptyContext));
-        Assert.Same(second, options.RequestMutatorsFactories[1](provider, EmptyContext));
+        Assert.Same(first, options.RequestMutatorsFactories[0](provider));
+        Assert.Same(second, options.RequestMutatorsFactories[1](provider));
     }
 
     [Fact]

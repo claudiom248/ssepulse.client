@@ -50,7 +50,7 @@ public class AddBearerTokenAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
     }
 
     [Fact]
@@ -81,8 +81,8 @@ public class AddBearerTokenAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        IRequestMutator requestMutator = options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null));
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
+        IRequestMutator requestMutator = options.RequestMutatorsFactories[0](provider);
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
     }
 
     [Fact]
