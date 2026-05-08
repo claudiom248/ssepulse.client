@@ -1,3 +1,5 @@
+using SsePulse.Client.Abstractions;
+
 namespace SsePulse.Client.DependencyInjection;
 
 /// <summary>
@@ -9,5 +11,10 @@ internal static class Constants
     /// The default source name used when registering SseSource without an explicit name.
     /// </summary>
     internal const string DefaultSourceName = "DefaultSseSource";
+
+    /// <summary>
+    /// Key for the scoped <see cref="ISseSourceFactory"/>.
+    /// </summary>
+    internal const string ScopedSseSourceFactoryServiceKey = "ScopedSseSourceFactory"; 
 }
 

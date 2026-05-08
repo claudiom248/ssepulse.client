@@ -7,7 +7,7 @@ using SsePulse.Client.Core.Configurations;
 
 namespace SsePulse.Client.DependencyInjection.Internal;
 
-internal class DefaultSseSourceFactory : ISseSourceFactory
+internal class DefaultSseSourceFactory : IScopedSseSourceFactory
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IOptionsMonitor<SseSourceOptions> _sourceOptions;
@@ -16,7 +16,7 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
     private readonly ILoggerFactory? _loggerFactory;
 
     public DefaultSseSourceFactory(
-        IServiceProvider serviceProvider, 
+        IServiceProvider serviceProvider,
         IOptionsMonitor<SseSourceOptions> sourceOptions,
         IOptionsMonitor<SseSourceFactoryOptions> sourceFactoryOptions,
         IHttpClientFactory httpClientFactory,
@@ -37,14 +37,14 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
         ILastEventIdStore? store = sourceFactoryOptions.LastEventIdStoreFactory?.Invoke(serviceProvider);
         IReadOnlyCollection<IRequestMutator> mutators = BuildMutators();
         SseSource source = new(
-            _httpClientFactory.CreateClient(sourceFactoryOptions.ClientName ?? name), 
-            _sourceOptions.Get(name), 
+            _httpClientFactory.CreateClient(sourceFactoryOptions.ClientName ?? name),
+            _sourceOptions.Get(name),
             mutators,
             store,
             _loggerFactory?.CreateLogger<SseSource>());
         BindEventsManagers();
         sourceFactoryOptions.RegisterHandlersAction?.Invoke(serviceProvider, source);
-        
+
         return source;
 
         IReadOnlyCollection<IRequestMutator> BuildMutators() =>
@@ -55,7 +55,8 @@ internal class DefaultSseSourceFactory : ISseSourceFactory
 
         void BindEventsManagers()
         {
-            foreach (Func<IServiceProvider, ISseEventsManager>? managerFactory in sourceFactoryOptions.EventManagerFactories)
+            foreach (Func<IServiceProvider, ISseEventsManager>? managerFactory in sourceFactoryOptions
+                         .EventManagerFactories)
             {
                 source.Bind(() => managerFactory(serviceProvider));
             }

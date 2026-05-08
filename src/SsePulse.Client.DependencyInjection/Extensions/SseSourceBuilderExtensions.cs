@@ -66,8 +66,7 @@ public static class SseSourceBuilderExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The store is registered as a keyed singleton scoped to this source's name. Use
-    /// <paramref name="configureOptions"/> to set the file path and choose a flush strategy:
+    /// Use <paramref name="configureOptions"/> to set the file path and choose a flush strategy:
     /// </para>
     /// <para>
     /// <b>Resolving multiple instances of the same <see cref="SseSource"/> with this store will share the same file.
@@ -83,7 +82,7 @@ public static class SseSourceBuilderExtensions
         Action<FileLastEventIdStoreOptions> configureOptions)
     {
         builder.Services.Configure(builder.Name, configureOptions);
-        builder.Services.TryAddKeyedSingleton<FileLastEventIdStore>(
+        builder.Services.TryAddKeyedTransient<FileLastEventIdStore>(
             builder.Name,
             (sp, _) => ActivatorUtilities.CreateInstance<FileLastEventIdStore>(
                 sp,
