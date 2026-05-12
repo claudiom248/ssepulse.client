@@ -106,9 +106,27 @@ New-Item -ItemType Directory -Path $testResultsPath -Force | Out-Null
 
 Write-Host "--- Test ---" -ForegroundColor Cyan
 
+function Get-ProjectTargetFrameworks([string] $ProjectPath) {
+    [xml] $xml = Get-Content $ProjectPath
+    $single = $xml.Project.PropertyGroup.TargetFramework  | Where-Object { $_ }
+    $multi  = $xml.Project.PropertyGroup.TargetFrameworks | Where-Object { $_ }
+    if ($multi)  { return $multi  -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ } }
+    if ($single) { return @($single.Trim()) }
+    return @()
+}
+
 $frameworkLabel = if ($Framework) { $Framework } else { "all" }
 
 foreach ($testProject in $testProjectsToRun) {
+    if ($Framework) {
+        $supportedFrameworks = Get-ProjectTargetFrameworks $testProject
+        if ($supportedFrameworks -notcontains $Framework) {
+            $testProjectName = [IO.Path]::GetFileNameWithoutExtension($testProject)
+            Write-Host "Skipping '$testProjectName': does not target '$Framework' (supports: $($supportedFrameworks -join ', '))" -ForegroundColor Yellow
+            continue
+        }
+    }
+
     $testProjectName = [IO.Path]::GetFileNameWithoutExtension($testProject)
     $logFileName = "$testProjectName-$frameworkLabel.trx"
 
@@ -117,6 +135,7 @@ foreach ($testProject in $testProjectsToRun) {
         $testProject,
         "-c", $Configuration,
         "--no-restore",
+        "--filter", "Category!=IntegrationTests",
         "--results-directory", $testResultsPath,
         "--logger", "trx;LogFileName=$logFileName",
         "--consoleLoggerParameters:Summary;Verbosity=Minimal"
