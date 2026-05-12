@@ -135,7 +135,7 @@ foreach ($testProject in $testProjectsToRun) {
         $testProject,
         "-c", $Configuration,
         "--no-restore",
-        "--filter", "Category!=IntegrationTests",
+#        "--filter", "Category!=IntegrationTests",
         "--results-directory", $testResultsPath,
         "--logger", "trx;LogFileName=$logFileName",
         "--consoleLoggerParameters:Summary;Verbosity=Minimal"
