@@ -56,6 +56,31 @@ public static class SseSourceBuilderExtensions
     {
         return AddLastEventIdCore<TEventIdStore>(builder, fromKeyed: false);
     }
+    
+    /// <summary>
+    /// Enables last-event-ID tracking for this SSE source using a custom <see cref="ILastEventIdStore"/>
+    /// implementation resolved via a factory delegate.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id.html"/>
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="factory"></param>
+    /// <typeparam name="TEventIdStore"></typeparam>
+    /// <returns></returns>
+    public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder, Func<IServiceProvider, TEventIdStore> factory)
+        where TEventIdStore : class, ILastEventIdStore
+    {
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
+        {
+            options.LastEventIdStoreFactory = factory;
+        });
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
+        {
+            options.RequestMutatorsFactories.Add((sp) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, factory(sp)));
+        });
+        return builder;
+    }
 
     /// <summary>
     /// Enables last-event-ID tracking for this SSE source using <see cref="FileLastEventIdStore"/>,

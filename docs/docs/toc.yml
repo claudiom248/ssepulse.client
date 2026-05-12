@@ -10,8 +10,11 @@
   href: json-serializer-options.md
 - name: Hosted Services
   href: hosted-services.md
-- name: Last-Event-ID Resumption
+- name: Last-Event-ID
   href: last-event-id.md
+  items:
+    - name: Last-Event-ID Stores
+      href: last-event-id-stores.md
 - name: Authentication
   href: authentication.md
 - name: Request Mutators

@@ -23,6 +23,7 @@
         <InternalsVisibleTo Include="SsePulse.Client.Tests" />
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection" />
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection.Tests" />
+        <InternalsVisibleTo Include="SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection.Tests" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
     

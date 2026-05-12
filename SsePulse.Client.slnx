@@ -14,6 +14,10 @@
     <Project Path="src/SsePulse.Client.Hosting/SsePulse.Client.Hosting.csproj" />
     <Project Path="src/SsePulse.Client/SsePulse.Client.csproj" />
   </Folder>
+  <Folder Name="/src/Extensions/">
+    <Project Path="src/SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection/SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection.csproj" />
+    <Project Path="src/SsePulse.Client.Extensions.Stores.Mongo/SsePulse.Client.Extensions.Stores.Mongo.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SsePulse.Client.Authentication.DependencyInjection.Tests/SsePulse.Client.Authentication.DependencyInjection.Tests.csproj" />
     <Project Path="tests/SsePulse.Client.Authentication.Tests/SsePulse.Client.Authentication.Tests.csproj" />
@@ -21,5 +25,10 @@
     <Project Path="tests/SsePulse.Client.Hosting.Tests/SsePulse.Client.Hosting.Tests.csproj" />
     <Project Path="tests/SsePulse.Client.Tests.Common/SsePulse.Client.Tests.Common.csproj" />
     <Project Path="tests/SsePulse.Client.Tests/SsePulse.Client.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Extensions/">
+    <Project Path="tests/SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection.Tests/SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection.Tests.csproj" />
+    <Project Path="tests/SsePulse.Client.Extensions.Stores.Mongo.IntegrationTests/SsePulse.Client.Extensions.Stores.Mongo.IntegrationTests.csproj" />
+    <Project Path="tests/SsePulse.Client.Extensions.Stores.Mongo.Tests/SsePulse.Client.Extensions.Stores.Mongo.Tests.csproj" />
   </Folder>
 </Solution>
