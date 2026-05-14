@@ -46,6 +46,10 @@ $packages = @(
     'SsePulse.Client.Authentication.DependencyInjection'
     'SsePulse.Client.DependencyInjection'
     'SsePulse.Client.Hosting'
+    'SsePulse.Client.Extensions.Stores.Mongo'
+    'SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection'
+    'SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection'
+    'SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection'
 )
 
 function Get-PackageVersions([string] $PackageName) {

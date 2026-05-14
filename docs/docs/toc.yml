@@ -15,6 +15,11 @@
   items:
     - name: Last-Event-ID Stores
       href: last-event-id-stores.md
+      items:
+        - name: MongoDB Store
+          href: store-mongo.md
+        - name: Distributed Cache Store
+          href: store-distributed-cache.md
 - name: Authentication
   href: authentication.md
 - name: Request Mutators

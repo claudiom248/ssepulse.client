@@ -3,7 +3,7 @@ namespace SsePulse.Client.Extensions.Stores.Mongo;
 /// <summary>
 /// Configuration options for <see cref="MongoLastEventIdStore"/>.
 /// <br/><br/>
-/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
 /// </summary>
 public sealed class MongoLastEventIdStoreOptions
 {

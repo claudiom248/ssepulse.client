@@ -9,7 +9,7 @@ namespace SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection;
 /// Extension methods on <see cref="ISseSourceBuilder"/> for registering
 /// <see cref="MongoLastEventIdStore"/> as the last-event-ID persistence store.
 /// <br/><br/>
-/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
 /// </summary>
 public static class SseSourceBuilderExtensions
 {
@@ -20,7 +20,7 @@ public static class SseSourceBuilderExtensions
     /// with all sources that specify the same connection string and is disposed when the
     /// <see cref="IServiceProvider"/> is disposed.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
     /// </summary>
     /// <param name="builder">The <see cref="ISseSourceBuilder"/> used to configure the SSE source.</param>
     /// <param name="connectionString">The MongoDB connection string used to create the client.</param>
@@ -46,7 +46,7 @@ public static class SseSourceBuilderExtensions
     /// resolving the <see cref="IMongoClient"/> from the dependency-injection container.
     /// An <see cref="IMongoClient"/> must be registered in the container before the source is created.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
     /// </summary>
     /// <param name="builder">The <see cref="ISseSourceBuilder"/> used to configure the SSE source.</param>
     /// <param name="configureOptions">A delegate that configures the store options, such as the database name and collection name.</param>
@@ -71,7 +71,7 @@ public static class SseSourceBuilderExtensions
     /// Use this overload when the client requires custom configuration or must be resolved from
     /// a named service, keyed service, or external factory.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
     /// </summary>
     /// <param name="builder">The <see cref="ISseSourceBuilder"/> used to configure the SSE source.</param>
     /// <param name="mongoClientFactory">

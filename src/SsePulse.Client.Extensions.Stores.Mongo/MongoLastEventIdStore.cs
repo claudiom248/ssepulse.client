@@ -9,7 +9,7 @@ namespace SsePulse.Client.Extensions.Stores.Mongo;
 /// Persists the last event ID to a MongoDB collection so that the SSE connection can be resumed
 /// after a process restart.
 /// <br/><br/>
-/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -38,7 +38,7 @@ public sealed class MongoLastEventIdStore : ILastEventIdStore
     /// if MongoDB is unavailable the error is logged and <see cref="LastEventId"/> remains
     /// <see langword="null"/>.
     /// <br/><br/>
-    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
     /// </summary>
     /// <param name="options">Configuration options for the store.</param>
     /// <param name="mongoClient">The MongoDB client used to access the database.</param>

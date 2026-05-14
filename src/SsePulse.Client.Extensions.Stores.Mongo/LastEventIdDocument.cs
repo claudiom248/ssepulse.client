@@ -6,7 +6,7 @@ namespace SsePulse.Client.Extensions.Stores.Mongo;
 /// <summary>
 /// MongoDB document that stores the last received SSE event ID for a given source.
 /// <br/><br/>
-/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id-stores.html"/>
+/// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
 /// </summary>
 /// <remarks>
 /// This type is used as the BSON schema type for the collection. Instances are constructed
