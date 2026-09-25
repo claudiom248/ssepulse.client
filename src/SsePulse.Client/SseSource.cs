@@ -85,12 +85,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         _logger = logger ?? NullLogger<SseSource>.Instance;
         OnError = ex => _logger.LogError(ex, "An error occurred while processing an SSE event.");
         _lastEventIdStore = lastEventIdStore;
-        _connectionHandlers = new ConnectionHandlers
-        {
-            OnConnectionEstablished = OnConnectionEstablished,
-            OnConnectionClosed = OnConnectionClosed,
-            OnConnectionLost = OnConnectionLost
-        };
+        _connectionHandlers = new ConnectionHandlers();
         _connection = new SseConnection(
             requestMutators,
             _connectionHandlers,
@@ -132,17 +127,17 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
                 await using (sseStream.ConfigureAwait(false))
                 {
                     _logger.LogDebug("SSE stream opened successfully");
-                    StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
+                    StreamConsumer consumer = new(_handlers, _options, _logger, _onError, _lastEventIdStore);
                     await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 _tcs.TrySetResult(true);
-                _connection.SetDisconnected();
+                await _connection.SetDisconnectedAsync().ConfigureAwait(false);
                 return;
             }
             catch (OperationCanceledException oce)
             {
                 _logger.LogInformation("SSE consumption canceled");
-                _connection.SetDisconnected();
+                await _connection.SetDisconnectedAsync().ConfigureAwait(false);
                 if (linkedCancellationTokenSource.IsCancellationRequested)
                 {
                     _tcs.TrySetResult(true);
@@ -166,7 +161,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
             {
                 _logger.LogError(ex, "Exception occurred during SSE consumption");
                 _tcs.TrySetException(ex);
-                _connection.SetDisconnected(ex);
+                await _connection.SetDisconnectedAsync(ex).ConfigureAwait(false);
                 throw;
             }
         }

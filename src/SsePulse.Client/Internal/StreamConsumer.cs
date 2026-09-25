@@ -15,7 +15,7 @@ internal class StreamConsumer
     private readonly SseHandlersDictionary _handlers;
     private readonly SseSourceOptions _options;
     private readonly ILogger<SseSource> _logger;
-    private readonly Action<Exception> _onError;
+    private readonly Func<Exception, ValueTask> _onError;
     private readonly ILastEventIdStore? _lastEventIdStore;
     private readonly EventIdCommitTracker _commitTracker = new();
 
@@ -23,7 +23,7 @@ internal class StreamConsumer
         SseHandlersDictionary handlers,
         SseSourceOptions options,
         ILogger<SseSource> logger,
-        Action<Exception> onError,
+        Func<Exception, ValueTask> onError,
         ILastEventIdStore? lastEventIdStore = null)
     {
         _handlers = handlers;
@@ -153,10 +153,22 @@ internal class StreamConsumer
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while handling event '{EventType}'", eventType);
-            _onError(ex);
+            await InvokeOnErrorAsync(ex).ConfigureAwait(false);
         }
 
         Commit(item.Sequence);
+    }
+
+    private async ValueTask InvokeOnErrorAsync(Exception exception)
+    {
+        try
+        {
+            await _onError.Invoke(exception).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "The OnError callback threw an exception");
+        }
     }
 
     private void Commit(long sequence)

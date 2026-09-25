@@ -136,3 +136,7 @@ SsePulse.Client.SseSource.OnItem<TEventData>(System.Func<System.Net.ServerSentEv
 SsePulse.Client.SseSource.OnItem<TEventData>(System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
 SsePulse.Client.SseSource.OnItem<TEventData>(string! eventName, System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
 SsePulse.Client.SseSource.OnItem<TEventData>(string! eventName, System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.UseOnConnectionClosed(System.Func<System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.UseOnConnectionEstablished(System.Func<System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.UseOnConnectionLost(System.Func<System.Exception!, System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.UseOnError(System.Func<System.Exception!, System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!

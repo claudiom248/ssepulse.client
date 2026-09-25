@@ -14,6 +14,7 @@ public partial class SseSource
         "Binding an events manager creates generic handler types at run time, which is not supported with native AOT. Register the handlers with On and OnItem instead.";
 
     private readonly SseHandlersDictionary _handlers;
+    private Func<Exception, ValueTask> _onError = _ => ValueTask.CompletedTask;
     
     /// <summary>
     /// Gets or sets the callback invoked each time the SSE connection is successfully established.
@@ -26,8 +27,9 @@ public partial class SseSource
         {
             AssertNotDisposed();
             AssertNotStarted();
-            field = WrapDefaultHandler(value);
-            _connectionHandlers.OnConnectionEstablished = field;
+            ArgumentNullException.ThrowIfNull(value);
+            field = value;
+            _connectionHandlers.OnConnectionEstablished = HandlerAdapter.ToValueTask(value);
         }
     } = () => { };
 
@@ -43,8 +45,9 @@ public partial class SseSource
         {
             AssertNotDisposed();
             AssertNotStarted();
-            field = WrapDefaultHandler(value);
-            _connectionHandlers.OnConnectionClosed = field;
+            ArgumentNullException.ThrowIfNull(value);
+            field = value;
+            _connectionHandlers.OnConnectionClosed = HandlerAdapter.ToValueTask(value);
         }
     } = () => { };
 
@@ -60,8 +63,9 @@ public partial class SseSource
         {
             AssertNotDisposed();
             AssertNotStarted();
-            field = WrapDefaultHandler(value);
-            _connectionHandlers.OnConnectionLost = field;
+            ArgumentNullException.ThrowIfNull(value);
+            field = value;
+            _connectionHandlers.OnConnectionLost = HandlerAdapter.ToValueTask(value);
         }
     } = _ => { };
 
@@ -77,7 +81,9 @@ public partial class SseSource
         {
             AssertNotDisposed();
             AssertNotStarted();
-            field = WrapDefaultHandler(value);
+            ArgumentNullException.ThrowIfNull(value);
+            field = value;
+            _onError = HandlerAdapter.ToValueTask(value);
         }
     } = _ => { };
     
@@ -260,24 +266,6 @@ public partial class SseSource
         }
 
         return this;
-    }
-    
-    private static Action WrapDefaultHandler(Action value)
-    {
-        return () => _ = Execute.WithIgnoreExceptionAsync(_ =>
-        {
-            value.Invoke();
-            return Task.CompletedTask;
-        });
-    }
-    
-    private static Action<Exception> WrapDefaultHandler(Action<Exception> value)
-    {
-        return ex => _ = Execute.WithIgnoreExceptionAsync(_ =>
-        {
-            value.Invoke(ex);
-            return Task.CompletedTask;
-        });
     }
     
     private static bool IsHandlerName(string methodName)
