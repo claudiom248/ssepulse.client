@@ -37,7 +37,6 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     private bool _disposed;
     private ITimer? _flushTimer;
     
-    // ReSharper disable once NotAccessedField.Local
     private readonly ILogger<FileLastEventIdStore> _logger;
 
     /// <summary>
@@ -82,6 +81,7 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
         _filePath = options.FilePath;
         _flushMode = options.FlushMode;
         _flushAfterCount = options.FlushAfterCount;
+        _logger = logger ?? NullLogger<FileLastEventIdStore>.Instance;
         _lastEventId = TryReadFromFile();
 
         if (options.FlushMode == FlushMode.AfterInterval)
@@ -92,8 +92,6 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
                 dueTime: options.FlushInterval,
                 period: options.FlushInterval);
         }
-        
-        _logger = logger ?? NullLogger<FileLastEventIdStore>.Instance;
     }
 
     /// <inheritdoc/>
@@ -102,6 +100,11 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     /// <inheritdoc/>
     public void Set(string eventId)
     {
+        if (string.IsNullOrWhiteSpace(eventId))
+        {
+            return;
+        }
+
         _lastEventId = eventId;
         switch (_flushMode)
         {
@@ -164,10 +167,18 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     {
         lock (_fileLock)
         {
-            string temp = _filePath + ".tmp";
-            File.WriteAllText(temp, eventId);
+            try
+            {
+                string temp = _filePath + ".tmp";
+                File.WriteAllText(temp, eventId);
 
-            File.Move(temp, _filePath, overwrite: true);
+                File.Move(temp, _filePath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _pendingFlush = true;
+                _logger.LogError(ex, "Failed to persist the last event ID to '{FilePath}'", _filePath);
+            }
         }
     }
 

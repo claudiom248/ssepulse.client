@@ -250,8 +250,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )",
-          "Microsoft.Extensions.Options": "[10.0.7, )",
-          "System.Threading.Tasks.DataFlow": "[10.0.7, )"
+          "Microsoft.Extensions.Options": "[10.0.7, )"
         }
       },
       "ssepulse.client.extensions.stores.distributedcache": {
@@ -299,12 +298,6 @@
         "requested": "[10.10.0, )",
         "resolved": "10.10.0",
         "contentHash": "8duZdxuO3Oo8tlyQXVq1drXee6GJC9DjUU97Pq3YaIqf92jrAHsWxbbRKwvjQI48Mer3IANwUKF0elqvHeY4Rw=="
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.7, )",
-        "resolved": "10.0.7",
-        "contentHash": "yLsXNuCRMv9sf/Lw4sadgXcezh6bEFS8Bp7hclCRThbUshttXtzhMz0R/oDrV9Ro08ilE8/3LtSORcHoh3ev8Q=="
       }
     }
   }
