@@ -61,13 +61,11 @@ internal class StreamConsumer
                 await dispatcherBlock.SendAsync(sseItem, cancellationToken).ConfigureAwait(false);
             }
         }
-#if NET8_0_OR_GREATER
         catch (HttpIOException ioEx) when (ioEx.HttpRequestError == HttpRequestError.ResponseEnded)
         {
             _logger.LogError(ioEx, ResponseAbortedMessage);
             throw new ResponseAbortedException(ioEx);
         }
-#endif
         catch (IOException hre) when (hre.FindInner<SocketException>() is
                                           { SocketErrorCode: SocketError.ConnectionReset })
         {
@@ -107,9 +105,7 @@ internal class StreamConsumer
 
         switch (ex)
         {
-#if NET8_0_OR_GREATER
             case HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded }:
-#endif
             case IOException hre when 
                 hre.FindInner<SocketException>() is { SocketErrorCode: SocketError.ConnectionReset }:
                 return true;

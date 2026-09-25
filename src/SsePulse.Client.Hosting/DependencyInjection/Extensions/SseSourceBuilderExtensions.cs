@@ -42,9 +42,7 @@ public static class SseSourceBuilderExtensions
     /// <param name="builder">The builder for configuring the <see cref="SseSource"/></param>
     /// <returns>The same builder for chaining.</returns>
     public static ISseSourceBuilder AddHostedService<
-#if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)]
-#endif
         THostedService>(this ISseSourceBuilder builder) where THostedService : BackgroundService
     {
         builder.Services.AddHostedService<THostedService>(sp =>
@@ -67,9 +65,7 @@ public static class SseSourceBuilderExtensions
     /// <param name="factory">Factory used to create the hosted service instance.</param>
     /// <returns>The same builder for chaining.</returns>
     public static ISseSourceBuilder AddHostedService<
-#if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)]
-#endif
         THostedService>(this ISseSourceBuilder builder, Func<IServiceProvider, THostedService> factory) where THostedService : BackgroundService
     {
         builder.Services.AddHostedService(factory);

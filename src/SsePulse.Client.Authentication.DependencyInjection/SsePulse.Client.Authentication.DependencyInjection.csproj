@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <PackageId>SsePulse.Client.Authentication.DependencyInjection</PackageId>
         <Description>Extension methods for registering SsePulse.Client.Authentication services and dependencies using Microsoft.Extensions.DependencyInjection.</Description>
         <PackageTags>dependency-injection;authentication;bearer-token;api-key;security;oauth;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
@@ -22,11 +22,5 @@
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="icon-128x128.png">
-        <Pack>true</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
-    </ItemGroup>
 
 </Project>

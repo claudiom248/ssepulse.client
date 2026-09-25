@@ -30,11 +30,7 @@ internal partial class SseConnection
         {
             try
             {
-#if NET8_0_OR_GREATER
                 return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
-#else
-                return await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
-#endif
             }
             catch (Exception ex)
             {
@@ -43,7 +39,6 @@ internal partial class SseConnection
             }
         }
 
-#if NET8_0_OR_GREATER
         public override int Read(Span<byte> buffer)
         {
             try
@@ -56,7 +51,6 @@ internal partial class SseConnection
                 throw;
             }
         }
-#endif
 
         public override long Seek(long offset, SeekOrigin origin)
         {

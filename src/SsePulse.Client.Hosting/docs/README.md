@@ -9,7 +9,7 @@
 - **Resilient stream consumption** — built-in retry, reconnect, and event-resume support.
 - **Flexible security model** — use built-in authentication providers or bring your own.
 - **Host-ready architecture** — run SSE workloads cleanly in modern background-service applications.
-- **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
+- **Modern .NET** — targets `net8.0` and runs on .NET 8, 9, 10 and later.
 
 ## This Package
 

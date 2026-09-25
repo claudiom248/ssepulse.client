@@ -90,5 +90,5 @@ services
 
 ## Platform availability
 
-Both packages target `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
+Both packages target `net8.0` and run on .NET 8, 9, 10 and later.
 

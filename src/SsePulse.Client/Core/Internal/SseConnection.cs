@@ -57,11 +57,7 @@ internal partial class SseConnection
                     }
 
                     SetConnected();
-#if NET8_0_OR_GREATER
                     Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#else
-                    Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#endif
                     return SseStream.Wrap(this, responseStream);
                 },
                 _options.ConnectionRetryOptions ?? RetryOptions.None,
