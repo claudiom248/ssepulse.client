@@ -41,6 +41,23 @@ public readonly struct RetryOptions
         MaxDelayInMilliseconds = maxDelayInMilliseconds;
     }
 
+    internal TimeSpan GetDelay(int retryNumber)
+    {
+        double milliseconds = Strategy switch
+        {
+            RetryStrategy.Fixed => DelayInMilliseconds,
+            RetryStrategy.Exponential => DelayInMilliseconds * Math.Pow(2, retryNumber),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        if (Strategy == RetryStrategy.Exponential && MaxDelayInMilliseconds > 0)
+        {
+            milliseconds = Math.Min(milliseconds, MaxDelayInMilliseconds);
+        }
+
+        return TimeSpan.FromMilliseconds(Math.Min(milliseconds, int.MaxValue));
+    }
+
     /// <summary>Gets a <see cref="RetryOptions"/> that disables retries entirely.</summary>
     public static RetryOptions None => new(RetryStrategy.Fixed, 0, 0, 0);
 

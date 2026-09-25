@@ -6,14 +6,35 @@ internal partial class SseConnection
     {
         private readonly SseConnection _connection;
         private readonly Stream _innerStream;
+        private readonly HttpResponseMessage _response;
 
-        private SseStream(SseConnection connection, Stream innerStream)
+        private SseStream(SseConnection connection, Stream innerStream, HttpResponseMessage response)
         {
             _innerStream = innerStream;
             _connection = connection;
+            _response = response;
         }
 
-        public static SseStream Wrap(SseConnection connection, Stream innerStream) => new(connection, innerStream);
+        public static SseStream Wrap(SseConnection connection, Stream innerStream, HttpResponseMessage response) =>
+            new(connection, innerStream, response);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _innerStream.Dispose();
+                _response.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await _innerStream.DisposeAsync().ConfigureAwait(false);
+            _response.Dispose();
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
 
         public override void Flush()
         {
@@ -22,7 +43,15 @@ internal partial class SseConnection
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return _innerStream.Read(buffer, offset, count);
+            try
+            {
+                return _innerStream.Read(buffer, offset, count);
+            }
+            catch (Exception ex)
+            {
+                _connection.SetDisconnected(ex);
+                throw;
+            }
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count,

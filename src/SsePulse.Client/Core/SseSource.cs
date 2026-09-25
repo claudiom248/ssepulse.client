@@ -86,6 +86,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         _options = options;
         _handlers = new SseHandlersDictionary(options.JsonSerializerOptions);
         _logger = logger ?? NullLogger<SseSource>.Instance;
+        OnError = ex => _logger.LogError(ex, "An error occurred while processing an SSE event.");
         _lastEventIdStore = lastEventIdStore;
         _connectionHandlers = new ConnectionHandlers
         {
@@ -259,14 +260,13 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         if (_started == 1)
         {
             _cts.Cancel();
-            _cts.Dispose();
         }
         else
         {
             _tcs.TrySetResult(true);
         }
 
-        _disposed = true;
+        _cts.Dispose();
         OnDisposed?.Invoke();
         GC.SuppressFinalize(this);
     }
@@ -283,7 +283,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         if (_started == 1 && !Completion.IsCompleted)
         {
             await _cts.CancelAsync().ConfigureAwait(false);
-            _cts.Dispose();
             await Completion.ConfigureAwait(false);
         }
         else
@@ -291,7 +290,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
             _tcs.TrySetResult(true);
         }
 
+        _cts.Dispose();
         OnDisposed?.Invoke();
         GC.SuppressFinalize(this);
-    }
-}
+    }}
