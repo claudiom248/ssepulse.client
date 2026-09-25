@@ -10,6 +10,11 @@
             <AdditionalProperties>$(AdditionalProperties);TreatWarningsAsErrors=false;EnforceCodeStyleInBuild=false;RunAnalyzersDuringBuild=false;GenerateDocumentationFile=false</AdditionalProperties>
         </ProjectReference>
     </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+    </ItemGroup>
 </Project>
 
 

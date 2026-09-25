@@ -34,9 +34,9 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
         await using Core.SseSource source = CreateSource(client);
 
         // ACT & ASSERT
-        _ = Task.Run(() => source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
-        await Task.Delay(3000);
+        Task consumption = source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
         await Assert.ThrowsAsync<InvalidOperationException>(() => source.StartConsumeAsync(default));
+        await consumption;
     }
 
     [Fact]

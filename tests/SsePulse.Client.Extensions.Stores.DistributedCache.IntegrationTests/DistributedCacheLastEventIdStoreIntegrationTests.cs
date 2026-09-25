@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging.Abstractions;
+using SsePulse.Client.Tests.Common;
 
 namespace SsePulse.Client.Extensions.Stores.DistributedCache.IntegrationTests;
 
@@ -140,7 +141,7 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
 
         // ACT
         store.Set("event-expiring");
-        await Task.Delay(600);
+        await TestWait.UntilAsync(async () => await _fixture.Cache.GetStringAsync(key) is null);
 
         // ASSERT
         string? storedValue = _fixture.Cache.GetString(key);

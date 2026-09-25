@@ -94,7 +94,7 @@ public class DelegatingTokenProviderTests
         // ARRANGE
         DelegatingTokenProvider provider = new(async _ =>
         {
-            await Task.Delay(1);
+            await Task.Yield();
             return TestToken;
         });
 

@@ -1,0 +1,8 @@
+M:System.Threading.Tasks.Task.Delay(System.Int32);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Tasks.Task.Delay(System.Int32,System.Threading.CancellationToken);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Tasks.Task.Delay(System.TimeSpan);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Tasks.Task.Delay(System.TimeSpan,System.Threading.CancellationToken);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Tasks.Task.Delay(System.TimeSpan,System.TimeProvider);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Tasks.Task.Delay(System.TimeSpan,System.TimeProvider,System.Threading.CancellationToken);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Thread.Sleep(System.Int32);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
+M:System.Threading.Thread.Sleep(System.TimeSpan);Use SseGate, Recorder<T> or FakeTimeProvider instead of waiting in real time
