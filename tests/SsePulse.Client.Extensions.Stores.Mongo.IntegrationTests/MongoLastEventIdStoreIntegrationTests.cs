@@ -28,24 +28,24 @@ public sealed class MongoLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Constructor_WhenCollectionIsEmpty_LastEventIdIsNull()
+    public async Task Get_WhenCollectionIsEmpty_ReturnsNull()
     {
         // ARRANGE & ACT
-        MongoLastEventIdStore store = CreateStore(nameof(Constructor_WhenCollectionIsEmpty_LastEventIdIsNull));
+        MongoLastEventIdStore store = CreateStore(nameof(Get_WhenCollectionIsEmpty_ReturnsNull));
 
         // ASSERT
-        Assert.Null(store.LastEventId);
+        Assert.Null(await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_WithValidId_DocumentIsPersistedInMongoDB()
+    public async Task Set_WithValidId_DocumentIsPersistedInMongoDB()
     {
         // ARRANGE
         string collection = nameof(Set_WithValidId_DocumentIsPersistedInMongoDB);
         MongoLastEventIdStore store = CreateStore(collection);
 
         // ACT
-        store.Set("event-100");
+        await store.SetLastEventIdAsync("event-100");
 
         // ASSERT 
         IMongoCollection<LastEventIdDocument> col = _fixture.MongoClient
@@ -58,31 +58,31 @@ public sealed class MongoLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Constructor_WhenDocumentExistsFromPreviousRun_LastEventIdIsRehydrated()
+    public async Task Get_WhenDocumentExistsFromPreviousRun_ReturnsThePersistedValue()
     {
         // ARRANGE
-        string collection = nameof(Constructor_WhenDocumentExistsFromPreviousRun_LastEventIdIsRehydrated);
+        string collection = nameof(Get_WhenDocumentExistsFromPreviousRun_ReturnsThePersistedValue);
         MongoLastEventIdStore firstStore = CreateStore(collection);
-        firstStore.Set("event-session-1");
+        await firstStore.SetLastEventIdAsync("event-session-1");
 
         // ACT
         MongoLastEventIdStore secondStore = CreateStore(collection);
 
         // ASSERT
-        Assert.Equal("event-session-1", secondStore.LastEventId);
+        Assert.Equal("event-session-1", await secondStore.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_CalledMultipleTimes_OnlyLatestValueIsPersistedInMongoDB()
+    public async Task Set_CalledMultipleTimes_OnlyLatestValueIsPersistedInMongoDB()
     {
         // ARRANGE
         string collection = nameof(Set_CalledMultipleTimes_OnlyLatestValueIsPersistedInMongoDB);
         MongoLastEventIdStore store = CreateStore(collection);
 
         // ACT
-        store.Set("event-1");
-        store.Set("event-2");
-        store.Set("event-3");
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
+        await store.SetLastEventIdAsync("event-3");
 
         // ASSERT
         IMongoCollection<LastEventIdDocument> col = _fixture.MongoClient
@@ -98,7 +98,7 @@ public sealed class MongoLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Set_WithDifferentDocumentKeys_StoredDocumentsAreIsolated()
+    public async Task Set_WithDifferentDocumentKeys_StoredDocumentsAreIsolated()
     {
         // ARRANGE
         string collection = nameof(Set_WithDifferentDocumentKeys_StoredDocumentsAreIsolated);
@@ -106,26 +106,26 @@ public sealed class MongoLastEventIdStoreIntegrationTests
         MongoLastEventIdStore storeB = CreateStore(collection, documentKey: "source-B");
 
         // ACT
-        storeA.Set("event-for-A");
-        storeB.Set("event-for-B");
+        await storeA.SetLastEventIdAsync("event-for-A");
+        await storeB.SetLastEventIdAsync("event-for-B");
 
         // ASSERT — each key holds its own value without affecting the other
         MongoLastEventIdStore reloadedA = CreateStore(collection, documentKey: "source-A");
         MongoLastEventIdStore reloadedB = CreateStore(collection, documentKey: "source-B");
 
-        Assert.Equal("event-for-A", reloadedA.LastEventId);
-        Assert.Equal("event-for-B", reloadedB.LastEventId);
+        Assert.Equal("event-for-A", await reloadedA.GetLastEventIdAsync());
+        Assert.Equal("event-for-B", await reloadedB.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_WithEmptyString_DoesNotWriteAnyDocumentToMongoDB()
+    public async Task Set_WithEmptyString_DoesNotWriteAnyDocumentToMongoDB()
     {
         // ARRANGE
         string collection = nameof(Set_WithEmptyString_DoesNotWriteAnyDocumentToMongoDB);
         MongoLastEventIdStore store = CreateStore(collection);
 
         // ACT
-        store.Set(string.Empty);
+        await store.SetLastEventIdAsync(string.Empty);
 
         // ASSERT
         IMongoCollection<LastEventIdDocument> col = _fixture.MongoClient
@@ -137,14 +137,14 @@ public sealed class MongoLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Set_WithWhiteSpace_DoesNotWriteAnyDocumentToMongoDB()
+    public async Task Set_WithWhiteSpace_DoesNotWriteAnyDocumentToMongoDB()
     {
         // ARRANGE
         string collection = nameof(Set_WithWhiteSpace_DoesNotWriteAnyDocumentToMongoDB);
         MongoLastEventIdStore store = CreateStore(collection);
 
         // ACT
-        store.Set("   ");
+        await store.SetLastEventIdAsync("   ");
 
         // ASSERT
         IMongoCollection<LastEventIdDocument> col = _fixture.MongoClient
@@ -156,7 +156,7 @@ public sealed class MongoLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Set_UpdatedAtTimestamp_IsSetToApproximatelyNow()
+    public async Task Set_UpdatedAtTimestamp_IsSetToApproximatelyNow()
     {
         // ARRANGE
         string collection = nameof(Set_UpdatedAtTimestamp_IsSetToApproximatelyNow);
@@ -164,7 +164,7 @@ public sealed class MongoLastEventIdStoreIntegrationTests
         DateTime before = DateTime.UtcNow.AddSeconds(-1);
 
         // ACT
-        store.Set("event-ts");
+        await store.SetLastEventIdAsync("event-ts");
 
         // ASSERT
         DateTime after = DateTime.UtcNow.AddSeconds(1);

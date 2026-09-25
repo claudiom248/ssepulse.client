@@ -5,71 +5,71 @@ namespace SsePulse.Client.Tests;
 public class InMemoryLastEventIdStoreTests
 {
     [Fact]
-    public void GetLastEventId_Initially_ReturnsNull()
+    public async Task GetLastEventId_Initially_ReturnsNull()
     {
         // ARRANGE
         InMemoryLastEventIdStore store = new();
 
         // ACT
-        string? result = store.LastEventId;
+        string? result = await store.GetLastEventIdAsync();
 
         // ASSERT
         Assert.Null(result);
     }
 
     [Fact]
-    public void SetLastEventId_WithValidId_StoresValue()
+    public async Task SetLastEventId_WithValidId_StoresValue()
     {
         // ARRANGE
         InMemoryLastEventIdStore store = new();
         string eventId = "event-456";
 
         // ACT
-        store.Set(eventId);
+        await store.SetLastEventIdAsync(eventId);
 
         // ASSERT
-        Assert.Equal(eventId, store.LastEventId);
+        Assert.Equal(eventId, await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void SetLastEventId_WithEmptyString_DoesNotStore()
+    public async Task SetLastEventId_WithEmptyString_DoesNotStore()
     {
         // ARRANGE
         InMemoryLastEventIdStore store = new();
 
         // ACT
-        store.Set("");
+        await store.SetLastEventIdAsync("");
 
         // ASSERT
-        Assert.Null(store.LastEventId);
+        Assert.Null(await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void SetLastEventId_WithWhitespace_DoesNotStore()
+    public async Task SetLastEventId_WithWhitespace_DoesNotStore()
     {
         // ARRANGE
         InMemoryLastEventIdStore store = new();
 
         // ACT
-        store.Set("   ");
+        await store.SetLastEventIdAsync("   ");
 
         // ASSERT
-        Assert.Null(store.LastEventId);
+        Assert.Null(await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void SetLastEventId_Multiple_UsesLastValue()
+    public async Task SetLastEventId_Multiple_UsesLastValue()
     {
         // ARRANGE
         InMemoryLastEventIdStore store = new();
 
         // ACT
-        store.Set("id-1");
-        store.Set("id-2");
-        store.Set("id-3");
+        await store.SetLastEventIdAsync("id-1");
+        await store.SetLastEventIdAsync("id-2");
+        await store.SetLastEventIdAsync("id-3");
 
         // ASSERT
-        Assert.Equal("id-3", store.LastEventId);
+        Assert.Equal("id-3", await store.GetLastEventIdAsync());
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,232 +13,240 @@ public sealed class DistributedCacheLastEventIdStoreTests
     [Fact]
     public void Constructor_WhenOptionsIsNull_ThrowsArgumentNullException()
     {
-        // ARRANGE
         IDistributedCache cache = Substitute.For<IDistributedCache>();
-        
-        // ACT & ASSERT
+
         Assert.Throws<ArgumentNullException>(() =>
             new DistributedCacheLastEventIdStore(null!, cache, NullLogger<DistributedCacheLastEventIdStore>.Instance));
     }
-    
+
     [Fact]
     public void Constructor_WhenCacheIsNull_ThrowsArgumentNullException()
     {
-        // ARRANGE
         DistributedCacheLastEventIdStoreOptions options = new();
-        
-        // ACT & ASSERT
+
         Assert.Throws<ArgumentNullException>(() =>
             new DistributedCacheLastEventIdStore(options, null!, NullLogger<DistributedCacheLastEventIdStore>.Instance));
     }
-    
+
     [Fact]
-    public void Constructor_WhenCacheReturnsNull_LastEventIdIsNull()
+    public void Constructor_DoesNotTouchTheCache()
     {
-        // ARRANGE
-        IDistributedCache cache = CreateCacheWithValue(null);
-        
-        // ACT
-        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ASSERT
-        Assert.Null(store.LastEventId);
-    }
-    [Fact]
-    public void Constructor_WhenCacheReturnsValue_LastEventIdIsRestored()
-    {
-        // ARRANGE
         IDistributedCache cache = CreateCacheWithValue("event-from-previous-session");
-        
-        // ACT
-        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ASSERT
-        Assert.Equal("event-from-previous-session", store.LastEventId);
+
+        _ = new DistributedCacheLastEventIdStore(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
+
+        Assert.Empty(cache.ReceivedCalls());
     }
+
     [Fact]
-    public void Constructor_WhenCacheIsUnavailable_LastEventIdIsNull()
+    public async Task Get_WhenCacheReturnsNull_ReturnsNull()
     {
-        // ARRANGE
-        IDistributedCache cache = Substitute.For<IDistributedCache>();
-        cache.Get(Arg.Any<string>()).Throws(new Exception("Cache unavailable"));
-        
-        // ACT
+        IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ASSERT
-        Assert.Null(store.LastEventId);
+
+        Assert.Null(await store.GetLastEventIdAsync());
     }
+
     [Fact]
-    public void Constructor_WhenCacheIsUnavailable_LogsError()
+    public async Task Get_WhenCacheReturnsValue_ReturnsThePersistedValue()
     {
-        // ARRANGE
+        IDistributedCache cache = CreateCacheWithValue("event-from-previous-session");
+        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
+
+        Assert.Equal("event-from-previous-session", await store.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task Get_ReadsTheCacheOnlyOnce()
+    {
+        IDistributedCache cache = CreateCacheWithValue("event-from-previous-session");
+        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
+
+        await store.GetLastEventIdAsync();
+        await store.GetLastEventIdAsync();
+
+        await cache.Received(1).GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Get_AfterASetBeforeTheFirstRead_KeepsTheValueSetInMemory()
+    {
+        IDistributedCache cache = CreateCacheWithValue("persisted");
+        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
+
+        await store.SetLastEventIdAsync("in-memory");
+
+        Assert.Equal("in-memory", await store.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task Get_WhenCacheIsUnavailable_ReturnsNull()
+    {
+        IDistributedCache cache = CreateUnavailableCache();
+        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
+
+        Assert.Null(await store.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task Get_WhenCacheIsUnavailable_LogsErrorAndReadsAgainOnTheNextCall()
+    {
         MockLogger<DistributedCacheLastEventIdStore> logger = new();
-        IDistributedCache cache = Substitute.For<IDistributedCache>();
-        cache.Get(Arg.Any<string>()).Throws(new Exception("Cache unavailable"));
-        
-        // ACT
-        DistributedCacheLastEventIdStore _ = new(new(), cache, logger);
-        
-        // ASSERT
+        IDistributedCache cache = CreateUnavailableCache();
+        DistributedCacheLastEventIdStore store = new(new(), cache, logger);
+
+        await store.GetLastEventIdAsync();
+        await store.GetLastEventIdAsync();
+
         Assert.True(logger.HasLog(LogLevel.Error, "Failed to retrieve last event ID", typeof(Exception)));
+        await cache.Received(2).GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
+
     [Fact]
-    public void Set_WithValidId_UpdatesLastEventIdProperty()
+    public async Task Set_WithValidId_UpdatesTheValueReturnedByGet()
     {
-        // ARRANGE
         IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ACT
-        store.Set("event-42");
-        
-        // ASSERT
-        Assert.Equal("event-42", store.LastEventId);
+
+        await store.SetLastEventIdAsync("event-42");
+
+        Assert.Equal("event-42", await store.GetLastEventIdAsync());
     }
+
     [Fact]
-    public void Set_WithValidId_CallsCacheSet()
+    public async Task Set_WithValidId_CallsCacheSet()
     {
-        // ARRANGE
         IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ACT
-        store.Set("event-42");
-        
-        // ASSERT
-        cache.Received(1).Set(
+
+        await store.SetLastEventIdAsync("event-42");
+
+        await cache.Received(1).SetAsync(
             Arg.Any<string>(),
             Arg.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "event-42"),
-            Arg.Any<DistributedCacheEntryOptions>());
+            Arg.Any<DistributedCacheEntryOptions>(),
+            Arg.Any<CancellationToken>());
     }
+
     [Fact]
-    public void Set_WithAbsoluteExpirationConfigured_PassesExpirationToCache()
+    public async Task Set_WithAbsoluteExpirationConfigured_PassesExpirationToCache()
     {
-        // ARRANGE
         TimeSpan ttl = TimeSpan.FromMinutes(30);
         IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStoreOptions options = new() { AbsoluteExpirationRelativeToNow = ttl };
         DistributedCacheLastEventIdStore store = new(options, cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ACT
-        store.Set("event-42");
-        
-        // ASSERT
-        cache.Received(1).Set(
+
+        await store.SetLastEventIdAsync("event-42");
+
+        await cache.Received(1).SetAsync(
             Arg.Any<string>(),
             Arg.Any<byte[]>(),
-            Arg.Is<DistributedCacheEntryOptions>(o => o.AbsoluteExpirationRelativeToNow == ttl));
+            Arg.Is<DistributedCacheEntryOptions>(o => o.AbsoluteExpirationRelativeToNow == ttl),
+            Arg.Any<CancellationToken>());
     }
+
     [Fact]
-    public void Set_WithNoAbsoluteExpirationConfigured_PassesNullExpirationToCache()
+    public async Task Set_WithNoAbsoluteExpirationConfigured_PassesNullExpirationToCache()
     {
-        // ARRANGE
         IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ACT
-        store.Set("event-42");
-        
-        // ASSERT
-        cache.Received(1).Set(
+
+        await store.SetLastEventIdAsync("event-42");
+
+        await cache.Received(1).SetAsync(
             Arg.Any<string>(),
             Arg.Any<byte[]>(),
-            Arg.Is<DistributedCacheEntryOptions>(o => o.AbsoluteExpirationRelativeToNow == null));
+            Arg.Is<DistributedCacheEntryOptions>(o => o.AbsoluteExpirationRelativeToNow == null),
+            Arg.Any<CancellationToken>());
     }
+
     [Fact]
-    public void Set_Multiple_LastEventIdIsLatestValue()
+    public async Task Set_Multiple_GetReturnsTheLatestValue()
     {
-        // ARRANGE
         IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-       
-        // ACT
-        store.Set("event-1");
-        store.Set("event-2");
-        store.Set("event-3");
-        
-        // ASSERT
-        Assert.Equal("event-3", store.LastEventId);
+
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
+        await store.SetLastEventIdAsync("event-3");
+
+        Assert.Equal("event-3", await store.GetLastEventIdAsync());
     }
-    [Fact]
-    public void Set_WithEmptyString_DoesNotUpdateLastEventIdOrWriteToCache()
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Set_WithEmptyValue_DoesNotUpdateTheValueOrWriteToCache(string value)
     {
-        // ARRANGE
         IDistributedCache cache = CreateCacheWithValue(null);
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ACT
-        store.Set(string.Empty);
-        
-        // ASSERT
-        Assert.Null(store.LastEventId);
-        cache.DidNotReceive().Set(
+
+        await store.SetLastEventIdAsync(value);
+
+        Assert.Null(await store.GetLastEventIdAsync());
+        await cache.DidNotReceive().SetAsync(
             Arg.Any<string>(),
             Arg.Any<byte[]>(),
-            Arg.Any<DistributedCacheEntryOptions>());
+            Arg.Any<DistributedCacheEntryOptions>(),
+            Arg.Any<CancellationToken>());
     }
+
     [Fact]
-    public void Set_WithWhiteSpace_DoesNotUpdateLastEventIdOrWriteToCache()
+    public async Task Set_WhenCacheThrows_LogsError()
     {
-        // ARRANGE
-        IDistributedCache cache = CreateCacheWithValue(null);
-        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        
-        // ACT
-        store.Set("   ");
-        
-        // ASSERT
-        Assert.Null(store.LastEventId);
-        cache.DidNotReceive().Set(
-            Arg.Any<string>(),
-            Arg.Any<byte[]>(),
-            Arg.Any<DistributedCacheEntryOptions>());
-    }
-    [Fact]
-    public void Set_WhenCacheThrows_LogsError()
-    {
-        // ARRANGE
         MockLogger<DistributedCacheLastEventIdStore> logger = new();
-        IDistributedCache cache = CreateCacheWithValue(null);
+        IDistributedCache cache = CreateFailingWriteCache();
         DistributedCacheLastEventIdStore store = new(new(), cache, logger);
-        cache.When(c => c.Set(
-                Arg.Any<string>(),
-                Arg.Any<byte[]>(),
-                Arg.Any<DistributedCacheEntryOptions>()))
-            .Throw(new Exception("Write failure"));
-        
-        // ACT
-        store.Set("event-42");
-        
-        // ASSERT
+
+        await store.SetLastEventIdAsync("event-42");
+
         Assert.True(logger.HasLog(LogLevel.Error, "Failed to persist last event ID", typeof(Exception)));
     }
+
     [Fact]
-    public void Set_WhenCacheThrows_DoesNotUpdateLastEventId()
+    public async Task Set_WhenCacheThrows_KeepsTheValueInMemory()
     {
-        // ARRANGE
-        IDistributedCache cache = CreateCacheWithValue(null);
+        IDistributedCache cache = CreateFailingWriteCache();
         DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
-        cache.When(c => c.Set(
-                Arg.Any<string>(),
-                Arg.Any<byte[]>(),
-                Arg.Any<DistributedCacheEntryOptions>()))
-            .Throw(new Exception("Write failure"));
-        
-        // ACT
-        store.Set("event-42");
-        
-        // ASSERT
-        Assert.Null(store.LastEventId);
+
+        await store.SetLastEventIdAsync("event-42");
+
+        Assert.Equal("event-42", await store.GetLastEventIdAsync());
     }
-    
+
+    [Fact]
+    public async Task Set_WhenTheTokenIsCancelled_PropagatesTheCancellation()
+    {
+        IDistributedCache cache = CreateCacheWithValue(null);
+        cache.SetAsync(Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromCanceled(call.Arg<CancellationToken>()));
+        DistributedCacheLastEventIdStore store = new(new(), cache, NullLogger<DistributedCacheLastEventIdStore>.Instance);
+        using CancellationTokenSource cts = new();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await store.SetLastEventIdAsync("event-42", cts.Token));
+    }
+
     private static IDistributedCache CreateCacheWithValue(string? value)
     {
         IDistributedCache cache = Substitute.For<IDistributedCache>();
-        cache.Get(Arg.Any<string>()).Returns(
-            value is not null ? Encoding.UTF8.GetBytes(value) : null);
+        cache.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
+            Task.FromResult(value is not null ? Encoding.UTF8.GetBytes(value) : null));
+        return cache;
+    }
+
+    private static IDistributedCache CreateUnavailableCache()
+    {
+        IDistributedCache cache = Substitute.For<IDistributedCache>();
+        cache.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ThrowsAsync(new Exception("Cache unavailable"));
+        return cache;
+    }
+
+    private static IDistributedCache CreateFailingWriteCache()
+    {
+        IDistributedCache cache = CreateCacheWithValue(null);
+        cache.SetAsync(Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception("Write failure"));
         return cache;
     }
 }
-

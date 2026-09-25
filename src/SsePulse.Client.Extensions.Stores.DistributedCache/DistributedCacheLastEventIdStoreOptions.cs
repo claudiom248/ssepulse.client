@@ -25,7 +25,7 @@ public sealed class DistributedCacheLastEventIdStoreOptions
     /// Setting a TTL is useful when you want stale last-event-ID values to expire automatically,
     /// for example after a deployment that resets the event stream. The value is forwarded to
     /// <see cref="DistributedCacheEntryOptions.AbsoluteExpirationRelativeToNow"/> on every
-    /// <see cref="DistributedCacheLastEventIdStore.Set"/> call.
+    /// <see cref="DistributedCacheLastEventIdStore.SetLastEventIdAsync"/> call.
     /// </remarks>
     public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
 }

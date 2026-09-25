@@ -18,6 +18,8 @@ internal class StreamConsumer
     private readonly Func<Exception, ValueTask> _onError;
     private readonly ILastEventIdStore? _lastEventIdStore;
     private readonly EventIdCommitTracker _commitTracker = new();
+    private readonly SemaphoreSlim _commitLock = new(1, 1);
+    private long _committedVersion;
 
     public StreamConsumer(
         SseHandlersDictionary handlers,
@@ -56,7 +58,7 @@ internal class StreamConsumer
                 using IDisposable? _ = _logger.BeginScope("EventType: {EventType}", sseItem.EventType);
                 _logger.LogDebug("Received event of type '{EventType}' and Data {Data}", sseItem.EventType,
                     sseItem.Data);
-                long sequence = _commitTracker.Register(sseItem.EventId);
+                long sequence = _lastEventIdStore is null ? -1 : _commitTracker.Register(sseItem.EventId);
                 await channel.Writer.WriteAsync(new DispatchItem(sequence, sseItem), faultSource.Token)
                     .ConfigureAwait(false);
             }
@@ -135,7 +137,7 @@ internal class StreamConsumer
             }
 
             _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
-            Commit(item.Sequence);
+            await CommitAsync(item.Sequence).ConfigureAwait(false);
             return;
         }
 
@@ -156,7 +158,7 @@ internal class StreamConsumer
             await InvokeOnErrorAsync(ex).ConfigureAwait(false);
         }
 
-        Commit(item.Sequence);
+        await CommitAsync(item.Sequence).ConfigureAwait(false);
     }
 
     private async ValueTask InvokeOnErrorAsync(Exception exception)
@@ -171,18 +173,39 @@ internal class StreamConsumer
         }
     }
 
-    private void Commit(long sequence)
+    private async ValueTask CommitAsync(long sequence)
     {
         if (_lastEventIdStore is null)
         {
             return;
         }
 
-        _commitTracker.Complete(sequence, eventId =>
+        EventIdAdvance? advance = _commitTracker.Complete(sequence);
+        if (advance is not { } value)
         {
-            _logger.LogDebug("Set last event ID to '{EventId}'", eventId);
-            _lastEventIdStore.Set(eventId);
-        });
+            return;
+        }
+
+        await _commitLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        try
+        {
+            if (value.Version <= _committedVersion)
+            {
+                return;
+            }
+
+            _committedVersion = value.Version;
+            _logger.LogDebug("Set last event ID to '{EventId}'", value.EventId);
+            await _lastEventIdStore.SetLastEventIdAsync(value.EventId, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to store the last event ID '{EventId}'", value.EventId);
+        }
+        finally
+        {
+            _commitLock.Release();
+        }
     }
 
     private readonly record struct DispatchItem(long Sequence, SseItem<string> Event);

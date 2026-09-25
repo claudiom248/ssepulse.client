@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using SsePulse.Client;
+using SsePulse.Client.Tests.Common;
 
 namespace SsePulse.Client.Tests;
 
@@ -16,11 +17,10 @@ public sealed class FileLastEventIdStoreTests : IDisposable
     public void Dispose() => Directory.Delete(_tempDir, recursive: true);
 
     private string TempFile(string name = "last-event-id.txt") => Path.Combine(_tempDir, name);
-    
+
     [Fact]
     public void Constructor_WhenOptionsIsNull_ThrowsArgumentNullException()
     {
-        // ACT & ASSERT
         Assert.Throws<ArgumentNullException>(() => new FileLastEventIdStore(null!));
     }
 
@@ -29,17 +29,14 @@ public sealed class FileLastEventIdStoreTests : IDisposable
     [InlineData("   ")]
     public void Constructor_WhenFilePathIsNullOrWhitespace_ThrowsArgumentException(string filePath)
     {
-        // ARRANGE
         FileLastEventIdStoreOptions options = new() { FilePath = filePath };
 
-        // ACT & ASSERT
         Assert.Throws<ArgumentException>(() => new FileLastEventIdStore(options));
     }
 
     [Fact]
     public void Constructor_WhenFlushAfterCountIsZero_ThrowsArgumentException()
     {
-        // ARRANGE
         FileLastEventIdStoreOptions options = new()
         {
             FilePath = TempFile(),
@@ -47,14 +44,12 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushAfterCount = 0
         };
 
-        // ACT & ASSERT
         Assert.Throws<ArgumentException>(() => new FileLastEventIdStore(options));
     }
 
     [Fact]
     public void Constructor_WhenFlushIntervalIsZero_ThrowsArgumentException()
     {
-        // ARRANGE
         FileLastEventIdStoreOptions options = new()
         {
             FilePath = TempFile(),
@@ -62,83 +57,95 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushInterval = TimeSpan.Zero
         };
 
-        // ACT & ASSERT
         Assert.Throws<ArgumentException>(() => new FileLastEventIdStore(options));
     }
 
     [Fact]
-    public void Constructor_WhenFileDoesNotExist_LastEventIdIsNull()
+    public async Task Get_WhenFileDoesNotExist_ReturnsNull()
     {
-        // ARRANGE
         FileLastEventIdStoreOptions options = new() { FilePath = TempFile() };
+        await using FileLastEventIdStore store = new(options);
 
-        // ACT
-        using FileLastEventIdStore store = new(options);
-
-        // ASSERT
-        Assert.Null(store.LastEventId);
+        Assert.Null(await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Constructor_WhenFileExists_ReadsLastEventId()
+    public async Task Get_WhenFileExists_ReadsLastEventId()
     {
-        // ARRANGE
         string path = TempFile();
-        File.WriteAllText(path, "event-id-from-previous-session");
-        FileLastEventIdStoreOptions options = new() { FilePath = path };
+        await File.WriteAllTextAsync(path, "event-id-from-previous-session");
+        await using FileLastEventIdStore store = new(new FileLastEventIdStoreOptions { FilePath = path });
 
-        // ACT
-        using FileLastEventIdStore store = new(options);
-
-        // ASSERT
-        Assert.Equal("event-id-from-previous-session", store.LastEventId);
+        Assert.Equal("event-id-from-previous-session", await store.GetLastEventIdAsync());
     }
-    
+
     [Fact]
-    public void Set_WithEverySet_WritesEventIdToFile()
+    public async Task Constructor_DoesNotReadTheFile()
     {
-        // ARRANGE
+        string path = TempFile();
+        await File.WriteAllTextAsync(path, "before-construction");
+        await using FileLastEventIdStore store = new(new FileLastEventIdStoreOptions { FilePath = path });
+        await File.WriteAllTextAsync(path, "after-construction");
+
+        Assert.Equal("after-construction", await store.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task Get_AfterASetBeforeTheFirstRead_KeepsTheValueSetInMemory()
+    {
+        string path = TempFile();
+        await File.WriteAllTextAsync(path, "persisted");
+        FileLastEventIdStoreOptions options = new()
+        {
+            FilePath = path,
+            FlushMode = FlushMode.AfterInterval,
+            FlushInterval = TimeSpan.FromMinutes(5)
+        };
+        await using FileLastEventIdStore store = new(options, timeProvider: new FakeTimeProvider());
+
+        await store.SetLastEventIdAsync("in-memory");
+
+        Assert.Equal("in-memory", await store.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task Set_WithEverySet_WritesEventIdToFile()
+    {
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
             FilePath = path,
             FlushMode = FlushMode.EverySet
         };
-        using FileLastEventIdStore store = new(options);
+        await using FileLastEventIdStore store = new(options);
 
-        // ACT
-        store.Set("event-42");
+        await store.SetLastEventIdAsync("event-42");
 
-        // ASSERT
-        Assert.Equal("event-42", File.ReadAllText(path));
+        Assert.Equal("event-42", await File.ReadAllTextAsync(path));
     }
 
     [Fact]
-    public void Set_WithEverySet_MultipleIds_FileContainsLatestId()
+    public async Task Set_WithEverySet_MultipleIds_FileContainsLatestId()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
             FilePath = path,
             FlushMode = FlushMode.EverySet
         };
-        using FileLastEventIdStore store = new(options);
+        await using FileLastEventIdStore store = new(options);
 
-        // ACT
-        store.Set("event-1");
-        store.Set("event-2");
-        store.Set("event-3");
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
+        await store.SetLastEventIdAsync("event-3");
 
-        // ASSERT
-        Assert.Equal("event-3", File.ReadAllText(path));
-        Assert.Equal("event-3", store.LastEventId);
+        Assert.Equal("event-3", await File.ReadAllTextAsync(path));
+        Assert.Equal("event-3", await store.GetLastEventIdAsync());
     }
-    
+
     [Fact]
-    public void Set_WithAfterCount_DoesNotWriteBeforeThreshold()
+    public async Task Set_WithAfterCount_DoesNotWriteBeforeThreshold()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
@@ -146,23 +153,20 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushMode = FlushMode.AfterCount,
             FlushAfterCount = 5
         };
-        using FileLastEventIdStore store = new(options);
+        await using FileLastEventIdStore store = new(options);
 
-        // ACT — call Set 4 times (below threshold of 5)
-        store.Set("event-1");
-        store.Set("event-2");
-        store.Set("event-3");
-        store.Set("event-4");
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
+        await store.SetLastEventIdAsync("event-3");
+        await store.SetLastEventIdAsync("event-4");
 
-        // ASSERT — file must not have been written yet
         Assert.False(File.Exists(path));
-        Assert.Equal("event-4", store.LastEventId);
+        Assert.Equal("event-4", await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_WithAfterCount_WritesAtThreshold()
+    public async Task Set_WithAfterCount_WritesAtThreshold()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
@@ -170,22 +174,19 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushMode = FlushMode.AfterCount,
             FlushAfterCount = 3
         };
-        using FileLastEventIdStore store = new(options);
+        await using FileLastEventIdStore store = new(options);
 
-        // ACT
-        store.Set("event-1");
-        store.Set("event-2");
-        store.Set("event-3"); // 3rd call — flush
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
+        await store.SetLastEventIdAsync("event-3");
 
-        // ASSERT
         Assert.True(File.Exists(path));
-        Assert.Equal("event-3", File.ReadAllText(path));
+        Assert.Equal("event-3", await File.ReadAllTextAsync(path));
     }
-    
+
     [Fact]
-    public void Set_WithAfterInterval_DoesNotWriteImmediately()
+    public async Task Set_WithAfterInterval_DoesNotWriteImmediately()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
@@ -194,21 +195,18 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushInterval = TimeSpan.FromSeconds(30)
         };
         FakeTimeProvider time = new();
-        using FileLastEventIdStore store = new(options, timeProvider: time);
+        await using FileLastEventIdStore store = new(options, timeProvider: time);
 
-        // ACT
-        store.Set("event-1");
+        await store.SetLastEventIdAsync("event-1");
         time.Advance(TimeSpan.FromSeconds(29));
 
-        // ASSERT — file must not have been written yet
         Assert.False(File.Exists(path));
-        Assert.Equal("event-1", store.LastEventId);
+        Assert.Equal("event-1", await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_WithAfterInterval_WritesAfterIntervalElapses()
+    public async Task Set_WithAfterInterval_WritesAfterIntervalElapses()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
@@ -217,21 +215,18 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushInterval = TimeSpan.FromMilliseconds(100)
         };
         FakeTimeProvider time = new();
-        using FileLastEventIdStore store = new(options, timeProvider: time);
+        await using FileLastEventIdStore store = new(options, timeProvider: time);
 
-        // ACT
-        store.Set("event-interval");
+        await store.SetLastEventIdAsync("event-interval");
         time.Advance(TimeSpan.FromMilliseconds(100));
+        await TestWait.UntilAsync(() => Task.FromResult(File.Exists(path)));
 
-        // ASSERT
-        Assert.True(File.Exists(path));
-        Assert.Equal("event-interval", File.ReadAllText(path));
+        Assert.Equal("event-interval", await File.ReadAllTextAsync(path));
     }
-    
+
     [Fact]
-    public void Dispose_WithAfterInterval_FlushesPendingWrite()
+    public async Task DisposeAsync_WithAfterInterval_FlushesPendingWrite()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
@@ -240,20 +235,17 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushInterval = TimeSpan.FromSeconds(30)
         };
         FileLastEventIdStore store = new(options);
-        store.Set("event-on-dispose");
+        await store.SetLastEventIdAsync("event-on-dispose");
 
-        // ACT
-        store.Dispose();
+        await store.DisposeAsync();
 
-        // ASSERT
         Assert.True(File.Exists(path));
-        Assert.Equal("event-on-dispose", File.ReadAllText(path));
+        Assert.Equal("event-on-dispose", await File.ReadAllTextAsync(path));
     }
 
     [Fact]
-    public void Dispose_WithAfterCount_FlushesPendingWrite()
+    public async Task Dispose_WithAfterCount_FlushesPendingWrite()
     {
-        // ARRANGE
         string path = TempFile();
         FileLastEventIdStoreOptions options = new()
         {
@@ -262,31 +254,39 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushAfterCount = 10
         };
         FileLastEventIdStore store = new(options);
-        store.Set("event-on-dispose");
+        await store.SetLastEventIdAsync("event-on-dispose");
 
-        // ACT
         store.Dispose();
 
-        // ASSERT 
         Assert.True(File.Exists(path));
-        Assert.Equal("event-on-dispose", File.ReadAllText(path));
+        Assert.Equal("event-on-dispose", await File.ReadAllTextAsync(path));
     }
-    
+
     [Fact]
-    public void LastEventId_AfterRestart_ReturnsPersistedValue()
+    public async Task Get_AfterRestart_ReturnsPersistedValue()
     {
-        // ARRANGE
         string path = TempFile();
-        using (FileLastEventIdStore first = new(new FileLastEventIdStoreOptions { FilePath = path }))
+        await using (FileLastEventIdStore first = new(new FileLastEventIdStoreOptions { FilePath = path }))
         {
-            first.Set("session-1-last-event");
+            await first.SetLastEventIdAsync("session-1-last-event");
         }
 
-        // ACT — "restart": create a new store pointing at the same file
-        using FileLastEventIdStore second = new(new FileLastEventIdStoreOptions { FilePath = path });
+        await using FileLastEventIdStore second = new(new FileLastEventIdStoreOptions { FilePath = path });
 
-        // ASSERT
-        Assert.Equal("session-1-last-event", second.LastEventId);
+        Assert.Equal("session-1-last-event", await second.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task Set_AfterAFailedWrite_PersistsTheNewestValueOnTheNextSet()
+    {
+        string directory = Path.Combine(_tempDir, "not-yet-created");
+        string path = Path.Combine(directory, "last-event-id.txt");
+        await using FileLastEventIdStore store = new(new FileLastEventIdStoreOptions { FilePath = path });
+        await store.SetLastEventIdAsync("event-1");
+        Directory.CreateDirectory(directory);
+
+        await store.SetLastEventIdAsync("event-2");
+
+        Assert.Equal("event-2", await File.ReadAllTextAsync(path));
     }
 }
-

@@ -142,7 +142,7 @@ public class AsyncHandlerTests
         await started.WaitForCountAsync(2);
         await harness.StopAsync();
 
-        Assert.Equal("1", store.LastEventId);
+        Assert.Equal("1", await store.GetLastEventIdAsync());
     }
 
     [Fact]
@@ -162,9 +162,9 @@ public class AsyncHandlerTests
         harness.Start();
 
         await started.WaitForCountAsync(1);
-        string? storedWhileRunning = store.LastEventId;
+        string? storedWhileRunning = await store.GetLastEventIdAsync();
         release.Open();
-        await TestWait.UntilAsync(() => Task.FromResult(store.LastEventId == "1"));
+        await TestWait.UntilAsync(async () => await store.GetLastEventIdAsync() == "1");
         await harness.StopAsync();
 
         Assert.Null(storedWhileRunning);

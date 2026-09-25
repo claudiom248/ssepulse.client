@@ -14,13 +14,17 @@ namespace SsePulse.Client.Extensions.Stores.Mongo;
 /// <remarks>
 /// <para>
 /// The document is looked up by <see cref="MongoLastEventIdStoreOptions.DocumentKey"/> and
-/// upserted (insert or update) on every <see cref="Set"/> call, ensuring exactly one document
+/// upserted (insert or update) on every <see cref="SetLastEventIdAsync"/> call, ensuring exactly one document
 /// per key is kept in the collection.
 /// </para>
 /// <para>
-/// If MongoDB is unavailable, the store falls back to the in-memory value only: the error is
+/// The persisted value is read lazily by the first <see cref="GetLastEventIdAsync"/> call; the constructor
+/// performs no I/O.
+/// </para>
+/// <para>
+/// If MongoDB is unavailable, the value held in memory stays authoritative: the error is
 /// logged at <c>Error</c> level but is never surfaced to the caller, so SSE event processing
-/// continues uninterrupted.
+/// continues uninterrupted. The next <see cref="SetLastEventIdAsync"/> call persists the newest value again.
 /// </para>
 /// </remarks>
 public sealed class MongoLastEventIdStore : ILastEventIdStore
@@ -28,15 +32,13 @@ public sealed class MongoLastEventIdStore : ILastEventIdStore
     private readonly MongoLastEventIdStoreOptions _options;
     private readonly ILogger<MongoLastEventIdStore> _logger;
     private readonly IMongoCollection<LastEventIdDocument> _collection;
-
-    /// <inheritdoc/>
-    public string? LastEventId { get; private set; }
+    private volatile string? _lastEventId;
+    private int _loaded;
 
     /// <summary>
     /// Initializes a new instance of <see cref="MongoLastEventIdStore"/>.
-    /// The constructor immediately attempts to read the persisted last-event-ID from MongoDB;
-    /// if MongoDB is unavailable the error is logged and <see cref="LastEventId"/> remains
-    /// <see langword="null"/>.
+    /// The constructor performs no I/O: the persisted last-event-ID is read from MongoDB by the first call to
+    /// <see cref="GetLastEventIdAsync"/>.
     /// <br/><br/>
     /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-mongo.html"/>
     /// </summary>
@@ -60,56 +62,57 @@ public sealed class MongoLastEventIdStore : ILastEventIdStore
         IMongoDatabase database = mongoClient
             .GetDatabase(options.DatabaseName);
         _collection = database.GetCollection<LastEventIdDocument>(options.CollectionName);
-        LastEventId = TryGetLastEventId();
     }
 
     /// <inheritdoc/>
-    /// <remarks>
-    /// Empty or whitespace values are silently ignored. If the upsert operation fails, the error
-    /// is logged and the in-memory <see cref="LastEventId"/> is still updated so the caller is
-    /// not affected.
-    /// </remarks>
-    public void Set(string eventId)
+    public async ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default)
+    {
+        if (Volatile.Read(ref _loaded) == 0)
+        {
+            FilterDefinition<LastEventIdDocument> filter =
+                Builders<LastEventIdDocument>.Filter.Eq(x => x.Id, _options.DocumentKey);
+            try
+            {
+                string? persisted = await _collection
+                    .Find(filter)
+                    .Project(d => d.LastEventId)
+                    .FirstOrDefaultAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                _lastEventId ??= persisted;
+                Volatile.Write(ref _loaded, 1);
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogError(ex, "Error while retrieving document with with key '{DocumentKey}'", _options.DocumentKey);
+            }
+        }
+
+        return _lastEventId;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(eventId))
         {
             return;
         }
 
-        FilterDefinition<LastEventIdDocument>? filter =
+        _lastEventId = eventId;
+        FilterDefinition<LastEventIdDocument> filter =
             Builders<LastEventIdDocument>.Filter.Eq(x => x.Id, _options.DocumentKey);
-        UpdateDefinition<LastEventIdDocument>? update = Builders<LastEventIdDocument>.Update
+        UpdateDefinition<LastEventIdDocument> update = Builders<LastEventIdDocument>.Update
             .Set(x => x.LastEventId, eventId)
             .Set(x => x.UpdatedAt, DateTime.UtcNow);
         try
         {
-            _collection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
+            await _collection
+                .UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, cancellationToken)
+                .ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Error while updating document with key '{DocumentKey}'", _options.DocumentKey);
-        }
-
-        LastEventId = eventId;
-    }
-
-    private string? TryGetLastEventId()
-    {
-        FilterDefinition<LastEventIdDocument>? filter =
-            Builders<LastEventIdDocument>.Filter.Eq(x => x.Id, _options.DocumentKey);
-
-        try
-        {
-            string? id = _collection
-                .Find(filter)
-                .Project(d => d.LastEventId)
-                .FirstOrDefault();
-            return id;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error while retrieving document with with key '{DocumentKey}'", _options.DocumentKey);
-            return null;
         }
     }
 }

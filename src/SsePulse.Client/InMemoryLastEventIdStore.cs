@@ -1,4 +1,3 @@
-
 namespace SsePulse.Client;
 
 /// <summary>
@@ -10,16 +9,22 @@ namespace SsePulse.Client;
 /// </summary>
 public class InMemoryLastEventIdStore : ILastEventIdStore
 {
-    /// <inheritdoc/>
-    public string? LastEventId { get; private set; }
+    private volatile string? _lastEventId;
 
     /// <inheritdoc/>
-    public void Set(string eventId)
+    public ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default)
+    {
+        return new ValueTask<string?>(_lastEventId);
+    }
+
+    /// <inheritdoc/>
+    public ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrWhiteSpace(eventId))
         {
-            LastEventId = eventId;
+            _lastEventId = eventId;
         }
+
+        return ValueTask.CompletedTask;
     }
 }
-

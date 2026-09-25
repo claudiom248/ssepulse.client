@@ -39,6 +39,47 @@ public class BackPressureTests
         Assert.Equal(expectedReads, readsWhileBlocked);
         Assert.Equal(10, handled.Count);
     }
+    [Fact]
+    public async Task SlowStore_StopsTheReadLoopOnceTheQueueIsFull()
+    {
+        const int parallelism = 1;
+        const int expectedReads = 4;
+        SseGate release = new();
+        SseSourceOptions options = new() { MaxBufferedEvents = 2, MaxDegreeOfParallelism = parallelism };
+        SseHandlersDictionary handlers = new(options.JsonSerializerOptions);
+        handlers.AddDataHandler("order", _ => { });
+        SlowStore store = new(release);
+        StreamConsumer consumer = new(handlers, options, NullLogger<SseSource>.Instance, _ => ValueTask.CompletedTask, store);
+        await using OneEventPerReadStream stream = new(10);
+
+        Task consumption = consumer.ConsumeAsync(stream, CancellationToken.None);
+        await TestWait.UntilAsync(() => Task.FromResult(stream.ReadCount >= expectedReads));
+        for (int i = 0; i < 100; i++)
+        {
+            await Task.Yield();
+        }
+
+        int readsWhileBlocked = stream.ReadCount;
+        release.Open();
+        await consumption;
+
+        Assert.Equal(expectedReads, readsWhileBlocked);
+        Assert.Equal("10", await store.GetLastEventIdAsync());
+    }
+
+    private sealed class SlowStore(SseGate release) : ILastEventIdStore
+    {
+        private string? _lastEventId;
+
+        public ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default) => new(_lastEventId);
+
+        public async ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
+        {
+            await release.WaitAsync(cancellationToken);
+            _lastEventId = eventId;
+        }
+    }
+
     private sealed class OneEventPerReadStream(int events) : Stream
     {
         private int _reads;
@@ -67,7 +108,7 @@ public class BackPressureTests
                 return Task.FromResult(0);
             }
 
-            byte[] frame = Encoding.UTF8.GetBytes($"event: order\ndata: {index}\n\n");
+            byte[] frame = Encoding.UTF8.GetBytes($"id: {index}\nevent: order\ndata: {index}\n\n");
             frame.CopyTo(buffer, offset);
             return Task.FromResult(frame.Length);
         }

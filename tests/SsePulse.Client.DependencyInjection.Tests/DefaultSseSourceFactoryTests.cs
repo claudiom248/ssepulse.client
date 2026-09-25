@@ -287,11 +287,14 @@ public class DefaultSseSourceFactoryTests
 
     private class TransientLastEventIdStore : ILastEventIdStore
     {
-        public string? LastEventId { get; private set; }
+        private string? _lastEventId;
 
-        public void Set(string eventId)
+        public ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default) => new(_lastEventId);
+
+        public ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
         {
-            LastEventId = eventId;
+            _lastEventId = eventId;
+            return ValueTask.CompletedTask;
         }
     }
 }

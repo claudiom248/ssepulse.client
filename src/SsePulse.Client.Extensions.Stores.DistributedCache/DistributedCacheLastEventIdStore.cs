@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client;
@@ -14,14 +14,13 @@ namespace SsePulse.Client.Extensions.Stores.DistributedCache;
 /// <remarks>
 /// <para>
 /// The last event ID is written to the configured <see cref="IDistributedCache"/> key on every
-/// <see cref="Set"/> call and read back from the cache when the store is constructed, allowing
-/// the SSE stream to resume after a process restart.
+/// <see cref="SetLastEventIdAsync"/> call and read back from the cache by the first <see cref="GetLastEventIdAsync"/>
+/// call, allowing the SSE stream to resume after a process restart. The constructor performs no I/O.
 /// </para>
 /// <para>
-/// If the cache is unavailable at construction time, <see cref="LastEventId"/> is initialised
-/// to <see langword="null"/>. If a <see cref="Set"/> call fails, the error is logged at
-/// <c>Error</c> level and <see cref="LastEventId"/> is <b>not</b> updated — SSE processing
-/// continues uninterrupted but the failed write is not retried.
+/// If the cache is unavailable, the value held in memory stays authoritative: the error is logged at
+/// <c>Error</c> level, SSE processing continues uninterrupted, and the next <see cref="SetLastEventIdAsync"/>
+/// call persists the newest value again.
 /// </para>
 /// </remarks>
 public class DistributedCacheLastEventIdStore : ILastEventIdStore
@@ -29,15 +28,13 @@ public class DistributedCacheLastEventIdStore : ILastEventIdStore
     private readonly DistributedCacheLastEventIdStoreOptions _options;
     private readonly IDistributedCache _cache;
     private readonly ILogger<DistributedCacheLastEventIdStore> _logger;
-
-    /// <inheritdoc/>
-    public string? LastEventId { get; private set; }
+    private volatile string? _lastEventId;
+    private int _loaded;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DistributedCacheLastEventIdStore"/>.
-    /// The constructor immediately attempts to read the persisted last-event-ID from the cache;
-    /// if the cache is unavailable the error is logged and <see cref="LastEventId"/> remains
-    /// <see langword="null"/>.
+    /// The constructor performs no I/O: the persisted last-event-ID is read from the cache by the first call to
+    /// <see cref="GetLastEventIdAsync"/>.
     /// <br/><br/>
     /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/store-distributed-cache.html"/>
     /// </summary>
@@ -56,23 +53,37 @@ public class DistributedCacheLastEventIdStore : ILastEventIdStore
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _logger = logger ?? NullLogger<DistributedCacheLastEventIdStore>.Instance;
-
-        LastEventId = TryGetLastEventId();
     }
 
     /// <inheritdoc/>
-    /// <remarks>
-    /// Empty or whitespace values are silently ignored. If the write to the distributed cache
-    /// fails, the error is logged and <see cref="LastEventId"/> is <b>not</b> updated — the
-    /// caller is not affected and SSE processing continues uninterrupted.
-    /// </remarks>
-    public void Set(string eventId)
+    public async ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default)
+    {
+        if (Volatile.Read(ref _loaded) == 0)
+        {
+            try
+            {
+                string? persisted = await _cache.GetStringAsync(_options.Key, cancellationToken).ConfigureAwait(false);
+                _lastEventId ??= persisted;
+                Volatile.Write(ref _loaded, 1);
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogError(ex, "Failed to retrieve last event ID with key '{Key}'", _options.Key);
+            }
+        }
+
+        return _lastEventId;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(eventId))
         {
             return;
         }
 
+        _lastEventId = eventId;
         try
         {
             DistributedCacheEntryOptions entryOptions = new()
@@ -80,27 +91,11 @@ public class DistributedCacheLastEventIdStore : ILastEventIdStore
                 AbsoluteExpirationRelativeToNow = _options.AbsoluteExpirationRelativeToNow
             };
 
-            _cache.SetString(_options.Key, eventId, entryOptions);
+            await _cache.SetStringAsync(_options.Key, eventId, entryOptions, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Failed to persist last event ID with key '{Key}'", _options.Key);
-            return;
-        }
-        
-        LastEventId = eventId;
-    }
-    
-    private string? TryGetLastEventId()
-    {
-        try
-        {
-            return _cache.GetString(_options.Key);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to retrieve last event ID with key '{Key}'", _options.Key);
-            return null;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Tests.Common;
 
@@ -27,24 +27,24 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Constructor_WhenCacheIsEmpty_LastEventIdIsNull()
+    public async Task Get_WhenCacheIsEmpty_ReturnsNull()
     {
         // ARRANGE & ACT
-        DistributedCacheLastEventIdStore store = CreateStore(nameof(Constructor_WhenCacheIsEmpty_LastEventIdIsNull));
+        DistributedCacheLastEventIdStore store = CreateStore(nameof(Get_WhenCacheIsEmpty_ReturnsNull));
 
         // ASSERT
-        Assert.Null(store.LastEventId);
+        Assert.Null(await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_WithValidId_EventIdIsPersistedInCache()
+    public async Task Set_WithValidId_EventIdIsPersistedInCache()
     {
         // ARRANGE
         string key = nameof(Set_WithValidId_EventIdIsPersistedInCache);
         DistributedCacheLastEventIdStore store = CreateStore(key);
         
         // ACT
-        store.Set("event-100");
+        await store.SetLastEventIdAsync("event-100");
         
         // ASSERT
         string? storedValue = _fixture.Cache.GetString(key);
@@ -52,31 +52,31 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Constructor_WhenKeyExistsFromPreviousInstance_LastEventIdIsRehydrated()
+    public async Task Get_WhenKeyExistsFromPreviousInstance_ReturnsThePersistedValue()
     {
         // ARRANGE
-        string key = nameof(Constructor_WhenKeyExistsFromPreviousInstance_LastEventIdIsRehydrated);
+        string key = nameof(Get_WhenKeyExistsFromPreviousInstance_ReturnsThePersistedValue);
         DistributedCacheLastEventIdStore firstStore = CreateStore(key);
-        firstStore.Set("event-session-1");
+        await firstStore.SetLastEventIdAsync("event-session-1");
 
         // ACT
         DistributedCacheLastEventIdStore secondStore = CreateStore(key);
 
         // ASSERT
-        Assert.Equal("event-session-1", secondStore.LastEventId);
+        Assert.Equal("event-session-1", await secondStore.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_CalledMultipleTimes_OnlyLatestValueIsPersistedInCache()
+    public async Task Set_CalledMultipleTimes_OnlyLatestValueIsPersistedInCache()
     {
         // ARRANGE
         string key = nameof(Set_CalledMultipleTimes_OnlyLatestValueIsPersistedInCache);
         DistributedCacheLastEventIdStore store = CreateStore(key);
 
         // ACT
-        store.Set("event-1");
-        store.Set("event-2");
-        store.Set("event-3");
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
+        await store.SetLastEventIdAsync("event-3");
 
         // ASSERT
         string? storedValue = _fixture.Cache.GetString(key);
@@ -84,7 +84,7 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Set_WithDifferentKeys_StoredValuesAreIsolated()
+    public async Task Set_WithDifferentKeys_StoredValuesAreIsolated()
     {
         // ARRANGE
         string baseKey = nameof(Set_WithDifferentKeys_StoredValuesAreIsolated);
@@ -92,25 +92,25 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
         DistributedCacheLastEventIdStore storeB = CreateStore($"{baseKey}:B");
 
         // ACT
-        storeA.Set("event-for-A");
-        storeB.Set("event-for-B");
+        await storeA.SetLastEventIdAsync("event-for-A");
+        await storeB.SetLastEventIdAsync("event-for-B");
 
         // ASSERT 
         DistributedCacheLastEventIdStore reloadedA = CreateStore($"{baseKey}:A");
         DistributedCacheLastEventIdStore reloadedB = CreateStore($"{baseKey}:B");
-        Assert.Equal("event-for-A", reloadedA.LastEventId);
-        Assert.Equal("event-for-B", reloadedB.LastEventId);
+        Assert.Equal("event-for-A", await reloadedA.GetLastEventIdAsync());
+        Assert.Equal("event-for-B", await reloadedB.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_WithEmptyString_DoesNotWriteToCache()
+    public async Task Set_WithEmptyString_DoesNotWriteToCache()
     {
         // ARRANGE
         string key = nameof(Set_WithEmptyString_DoesNotWriteToCache);
         DistributedCacheLastEventIdStore store = CreateStore(key);
 
         // ACT
-        store.Set(string.Empty);
+        await store.SetLastEventIdAsync(string.Empty);
 
         // ASSERT
         string? storedValue = _fixture.Cache.GetString(key);
@@ -118,14 +118,14 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
     }
 
     [Fact]
-    public void Set_WithWhiteSpace_DoesNotWriteToCache()
+    public async Task Set_WithWhiteSpace_DoesNotWriteToCache()
     {
         // ARRANGE
         string key = nameof(Set_WithWhiteSpace_DoesNotWriteToCache);
         DistributedCacheLastEventIdStore store = CreateStore(key);
 
         // ACT
-        store.Set("   ");
+        await store.SetLastEventIdAsync("   ");
 
         // ASSERT
         string? storedValue = _fixture.Cache.GetString(key);
@@ -140,7 +140,7 @@ public sealed class DistributedCacheLastEventIdStoreIntegrationTests
         DistributedCacheLastEventIdStore store = CreateStore(key, absoluteExpirationRelativeToNow: TimeSpan.FromMilliseconds(200));
 
         // ACT
-        store.Set("event-expiring");
+        await store.SetLastEventIdAsync("event-expiring");
         await TestWait.UntilAsync(async () => await _fixture.Cache.GetStringAsync(key) is null);
 
         // ASSERT

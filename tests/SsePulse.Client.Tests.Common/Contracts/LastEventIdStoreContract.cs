@@ -7,56 +7,57 @@ public abstract class LastEventIdStoreContract
     protected abstract ILastEventIdStore CreateStore();
 
     [Fact]
-    public void NewStore_HasNoLastEventId()
+    public async Task NewStore_HasNoLastEventId()
     {
         ILastEventIdStore store = CreateStore();
 
-        Assert.Null(store.LastEventId);
+        Assert.Null(await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_StoresTheValue()
+    public async Task Set_StoresTheValue()
     {
         ILastEventIdStore store = CreateStore();
 
-        store.Set("event-1");
+        await store.SetLastEventIdAsync("event-1");
 
-        Assert.Equal("event-1", store.LastEventId);
+        Assert.Equal("event-1", await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_ReplacesThePreviousValue()
+    public async Task Set_ReplacesThePreviousValue()
     {
         ILastEventIdStore store = CreateStore();
 
-        store.Set("event-1");
-        store.Set("event-2");
+        await store.SetLastEventIdAsync("event-1");
+        await store.SetLastEventIdAsync("event-2");
 
-        Assert.Equal("event-2", store.LastEventId);
+        Assert.Equal("event-2", await store.GetLastEventIdAsync());
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Set_IgnoresEmptyValues(string value)
+    public async Task Set_IgnoresEmptyValues(string value)
     {
         ILastEventIdStore store = CreateStore();
-        store.Set("event-1");
+        await store.SetLastEventIdAsync("event-1");
 
-        store.Set(value);
+        await store.SetLastEventIdAsync(value);
 
-        Assert.Equal("event-1", store.LastEventId);
+        Assert.Equal("event-1", await store.GetLastEventIdAsync());
     }
 
     [Fact]
-    public void Set_FromManyThreads_DoesNotThrowAndKeepsOneOfTheValues()
+    public async Task Set_FromManyThreads_DoesNotThrowAndKeepsOneOfTheValues()
     {
         ILastEventIdStore store = CreateStore();
 
-        Exception? exception = Record.Exception(() =>
-            Parallel.For(0, 50, index => store.Set($"event-{index}")));
+        Exception? exception = await Record.ExceptionAsync(() => Parallel.ForEachAsync(
+            Enumerable.Range(0, 50),
+            async (index, token) => await store.SetLastEventIdAsync($"event-{index}", token)));
 
         Assert.Null(exception);
-        Assert.StartsWith("event-", store.LastEventId);
+        Assert.StartsWith("event-", await store.GetLastEventIdAsync());
     }
 }

@@ -7,6 +7,7 @@ internal sealed class EventIdCommitTracker
     private readonly HashSet<long> _completed = [];
     private long _next;
     private long _nextToCommit;
+    private long _version;
 
     public long Register(string? eventId)
     {
@@ -18,7 +19,7 @@ internal sealed class EventIdCommitTracker
         }
     }
 
-    public void Complete(long sequence, Action<string> commit)
+    public EventIdAdvance? Complete(long sequence)
     {
         lock (_lock)
         {
@@ -34,10 +35,9 @@ internal sealed class EventIdCommitTracker
                 _nextToCommit++;
             }
 
-            if (lastId is not null)
-            {
-                commit(lastId);
-            }
+            return lastId is null ? null : new EventIdAdvance(++_version, lastId);
         }
     }
 }
+
+internal readonly record struct EventIdAdvance(long Version, string EventId);
