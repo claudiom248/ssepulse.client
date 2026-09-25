@@ -12,9 +12,9 @@ distributed as separate NuGet packages, each documented on its own page.
 [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Extensions.Stores.Mongo?label=SsePulse.Client.Extensions.Stores.Mongo)](https://www.nuget.org/packages/SsePulse.Client.Extensions.Stores.Mongo)
 [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection?label=SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection)](https://www.nuget.org/packages/SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection)
 
-Persists the last event ID to a MongoDB collection using an upsert strategy. If MongoDB is
-unavailable the error is logged and the in-memory value is still updated so SSE processing
-continues uninterrupted.
+Persists the last event ID to a MongoDB collection using an upsert strategy. The persisted value is
+read lazily by the first connection. If MongoDB is unavailable the error is logged and the in-memory
+value is still updated so SSE processing continues uninterrupted.
 
 → [MongoDB Store documentation](store-mongo.md)
 
@@ -26,7 +26,7 @@ continues uninterrupted.
 [![NuGet](https://img.shields.io/nuget/v/SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection?label=SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection)](https://www.nuget.org/packages/SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection)
 
 Persists the last event ID to any `IDistributedCache` backend (Redis, SQL Server, in-memory,
-etc.). If the cache write fails the error is logged and `LastEventId` is not updated in memory —
-SSE processing continues uninterrupted.
+etc.). The persisted value is read lazily by the first connection. If the cache write fails the error is
+logged and the in-memory value is still updated — SSE processing continues uninterrupted.
 
 → [Distributed Cache Store documentation](store-distributed-cache.md)

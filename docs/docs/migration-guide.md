@@ -43,3 +43,34 @@ Callbacks are now awaited, and an exception they throw is logged through the `IL
 ### `Bind`
 
 `Bind` accepts methods that return `Task` or `ValueTask` and take an optional `CancellationToken`. It now throws an `InvalidOperationException` for an `async void` method, and the message for a wrong parameter list changed. See [Asynchronous Handlers](async-handlers.md).
+
+---
+
+## Last-Event-ID stores
+
+### `ILastEventIdStore` is asynchronous
+
+The synchronous members are replaced:
+
+| 1.x                                  | 2.0                                                             |
+|--------------------------------------|-----------------------------------------------------------------|
+| `string? LastEventId { get; }`       | `ValueTask<string?> GetLastEventIdAsync(CancellationToken)`     |
+| `void Set(string eventId)`           | `ValueTask SetLastEventIdAsync(string eventId, CancellationToken)` |
+
+A custom store must be rewritten. There is no synchronous adapter. See [Last-Event-ID Resumption](last-event-id.md#custom-store) for the rules an implementation follows.
+
+Code that read `store.LastEventId` or called `store.Set(...)` now awaits the new methods. The `InMemoryLastEventIdStore` no longer has a public `LastEventId` property.
+
+### No I/O in the constructors
+
+`FileLastEventIdStore`, `MongoLastEventIdStore` and `DistributedCacheLastEventIdStore` do not read their backend when they are created. The persisted value is loaded by the first `GetLastEventIdAsync`, which happens when the source connects. A failed read is logged and retried on the next connection.
+
+`FileLastEventIdStore` also implements `IAsyncDisposable`.
+
+### Uniform failure semantics
+
+If the backend fails, every store keeps the value in memory, logs the error and persists the newest value again on the next write. `DistributedCacheLastEventIdStore` used to discard the in-memory update when a write failed.
+
+### The ID is stored after the handler
+
+The ID of an event is stored after its handlers complete, so a crash in the middle of a handler delivers the event again. A handler that throws no longer prevents the ID from being stored by default (`HandlerFailureBehavior.SkipAndAdvance`); set `SseSourceOptions.HandlerFailureBehavior` to `StopSource` to fault the source and get the event again after a restart.

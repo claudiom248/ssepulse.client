@@ -7,9 +7,13 @@ Persists the last event ID to a MongoDB collection so the SSE connection can be 
 process restart or a redeployment. The store uses an upsert strategy: exactly one document per
 [`DocumentKey`](#options) is kept in the collection.
 
-If MongoDB is unavailable at the time of a `Set` call, the error is logged at `Error` level but
+The store performs no I/O in its constructor: the persisted value is read by the first call to
+`GetLastEventIdAsync`, that is by the first connection attempt.
+
+If MongoDB is unavailable at the time of a write, the error is logged at `Error` level but
 is never surfaced to the caller — SSE event processing continues uninterrupted and the
-last-event-ID is still held in memory.
+last-event-ID is still held in memory. The next write persists the newest value again, and a failed
+read is retried on the next connection.
 
 ---
 

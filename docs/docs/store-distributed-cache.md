@@ -7,9 +7,12 @@ Persists the last event ID to any `IDistributedCache` implementation (Redis, SQL
 in-memory, or any other backend) so the SSE connection can be resumed after a process restart or
 a redeployment.
 
-If the cache is unavailable at the time of a `Set` call, the error is logged at `Error` level but
-is never surfaced to the caller. Unlike the MongoDB store, `LastEventId` is **not** updated in
-memory on a failed write — the value held in memory reflects only what was successfully persisted.
+The store performs no I/O in its constructor: the persisted value is read by the first call to
+`GetLastEventIdAsync`, that is by the first connection attempt.
+
+If the cache is unavailable at the time of a write, the error is logged at `Error` level but is
+never surfaced to the caller. The value held in memory is still updated, and the next write persists
+the newest value again. A failed read is logged and retried on the next connection.
 
 ---
 

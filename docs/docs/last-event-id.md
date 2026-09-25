@@ -8,9 +8,39 @@ once you register a last-event-ID store on the builder.
 
 ## How it works
 
-Every time an SSE event that carries an `id:` field is received, SsePulse stores the value in the
+Every time an SSE event that carries an `id:` field has been handled, SsePulse stores the value in the
 configured `ILastEventIdStore`. On the next connection attempt, `LastEventIdRequestMutator` reads
-the stored value and attaches it as the `Last-Event-ID` request header.
+the stored value with `GetLastEventIdAsync` and attaches it as the `Last-Event-ID` request header.
+
+---
+
+## Delivery guarantee
+
+The ID of an event is stored only **after every handler of that event completed**, so delivery is
+at-least-once: if the process crashes in the middle of a handler, the event is delivered again after the
+resume. Make handlers idempotent.
+
+- With `MaxDegreeOfParallelism` greater than `1`, the stored ID never moves past an event that is still
+  being handled.
+- A handler cancelled because the source is stopping does not store its ID.
+- The IDs are written one at a time and in order, and an older ID is never written after a newer one.
+
+### When a handler throws
+
+`SseSourceOptions.HandlerFailureBehavior` decides what happens to the ID of an event whose handler threw.
+In both cases the exception is logged and passed to `OnError`.
+
+| `HandlerFailureBehavior`        | Behavior |
+|---------------------------------|----------|
+| `SkipAndAdvance` *(default)*    | The ID of the failed event is stored and the source keeps going. The event is not delivered again. |
+| `StopSource`                    | The source stops and `Completion` faults with the handler's exception. The ID of the failed event is **not** stored, so the event is delivered again when the source is restarted. |
+
+### When the store fails
+
+A store keeps the value it received in memory, which is authoritative for the running process. If the
+persistence backend fails, the error is logged and never thrown, and the next `SetLastEventIdAsync` persists
+the newest value again. A failed read is logged and retried on the next connection. The built-in stores behave
+in the same way.
 
 ---
 
@@ -35,7 +65,7 @@ services
 ### `FileLastEventIdStore`
 
 Persists the last event ID to a local file so the stream can be resumed even after a process
-restart. The file is read back automatically during construction.
+restart. The file is read lazily, by the first connection attempt, and not during construction.
 
 Writes to disk are controlled by a configurable **flush strategy**:
 
@@ -46,8 +76,8 @@ Writes to disk are controlled by a configurable **flush strategy**:
 | `AfterInterval`        | On a repeating timer         |
 
 > [!IMPORTANT]
-> Dispose the `SseSource` to guarantee that any pending
-> `AfteCount` and `AfterInterval` flush is written before the process exits.
+> Dispose the store (`Dispose` or `DisposeAsync`) to guarantee that any pending
+> `AfterCount` and `AfterInterval` flush is written before the process exits.
 
 **Register on the builder:**
 
@@ -94,12 +124,43 @@ strategy (Redis, database, distributed cache, etc.):
 ```csharp
 public class RedisLastEventIdStore : ILastEventIdStore
 {
-    public string? LastEventId { get; private set; }
+    private readonly IDatabase _database;
+    private volatile string? _lastEventId;
+    private int _loaded;
 
-    public void Set(string eventId) => LastEventId = eventId;
-    // ... persist to Redis
+    public RedisLastEventIdStore(IDatabase database) => _database = database;
+
+    public async ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default)
+    {
+        if (Volatile.Read(ref _loaded) == 0)
+        {
+            _lastEventId ??= await _database.StringGetAsync("last-event-id");
+            Volatile.Write(ref _loaded, 1);
+        }
+
+        return _lastEventId;
+    }
+
+    public async ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(eventId))
+        {
+            return;
+        }
+
+        _lastEventId = eventId;
+        await _database.StringSetAsync("last-event-id", eventId);
+    }
 }
 ```
+
+An implementation should follow these rules, which the built-in stores respect:
+
+- **No I/O in the constructor.** Load the persisted value lazily in `GetLastEventIdAsync`.
+- **Ignore empty and whitespace IDs.**
+- **The value in memory is authoritative.** Log a persistence failure instead of throwing it, and persist the newest value again on the next call.
+- **Be thread safe.** With parallel handlers the source may call the store from several threads, although it serializes the writes.
+- Implement `IAsyncDisposable` when the store owns resources such as a timer or a connection.
 
 ```csharp
 services.AddSingleton<RedisLastEventIdStore>();
