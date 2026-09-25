@@ -85,7 +85,8 @@ internal partial class SseConnection
                     }
                     return hre.FindInner<TimeoutException>() is not null;
                 },
-                cancellationToken: cancellationToken
+                cancellationToken: cancellationToken,
+                timeProvider: _options.TimeProvider
             ).ConfigureAwait(false);
         }
         catch (Exception ex)

@@ -206,13 +206,20 @@ public class SseSourceLoggingTests
             new SseEvent { EventType = "e", Data = "3" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
         await using Core.SseSource source = new(client, DefaultOptions, logger);
-        source.On("e", async _ => await Task.Delay(5000));
+        TaskCompletionSource handlerStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource releaseHandler = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        source.On("e", async _ =>
+        {
+            handlerStarted.TrySetResult();
+            await releaseHandler.Task;
+        });
 
         // ACT
         Task consumeTask = source.StartConsumeAsync(CancellationToken.None);
-        await Task.Delay(100);
+        await handlerStarted.Task;
         await source.StopAsync();
         await consumeTask;
+        releaseHandler.TrySetResult();
 
         // ASSERT
         Assert.True(logger.HasLog(LogLevel.Information, "Stopping SSE consumption"));

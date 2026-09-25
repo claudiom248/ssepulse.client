@@ -63,7 +63,7 @@ public class SseSourceHostedServiceTests
             .Returns(async callInfo =>
             {
                 consuming.TrySetResult(true);
-                await Task.Delay(Timeout.InfiniteTimeSpan, callInfo.ArgAt<CancellationToken>(0));
+                await TestWait.ForeverAsync(callInfo.ArgAt<CancellationToken>(0));
             });
 
         SseSourceHostedService hostedService = new(sseSourceControlMock, logger);

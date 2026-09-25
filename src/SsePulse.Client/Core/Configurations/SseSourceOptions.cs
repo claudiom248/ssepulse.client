@@ -92,4 +92,10 @@ public class SseSourceOptions
     /// </summary>
     public JsonSerializerOptions JsonSerializerOptions { get; set; } =
         SerializationOptions.DefaultJsonSerializerOptions;
+
+    /// <summary>
+    /// Gets or sets the <see cref="System.TimeProvider"/> used for delays between connection attempts.
+    /// Defaults to <see cref="System.TimeProvider.System"/>.
+    /// </summary>
+    public TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 }

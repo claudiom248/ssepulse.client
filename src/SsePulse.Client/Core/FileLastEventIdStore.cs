@@ -35,9 +35,8 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     private volatile bool _pendingFlush;
     private int _count;
     private bool _disposed;
-    private Timer? _flushTimer;
+    private ITimer? _flushTimer;
     
-    // ReSharper disable once NotAccessedField.Local
     private readonly ILogger<FileLastEventIdStore> _logger;
 
     /// <summary>
@@ -47,13 +46,17 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     /// </summary>
     /// <param name="options">Options that control the file path and flush behavior.</param>
     /// <param name="logger">Optional logger. Falls back to <see cref="Microsoft.Extensions.Logging.Abstractions.NullLogger{T}"/> when omitted.</param>
+    /// <param name="timeProvider">Time provider used by the interval flush timer. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <see cref="FileLastEventIdStoreOptions.FilePath"/> is null or whitespace,
     /// <see cref="FileLastEventIdStoreOptions.FlushAfterCount"/> is not greater than zero, or
     /// <see cref="FileLastEventIdStoreOptions.FlushInterval"/> is not greater than <see cref="TimeSpan.Zero"/>.
     /// </exception>
-    public FileLastEventIdStore(FileLastEventIdStoreOptions options, ILogger<FileLastEventIdStore>? logger = null)
+    public FileLastEventIdStore(
+        FileLastEventIdStoreOptions options,
+        ILogger<FileLastEventIdStore>? logger = null,
+        TimeProvider? timeProvider = null)
     {
         if (options == null)
         {
@@ -78,18 +81,17 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
         _filePath = options.FilePath;
         _flushMode = options.FlushMode;
         _flushAfterCount = options.FlushAfterCount;
+        _logger = logger ?? NullLogger<FileLastEventIdStore>.Instance;
         _lastEventId = TryReadFromFile();
 
         if (options.FlushMode == FlushMode.AfterInterval)
         {
-            _flushTimer = new Timer(
+            _flushTimer = (timeProvider ?? TimeProvider.System).CreateTimer(
                 _ => FlushIfPending(),
                 state: null,
                 dueTime: options.FlushInterval,
                 period: options.FlushInterval);
         }
-        
-        _logger = logger ?? NullLogger<FileLastEventIdStore>.Instance;
     }
 
     /// <inheritdoc/>
@@ -98,6 +100,11 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     /// <inheritdoc/>
     public void Set(string eventId)
     {
+        if (string.IsNullOrWhiteSpace(eventId))
+        {
+            return;
+        }
+
         _lastEventId = eventId;
         switch (_flushMode)
         {
@@ -160,10 +167,18 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     {
         lock (_fileLock)
         {
-            string temp = _filePath + ".tmp";
-            File.WriteAllText(temp, eventId);
+            try
+            {
+                string temp = _filePath + ".tmp";
+                File.WriteAllText(temp, eventId);
 
-            File.Move(temp, _filePath, overwrite: true);
+                File.Move(temp, _filePath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _pendingFlush = true;
+                _logger.LogError(ex, "Failed to persist the last event ID to '{FilePath}'", _filePath);
+            }
         }
     }
 

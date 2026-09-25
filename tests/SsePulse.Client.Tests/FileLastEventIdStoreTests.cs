@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using SsePulse.Client.Core;
 using SsePulse.Client.Core.Configurations;
 
@@ -183,7 +184,7 @@ public sealed class FileLastEventIdStoreTests : IDisposable
     }
     
     [Fact]
-    public async Task Set_WithAfterInterval_DoesNotWriteImmediately()
+    public void Set_WithAfterInterval_DoesNotWriteImmediately()
     {
         // ARRANGE
         string path = TempFile();
@@ -193,11 +194,12 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushMode = FlushMode.AfterInterval,
             FlushInterval = TimeSpan.FromSeconds(30)
         };
-        using FileLastEventIdStore store = new(options);
+        FakeTimeProvider time = new();
+        using FileLastEventIdStore store = new(options, timeProvider: time);
 
         // ACT
         store.Set("event-1");
-        await Task.Delay(50); // well within the 30-second window
+        time.Advance(TimeSpan.FromSeconds(29));
 
         // ASSERT — file must not have been written yet
         Assert.False(File.Exists(path));
@@ -205,7 +207,7 @@ public sealed class FileLastEventIdStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task Set_WithAfterInterval_WritesAfterIntervalElapses()
+    public void Set_WithAfterInterval_WritesAfterIntervalElapses()
     {
         // ARRANGE
         string path = TempFile();
@@ -215,11 +217,12 @@ public sealed class FileLastEventIdStoreTests : IDisposable
             FlushMode = FlushMode.AfterInterval,
             FlushInterval = TimeSpan.FromMilliseconds(100)
         };
-        using FileLastEventIdStore store = new(options);
+        FakeTimeProvider time = new();
+        using FileLastEventIdStore store = new(options, timeProvider: time);
 
         // ACT
         store.Set("event-interval");
-        await Task.Delay(400); // wait well past the 100 ms interval
+        time.Advance(TimeSpan.FromMilliseconds(100));
 
         // ASSERT
         Assert.True(File.Exists(path));

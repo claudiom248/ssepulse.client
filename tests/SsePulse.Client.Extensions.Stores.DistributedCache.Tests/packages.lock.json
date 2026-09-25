@@ -8,6 +8,12 @@
         "resolved": "8.0.1",
         "contentHash": "YkP5ZQBSwDno2uUdND/x0tmyLOacCxvKwSN2iEvndpw7OzBaH7STi2xeA06KKkyYHN0m76qDK8Pdz1CVdAPoeg=="
       },
+      "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
+        "type": "Direct",
+        "requested": "[5.6.0, )",
+        "resolved": "5.6.0",
+        "contentHash": "Kcobt3pnOdO0A+6CKiMHZdTEluJpsfxiV20axtZdmfBQnDmiWTKPJADlgAfdTuKNAnVarrkJa0UEGwuOo91muw=="
+      },
       "Microsoft.Extensions.Caching.Abstractions": {
         "type": "Direct",
         "requested": "[10.0.7, )",
@@ -161,7 +167,9 @@
       "ssepulse.client.tests.common": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )"
+          "Microsoft.Extensions.TimeProvider.Testing": "[10.10.0, )",
+          "SsePulse.Client": "[1.0.0, )",
+          "xunit": "[2.9.3, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
@@ -179,6 +187,12 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
           "Microsoft.Extensions.Primitives": "10.0.7"
         }
+      },
+      "Microsoft.Extensions.TimeProvider.Testing": {
+        "type": "CentralTransitive",
+        "requested": "[10.10.0, )",
+        "resolved": "10.10.0",
+        "contentHash": "8duZdxuO3Oo8tlyQXVq1drXee6GJC9DjUU97Pq3YaIqf92jrAHsWxbbRKwvjQI48Mer3IANwUKF0elqvHeY4Rw=="
       }
     },
     "net8.0": {
@@ -187,6 +201,12 @@
         "requested": "[8.0.1, )",
         "resolved": "8.0.1",
         "contentHash": "YkP5ZQBSwDno2uUdND/x0tmyLOacCxvKwSN2iEvndpw7OzBaH7STi2xeA06KKkyYHN0m76qDK8Pdz1CVdAPoeg=="
+      },
+      "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
+        "type": "Direct",
+        "requested": "[5.6.0, )",
+        "resolved": "5.6.0",
+        "contentHash": "Kcobt3pnOdO0A+6CKiMHZdTEluJpsfxiV20axtZdmfBQnDmiWTKPJADlgAfdTuKNAnVarrkJa0UEGwuOo91muw=="
       },
       "Microsoft.Extensions.Caching.Abstractions": {
         "type": "Direct",
@@ -360,7 +380,11 @@
       "ssepulse.client.tests.common": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )"
+          "Microsoft.Extensions.Caching.Abstractions": "[10.0.7, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )",
+          "Microsoft.Extensions.TimeProvider.Testing": "[10.10.0, )",
+          "SsePulse.Client": "[1.0.0, )",
+          "xunit": "[2.9.3, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
@@ -378,6 +402,12 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
           "Microsoft.Extensions.Primitives": "10.0.7"
         }
+      },
+      "Microsoft.Extensions.TimeProvider.Testing": {
+        "type": "CentralTransitive",
+        "requested": "[10.10.0, )",
+        "resolved": "10.10.0",
+        "contentHash": "8duZdxuO3Oo8tlyQXVq1drXee6GJC9DjUU97Pq3YaIqf92jrAHsWxbbRKwvjQI48Mer3IANwUKF0elqvHeY4Rw=="
       },
       "System.Net.ServerSentEvents": {
         "type": "CentralTransitive",

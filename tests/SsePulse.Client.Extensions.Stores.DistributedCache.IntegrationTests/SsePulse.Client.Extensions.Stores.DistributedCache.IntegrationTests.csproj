@@ -5,6 +5,7 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\src\SsePulse.Client.Extensions.Stores.DistributedCache\SsePulse.Client.Extensions.Stores.DistributedCache.csproj" />
+        <ProjectReference Include="..\SsePulse.Client.Tests.Common\SsePulse.Client.Tests.Common.csproj" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="coverlet.msbuild">
