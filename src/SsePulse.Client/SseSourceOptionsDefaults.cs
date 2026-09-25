@@ -26,6 +26,9 @@ public static class SseSourceOptionsDefaults
     /// <summary>Default value for throwing when no event handler is found: <see langword="false"/>.</summary>
     public const bool ThrowWhenEventHandlerNotFound = false;
 
+    /// <summary>Default behavior when an event handler throws: <see cref="HandlerFailureBehavior.SkipAndAdvance"/>.</summary>
+    public const HandlerFailureBehavior DefaultHandlerFailureBehavior = HandlerFailureBehavior.SkipAndAdvance;
+
     /// <summary>Default value for restarting on connection abort: <see langword="true"/>.</summary>
     public const bool RestartOnConnectionAbort = true;
 }

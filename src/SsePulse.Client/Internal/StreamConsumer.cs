@@ -156,6 +156,10 @@ internal class StreamConsumer
         {
             _logger.LogError(ex, "Error occurred while handling event '{EventType}'", eventType);
             await InvokeOnErrorAsync(ex).ConfigureAwait(false);
+            if (_options.HandlerFailureBehavior == HandlerFailureBehavior.StopSource)
+            {
+                throw;
+            }
         }
 
         await CommitAsync(item.Sequence).ConfigureAwait(false);

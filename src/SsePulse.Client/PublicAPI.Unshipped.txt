@@ -141,3 +141,9 @@ SsePulse.Client.ILastEventIdStore.GetLastEventIdAsync(System.Threading.Cancellat
 SsePulse.Client.ILastEventIdStore.SetLastEventIdAsync(string! eventId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 SsePulse.Client.InMemoryLastEventIdStore.GetLastEventIdAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<string?>
 SsePulse.Client.InMemoryLastEventIdStore.SetLastEventIdAsync(string! eventId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+const SsePulse.Client.SseSourceOptionsDefaults.DefaultHandlerFailureBehavior = SsePulse.Client.HandlerFailureBehavior.SkipAndAdvance -> SsePulse.Client.HandlerFailureBehavior
+SsePulse.Client.HandlerFailureBehavior
+SsePulse.Client.HandlerFailureBehavior.SkipAndAdvance = 0 -> SsePulse.Client.HandlerFailureBehavior
+SsePulse.Client.HandlerFailureBehavior.StopSource = 1 -> SsePulse.Client.HandlerFailureBehavior
+SsePulse.Client.SseSourceOptions.HandlerFailureBehavior.get -> SsePulse.Client.HandlerFailureBehavior
+SsePulse.Client.SseSourceOptions.HandlerFailureBehavior.set -> void
