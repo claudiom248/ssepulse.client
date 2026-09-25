@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.ServerSentEvents;
 using System.Reflection;
 using SsePulse.Client.Internal;
@@ -6,6 +7,12 @@ namespace SsePulse.Client;
 
 public partial class SseSource
 {
+    private const string BindRequiresUnreferencedCodeMessage =
+        "Binding an events manager discovers its handler methods by reflection, which the trimmer cannot see. Register the handlers with On and OnItem instead.";
+
+    private const string BindRequiresDynamicCodeMessage =
+        "Binding an events manager creates generic handler types at run time, which is not supported with native AOT. Register the handlers with On and OnItem instead.";
+
     private readonly SseHandlersDictionary _handlers;
     
     /// <summary>
@@ -175,6 +182,8 @@ public partial class SseSource
     /// An <see cref="ISseEventsManager"/> implementation with a parameterless constructor.
     /// </typeparam>
     /// <returns>The current <see cref="SseSource"/> for chaining.</returns>
+    [RequiresUnreferencedCode(BindRequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(BindRequiresDynamicCodeMessage)]
     public SseSource Bind<TManager>() where TManager : ISseEventsManager, new()
     {
         TManager manager = Activator.CreateInstance<TManager>();
@@ -188,6 +197,8 @@ public partial class SseSource
     /// <typeparam name="TManager">An <see cref="ISseEventsManager"/> implementation.</typeparam>
     /// <param name="factory">Factory delegate that produces the manager instance.</param>
     /// <returns>The current <see cref="SseSource"/> for chaining.</returns>
+    [RequiresUnreferencedCode(BindRequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(BindRequiresDynamicCodeMessage)]
     public SseSource Bind<TManager>(Func<TManager> factory) where TManager : ISseEventsManager
     {
         return Bind(factory());
@@ -202,6 +213,8 @@ public partial class SseSource
     /// <param name="manager">The pre-created manager instance whose handlers will be registered.</param>
     /// <returns>The current <see cref="SseSource"/> for chaining.</returns>
 
+    [RequiresUnreferencedCode(BindRequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(BindRequiresDynamicCodeMessage)]
     public SseSource Bind<TManager>(TManager manager) where TManager : ISseEventsManager
     {
         AssertNotDisposed();

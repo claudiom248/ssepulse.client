@@ -114,3 +114,34 @@ jobs:
               dotnet nuget push $package.FullName --source $feed --api-key $env:GITHUB_TOKEN --skip-duplicate
           }
         shell: pwsh
+
+  trim-aot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.x
+
+      - name: Install native AOT prerequisites
+        run: sudo apt-get install -y clang zlib1g-dev
+
+      - name: Publish trimmed
+        run: dotnet publish samples/AotSmoke -c Release -r linux-x64 --self-contained -p:PublishTrimmed=true -o .artifacts/trimmed
+
+      - name: Run trimmed
+        run: ./.artifacts/trimmed/AotSmoke
+
+      - name: Publish native AOT
+        run: dotnet publish samples/AotSmoke -c Release -r linux-x64 -p:PublishAot=true -o .artifacts/aot
+
+      - name: Run native AOT
+        run: ./.artifacts/aot/AotSmoke

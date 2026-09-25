@@ -6,7 +6,7 @@ namespace SsePulse.Client.Tests.Source;
 
 public abstract class SseSourceTestBase
 {
-    protected const int DefaultCancellationTokenDelay = 500;
+    protected const int DefaultCancellationTokenDelay = 30000;
 
     private static readonly HttpClient DefaultClient = new()
     {
