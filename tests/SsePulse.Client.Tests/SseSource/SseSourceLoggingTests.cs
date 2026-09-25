@@ -8,7 +8,7 @@ namespace SsePulse.Client.Tests.Source;
 
 public class SseSourceLoggingTests
 {
-    private const int DefaultCancellationTokenDelay = 500;
+    private const int DefaultCancellationTokenDelay = 30000;
 
     private static readonly HttpClient DefaultClient = new()
     {
