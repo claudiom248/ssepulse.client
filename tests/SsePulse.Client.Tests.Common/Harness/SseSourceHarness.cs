@@ -21,7 +21,8 @@ public sealed class SseSourceHarness : IAsyncDisposable
         SseSourceOptions options = new()
         {
             Path = "/events",
-            TimeProvider = Time
+            TimeProvider = Time,
+            ConnectionRetryOptions = RetryOptions.None
         };
         configure?.Invoke(options);
 

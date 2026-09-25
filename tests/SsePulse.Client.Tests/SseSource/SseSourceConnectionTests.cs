@@ -10,10 +10,10 @@ public class SseSourceConnectionTests : SseSourceTestBase
 {
     [Theory]
     [InlineData(HttpStatusCode.NotFound)]
-    [InlineData(HttpStatusCode.InternalServerError)]
-    [InlineData(HttpStatusCode.BadGateway)]
-    [InlineData(HttpStatusCode.ServiceUnavailable)]
-    [InlineData(HttpStatusCode.GatewayTimeout)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.Gone)]
     public async Task StartConsumeAsync_WhenServerReturnsNonTransientErrorCode_ThrowsHttpRequestException(
         HttpStatusCode statusCode)
     {
@@ -29,8 +29,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
 
     [Theory]
     [InlineData(HttpStatusCode.NotFound)]
-    [InlineData(HttpStatusCode.InternalServerError)]
-    [InlineData(HttpStatusCode.BadGateway)]
+    [InlineData(HttpStatusCode.BadRequest)]
     [InlineData(HttpStatusCode.Unauthorized)]
     [InlineData(HttpStatusCode.Forbidden)]
     public async Task StartConsumeAsync_WhenServerReturnsNonTransientErrorCode_LeavesIsConnectedFalse(
@@ -288,7 +287,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
     [Theory]
     [InlineData(HttpStatusCode.GatewayTimeout)]
     [InlineData(HttpStatusCode.RequestTimeout)]
-    public async Task StartConsumeAsync_WhenNonTransientHttpStatusCodesAreSet_AndServerReturnsNonTransientErrorCode_ThrowsHttpRequestException(HttpStatusCode statusCode)
+    public async Task StartConsumeAsync_WhenTheStatusCodeIsNotInTheTransientSet_ThrowsHttpRequestException(HttpStatusCode statusCode)
     {
         // ARRANGE
         using HttpClient client = new(new FixedStatusHttpMessageHandler(statusCode));
@@ -298,7 +297,7 @@ public class SseSourceConnectionTests : SseSourceTestBase
             new SseSourceOptions
             {
                 Path = "/sse",
-                NonTransientStatusCodes = [HttpStatusCode.GatewayTimeout, HttpStatusCode.RequestTimeout]
+                TransientStatusCodes = [HttpStatusCode.ServiceUnavailable]
             });
 
         // ACT & ASSERT

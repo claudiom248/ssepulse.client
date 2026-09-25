@@ -48,7 +48,7 @@ public class SseSourceOptions
     /// <summary>
     /// Gets or sets the retry options for connection failures.
     /// Set to <see langword="null"/> or <see cref="RetryOptions.None"/> to disable retries.
-    /// Defaults to <see cref="RetryOptions.None"/>.
+    /// Defaults to <see cref="RetryOptions.Default"/>.
     /// </summary>
     public RetryOptions? ConnectionRetryOptions { get; set; } = SseSourceOptionsDefaults.DefaultRetryOptions;
 
@@ -73,18 +73,16 @@ public class SseSourceOptions
     public bool RestartOnConnectionAbort { get; set; } = SseSourceOptionsDefaults.RestartOnConnectionAbort;
 
     /// <summary>
-    /// Gets or sets the collection of HTTP status codes that are considered non-transient failures during the connection
+    /// Gets or sets the collection of HTTP status codes that are considered transient failures during the connection
     /// phase, when the server returns a response.
     /// </summary>
     /// <remarks>
-    /// When the server responds with a status code included in this collection, the source will not attempt to retry the connection,
-    /// even if <see cref="ConnectionRetryOptions"/> is set to <see langword="null"/> or <see cref="RetryOptions.None"/>.
+    /// When the server responds with a status code included in this collection, the source retries the connection
+    /// according to <see cref="ConnectionRetryOptions"/>. Any other status code fails immediately, without a retry.
+    /// Defaults to <c>408</c>, <c>425</c>, <c>429</c>, <c>500</c>, <c>502</c>, <c>503</c> and <c>504</c>.
+    /// <see cref="IsTransientConnectionFailure"/> takes precedence over this collection.
     /// </remarks>
-    public ICollection<HttpStatusCode> NonTransientStatusCodes { get; set; } =
-    [
-        HttpStatusCode.NotFound, HttpStatusCode.InternalServerError, HttpStatusCode.BadGateway,
-        HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden
-    ];
+    public ICollection<HttpStatusCode> TransientStatusCodes { get; set; } = SseSourceOptionsDefaults.DefaultTransientStatusCodes();
 
     /// <summary>
     /// Gets or sets a predicate to determine whether an exception is considered transient during the connection phase.
