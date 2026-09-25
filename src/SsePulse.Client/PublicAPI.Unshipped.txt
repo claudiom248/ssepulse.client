@@ -1,0 +1,126 @@
+#nullable enable
+const SsePulse.Client.SseSourceOptionsDefaults.DefaultEventNameCasePolicy = SsePulse.Client.NameCasePolicy.PascalCase -> SsePulse.Client.NameCasePolicy
+const SsePulse.Client.SseSourceOptionsDefaults.MaxBufferedEvents = 1024 -> int
+const SsePulse.Client.SseSourceOptionsDefaults.MaxDegreeOfParallelism = 1 -> int
+const SsePulse.Client.SseSourceOptionsDefaults.Path = "/sse" -> string!
+const SsePulse.Client.SseSourceOptionsDefaults.RestartOnConnectionAbort = true -> bool
+const SsePulse.Client.SseSourceOptionsDefaults.ThrowWhenEventHandlerNotFound = false -> bool
+SsePulse.Client.FileLastEventIdStore
+SsePulse.Client.FileLastEventIdStore.Dispose() -> void
+SsePulse.Client.FileLastEventIdStore.FileLastEventIdStore(SsePulse.Client.FileLastEventIdStoreOptions! options, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.FileLastEventIdStore!>? logger = null, System.TimeProvider? timeProvider = null) -> void
+SsePulse.Client.FileLastEventIdStore.LastEventId.get -> string?
+SsePulse.Client.FileLastEventIdStore.Set(string! eventId) -> void
+SsePulse.Client.FileLastEventIdStoreOptions
+SsePulse.Client.FileLastEventIdStoreOptions.FileLastEventIdStoreOptions() -> void
+SsePulse.Client.FileLastEventIdStoreOptions.FilePath.get -> string!
+SsePulse.Client.FileLastEventIdStoreOptions.FilePath.set -> void
+SsePulse.Client.FileLastEventIdStoreOptions.FlushAfterCount.get -> int
+SsePulse.Client.FileLastEventIdStoreOptions.FlushAfterCount.set -> void
+SsePulse.Client.FileLastEventIdStoreOptions.FlushInterval.get -> System.TimeSpan
+SsePulse.Client.FileLastEventIdStoreOptions.FlushInterval.set -> void
+SsePulse.Client.FileLastEventIdStoreOptions.FlushMode.get -> SsePulse.Client.FlushMode
+SsePulse.Client.FileLastEventIdStoreOptions.FlushMode.set -> void
+SsePulse.Client.FlushMode
+SsePulse.Client.FlushMode.AfterCount = 1 -> SsePulse.Client.FlushMode
+SsePulse.Client.FlushMode.AfterInterval = 2 -> SsePulse.Client.FlushMode
+SsePulse.Client.FlushMode.EverySet = 0 -> SsePulse.Client.FlushMode
+SsePulse.Client.HandlerNotFoundException
+SsePulse.Client.ILastEventIdStore
+SsePulse.Client.ILastEventIdStore.LastEventId.get -> string?
+SsePulse.Client.ILastEventIdStore.Set(string! eventId) -> void
+SsePulse.Client.InMemoryLastEventIdStore
+SsePulse.Client.InMemoryLastEventIdStore.InMemoryLastEventIdStore() -> void
+SsePulse.Client.InMemoryLastEventIdStore.LastEventId.get -> string?
+SsePulse.Client.InMemoryLastEventIdStore.Set(string! eventId) -> void
+SsePulse.Client.IRequestMutator
+SsePulse.Client.IRequestMutator.ApplyAsync(System.Net.Http.HttpRequestMessage! message, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.IScopedSseSourceFactory
+SsePulse.Client.ISseEventsManager
+SsePulse.Client.ISseSourceControl
+SsePulse.Client.ISseSourceControl.Reset() -> void
+SsePulse.Client.ISseSourceControl.StartConsumeAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+SsePulse.Client.ISseSourceControl.Stop() -> void
+SsePulse.Client.ISseSourceControl.StopAsync() -> System.Threading.Tasks.Task!
+SsePulse.Client.ISseSourceFactory
+SsePulse.Client.ISseSourceFactory.CreateSseSource(string? name) -> SsePulse.Client.SseSource!
+SsePulse.Client.MapEventNameAttribute
+SsePulse.Client.MapEventNameAttribute.EventName.get -> string!
+SsePulse.Client.MapEventNameAttribute.EventName.set -> void
+SsePulse.Client.MapEventNameAttribute.MapEventNameAttribute() -> void
+SsePulse.Client.NameCasePolicy
+SsePulse.Client.NameCasePolicy.CamelCase = 1 -> SsePulse.Client.NameCasePolicy
+SsePulse.Client.NameCasePolicy.KebabCase = 3 -> SsePulse.Client.NameCasePolicy
+SsePulse.Client.NameCasePolicy.PascalCase = 0 -> SsePulse.Client.NameCasePolicy
+SsePulse.Client.NameCasePolicy.SnakeCase = 2 -> SsePulse.Client.NameCasePolicy
+SsePulse.Client.ResponseAbortedException
+SsePulse.Client.RetryOptions
+SsePulse.Client.RetryOptions.DelayInMilliseconds.get -> int
+SsePulse.Client.RetryOptions.MaxDelayInMilliseconds.get -> int
+SsePulse.Client.RetryOptions.MaxRetries.get -> int
+SsePulse.Client.RetryOptions.RetryOptions() -> void
+SsePulse.Client.RetryOptions.Strategy.get -> SsePulse.Client.RetryStrategy
+SsePulse.Client.RetryStrategy
+SsePulse.Client.RetryStrategy.Exponential = 1 -> SsePulse.Client.RetryStrategy
+SsePulse.Client.RetryStrategy.Fixed = 0 -> SsePulse.Client.RetryStrategy
+SsePulse.Client.SseSource
+SsePulse.Client.SseSource.Bind<TManager>() -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.Bind<TManager>(System.Func<TManager>! factory) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.Bind<TManager>(TManager manager) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.Completion.get -> System.Threading.Tasks.Task!
+SsePulse.Client.SseSource.Dispose() -> void
+SsePulse.Client.SseSource.DisposeAsync() -> System.Threading.Tasks.ValueTask
+SsePulse.Client.SseSource.IsConnected.get -> bool
+SsePulse.Client.SseSource.On(string! eventName, System.Action<string!>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On<TEventData>(string! eventName, System.Action<TEventData>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On<TEventData>(System.Action<TEventData>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnConnectionClosed.get -> System.Action!
+SsePulse.Client.SseSource.OnConnectionClosed.set -> void
+SsePulse.Client.SseSource.OnConnectionEstablished.get -> System.Action!
+SsePulse.Client.SseSource.OnConnectionEstablished.set -> void
+SsePulse.Client.SseSource.OnConnectionLost.get -> System.Action<System.Exception!>!
+SsePulse.Client.SseSource.OnConnectionLost.set -> void
+SsePulse.Client.SseSource.OnError.get -> System.Action<System.Exception!>!
+SsePulse.Client.SseSource.OnError.set -> void
+SsePulse.Client.SseSource.OnItem(string! eventName, System.Action<System.Net.ServerSentEvents.SseItem<string!>>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem<TEventData>(string! eventName, System.Action<System.Net.ServerSentEvents.SseItem<TEventData>>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem<TEventData>(System.Action<System.Net.ServerSentEvents.SseItem<TEventData>>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.Reset() -> void
+SsePulse.Client.SseSource.SseSource(System.Net.Http.HttpClient! client, SsePulse.Client.SseSourceOptions! options, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.SseSource!>? logger = null) -> void
+SsePulse.Client.SseSource.SseSource(System.Net.Http.HttpClient! client, SsePulse.Client.SseSourceOptions! options, System.Collections.Generic.IReadOnlyCollection<SsePulse.Client.IRequestMutator!>! requestMutators, SsePulse.Client.ILastEventIdStore? lastEventIdStore = null, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.SseSource!>? logger = null) -> void
+SsePulse.Client.SseSource.StartConsumeAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+SsePulse.Client.SseSource.Stop() -> void
+SsePulse.Client.SseSource.StopAsync() -> System.Threading.Tasks.Task!
+SsePulse.Client.SseSourceOptions
+SsePulse.Client.SseSourceOptions.ConnectionRetryOptions.get -> SsePulse.Client.RetryOptions?
+SsePulse.Client.SseSourceOptions.ConnectionRetryOptions.set -> void
+SsePulse.Client.SseSourceOptions.DefaultEventNameCasePolicy.get -> SsePulse.Client.NameCasePolicy
+SsePulse.Client.SseSourceOptions.DefaultEventNameCasePolicy.set -> void
+SsePulse.Client.SseSourceOptions.IsResponseAborted.get -> System.Predicate<System.Exception!>?
+SsePulse.Client.SseSourceOptions.IsResponseAborted.set -> void
+SsePulse.Client.SseSourceOptions.IsTransientConnectionFailure.get -> System.Predicate<System.Exception!>?
+SsePulse.Client.SseSourceOptions.IsTransientConnectionFailure.set -> void
+SsePulse.Client.SseSourceOptions.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
+SsePulse.Client.SseSourceOptions.JsonSerializerOptions.set -> void
+SsePulse.Client.SseSourceOptions.MaxBufferedEvents.get -> int
+SsePulse.Client.SseSourceOptions.MaxBufferedEvents.set -> void
+SsePulse.Client.SseSourceOptions.MaxDegreeOfParallelism.get -> int
+SsePulse.Client.SseSourceOptions.MaxDegreeOfParallelism.set -> void
+SsePulse.Client.SseSourceOptions.Name.get -> string!
+SsePulse.Client.SseSourceOptions.Name.set -> void
+SsePulse.Client.SseSourceOptions.NonTransientStatusCodes.get -> System.Collections.Generic.ICollection<System.Net.HttpStatusCode>!
+SsePulse.Client.SseSourceOptions.NonTransientStatusCodes.set -> void
+SsePulse.Client.SseSourceOptions.Path.get -> string!
+SsePulse.Client.SseSourceOptions.Path.set -> void
+SsePulse.Client.SseSourceOptions.RestartOnConnectionAbort.get -> bool
+SsePulse.Client.SseSourceOptions.RestartOnConnectionAbort.set -> void
+SsePulse.Client.SseSourceOptions.SseSourceOptions() -> void
+SsePulse.Client.SseSourceOptions.ThrowWhenNoEventHandlerFound.get -> bool
+SsePulse.Client.SseSourceOptions.ThrowWhenNoEventHandlerFound.set -> void
+SsePulse.Client.SseSourceOptions.TimeProvider.get -> System.TimeProvider!
+SsePulse.Client.SseSourceOptions.TimeProvider.set -> void
+SsePulse.Client.SseSourceOptionsDefaults
+static readonly SsePulse.Client.SseSourceOptionsDefaults.DefaultRetryOptions -> SsePulse.Client.RetryOptions
+static SsePulse.Client.RetryOptions.Default.get -> SsePulse.Client.RetryOptions
+static SsePulse.Client.RetryOptions.Exponential(int maxRetries, int delayInMilliseconds, int maxDelayInMilliseconds) -> SsePulse.Client.RetryOptions
+static SsePulse.Client.RetryOptions.Fixed(int maxRetries, int delayInMilliseconds) -> SsePulse.Client.RetryOptions
+static SsePulse.Client.RetryOptions.None.get -> SsePulse.Client.RetryOptions

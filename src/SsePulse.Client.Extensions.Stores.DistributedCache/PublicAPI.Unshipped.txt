@@ -1,0 +1,11 @@
+#nullable enable
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStore
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStore.DistributedCacheLastEventIdStore(SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions! options, Microsoft.Extensions.Caching.Distributed.IDistributedCache! cache, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStore!>? logger = null) -> void
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStore.LastEventId.get -> string?
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStore.Set(string! eventId) -> void
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions.AbsoluteExpirationRelativeToNow.get -> System.TimeSpan?
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions.AbsoluteExpirationRelativeToNow.set -> void
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions.DistributedCacheLastEventIdStoreOptions() -> void
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions.Key.get -> string!
+SsePulse.Client.Extensions.Stores.DistributedCache.DistributedCacheLastEventIdStoreOptions.Key.set -> void

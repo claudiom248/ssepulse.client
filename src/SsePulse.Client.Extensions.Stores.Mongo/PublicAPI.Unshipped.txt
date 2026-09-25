@@ -1,0 +1,21 @@
+#nullable enable
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.Id.get -> string!
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.Id.set -> void
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.LastEventId.get -> string!
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.LastEventId.set -> void
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.LastEventIdDocument() -> void
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.UpdatedAt.get -> System.DateTime
+SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.UpdatedAt.set -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.LastEventId.get -> string?
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.MongoLastEventIdStore(SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions! options, MongoDB.Driver.IMongoClient! mongoClient, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore!>? logger = null) -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.Set(string! eventId) -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.CollectionName.get -> string!
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.CollectionName.set -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DatabaseName.get -> string!
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DatabaseName.set -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DocumentKey.get -> string?
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DocumentKey.set -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.MongoLastEventIdStoreOptions() -> void

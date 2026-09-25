@@ -1,0 +1,93 @@
+#nullable enable
+override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.GetHashCode() -> int
+override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.GetHashCode() -> int
+override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.GetHashCode() -> int
+SsePulse.Client.Authentication.Abstractions.ISseAuthenticationProvider
+SsePulse.Client.Authentication.Abstractions.ISseAuthenticationProvider.ApplyAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials.BasicCredentials() -> void
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials.BasicCredentials(string! username, string! password) -> void
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials.Password.get -> string!
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials.Password.set -> void
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials.Username.get -> string!
+SsePulse.Client.Authentication.Common.Credentials.BasicCredentials.Username.set -> void
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials.ClientCredentials() -> void
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials.ClientCredentials(string! clientId, string! clientSecret) -> void
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials.ClientId.get -> string!
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials.ClientId.set -> void
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials.ClientSecret.get -> string!
+SsePulse.Client.Authentication.Common.Credentials.ClientCredentials.ClientSecret.set -> void
+SsePulse.Client.Authentication.Common.Credentials.IAuthenticationCredentials
+SsePulse.Client.Authentication.Internal.AuthenticationRequestMutator
+SsePulse.Client.Authentication.Internal.AuthenticationRequestMutator.ApplyAsync(System.Net.Http.HttpRequestMessage! message, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.Authentication.Internal.AuthenticationRequestMutator.AuthenticationRequestMutator(SsePulse.Client.Authentication.Abstractions.ISseAuthenticationProvider! authenticationProvider, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.Authentication.Internal.AuthenticationRequestMutator!>? logger = null) -> void
+SsePulse.Client.Authentication.Providers.ApiKeyAuthenticationProvider
+SsePulse.Client.Authentication.Providers.ApiKeyAuthenticationProvider.ApiKeyAuthenticationProvider(SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration! configuration) -> void
+SsePulse.Client.Authentication.Providers.ApiKeyAuthenticationProvider.ApplyAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.Authentication.Providers.BasicAuthenticationProvider
+SsePulse.Client.Authentication.Providers.BasicAuthenticationProvider.ApplyAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.Authentication.Providers.BasicAuthenticationProvider.BasicAuthenticationProvider(SsePulse.Client.Authentication.Common.Credentials.BasicCredentials! credentials) -> void
+SsePulse.Client.Authentication.Providers.BearerTokenAuthenticationProvider
+SsePulse.Client.Authentication.Providers.BearerTokenAuthenticationProvider.ApplyAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.Authentication.Providers.BearerTokenAuthenticationProvider.BearerTokenAuthenticationProvider(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider! tokenProvider) -> void
+SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration
+SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration.ApiKeyAuthenticationProviderConfiguration() -> void
+SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration.Header.get -> string!
+SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration.Header.set -> void
+SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration.Key.get -> string!
+SsePulse.Client.Authentication.Providers.Configurations.ApiKeyAuthenticationProviderConfiguration.Key.set -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.ClientCredentialsTokenProvider
+SsePulse.Client.Authentication.Providers.TokenProviders.ClientCredentialsTokenProvider.ClientCredentialsTokenProvider(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration configuration) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.ClientCredentialsTokenProvider.GetAuthenticationTokenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.ClientCredentialsTokenProviderConfiguration() -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.ClientCredentialsTokenProviderConfiguration(System.Uri! TokenEndpoint, SsePulse.Client.Authentication.Common.Credentials.ClientCredentials! Credentials) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.Credentials.get -> SsePulse.Client.Authentication.Common.Credentials.ClientCredentials!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.Credentials.set -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.Deconstruct(out System.Uri! TokenEndpoint, out SsePulse.Client.Authentication.Common.Credentials.ClientCredentials! Credentials) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.Equals(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration other) -> bool
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.Provider.get -> string!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.TokenEndpoint.get -> System.Uri!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.TokenEndpoint.set -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.Deconstruct(out string! EnvironmentVariable) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.EnvironmentVariable.get -> string!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.EnvironmentVariable.set -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.EnvironmentVariableTokenProviderConfiguration() -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.EnvironmentVariableTokenProviderConfiguration(string! EnvironmentVariable) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.Equals(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration other) -> bool
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.Provider.get -> string!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider.GetAuthenticationTokenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProviderConfiguration
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProviderConfiguration.Provider.get -> string!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.Deconstruct(out string! Token) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.Equals(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration other) -> bool
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.Provider.get -> string!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.StaticTokenProviderConfiguration() -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.StaticTokenProviderConfiguration(string! Token) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.Token.get -> string!
+SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.Token.set -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.DelegatingTokenProvider
+SsePulse.Client.Authentication.Providers.TokenProviders.DelegatingTokenProvider.DelegatingTokenProvider(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string!>>! tokenProvider) -> void
+SsePulse.Client.Authentication.Providers.TokenProviders.DelegatingTokenProvider.GetAuthenticationTokenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
+SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderFactory
+SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType
+SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType.ClientCredentials = 1 -> SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType
+SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType.EnvironmentVariable = 2 -> SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType
+SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType.Static = 0 -> SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderType
+static SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.operator !=(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration left, SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration right) -> bool
+static SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.operator ==(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration left, SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration right) -> bool
+static SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.operator !=(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration left, SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration right) -> bool
+static SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.operator ==(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration left, SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration right) -> bool
+static SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.operator !=(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration left, SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration right) -> bool
+static SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.operator ==(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration left, SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration right) -> bool
+static SsePulse.Client.Authentication.Providers.TokenProviders.TokenProviderFactory.Create(SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProviderConfiguration! configuration) -> SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ITokenProvider!
+~override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.Equals(object obj) -> bool
+~override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.ClientCredentialsTokenProviderConfiguration.ToString() -> string
+~override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.Equals(object obj) -> bool
+~override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.EnvironmentVariableTokenProviderConfiguration.ToString() -> string
+~override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.Equals(object obj) -> bool
+~override SsePulse.Client.Authentication.Providers.TokenProviders.Configurations.StaticTokenProviderConfiguration.ToString() -> string
