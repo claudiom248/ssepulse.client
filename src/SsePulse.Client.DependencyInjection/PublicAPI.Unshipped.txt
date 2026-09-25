@@ -1,0 +1,52 @@
+#nullable enable
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.AddHttpClient() -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.AddHttpClient(System.Action<System.Net.Http.HttpClient!>! configureClient) -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.AddHttpClient(System.Action<System.Net.Http.HttpClient!>? configureClient, System.Action<Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!>? clientBuilder) -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.AddRequestMutator(SsePulse.Client.IRequestMutator! mutator) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.AddRequestMutator(System.Func<System.IServiceProvider!, SsePulse.Client.IRequestMutator!>! mutatorFactory) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.AddRequestMutator<TRequestMutator>() -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.BindEventsManager(SsePulse.Client.ISseEventsManager! manager) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.BindEventsManager(System.Func<System.IServiceProvider!, SsePulse.Client.ISseEventsManager!>! managerFactory) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.BindEventsManager<TManager>() -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration?
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.Name.get -> string!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.RegisterHandlers(System.Action<System.IServiceProvider!, SsePulse.Client.SseSource!>! registerHandlers) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder.UseHttpClient(string! clientName) -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions
+SsePulse.Client.DependencyInjection.Extensions.ServiceProviderExtensions
+SsePulse.Client.DependencyInjection.Extensions.ServiceScopeExtensions
+SsePulse.Client.DependencyInjection.Extensions.SseSourceBuilderExtensions
+SsePulse.Client.DependencyInjection.SseSourceBuilder
+SsePulse.Client.DependencyInjection.SseSourceBuilder.AddHttpClient() -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.AddHttpClient(System.Action<System.Net.Http.HttpClient!>! configureClient) -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.AddHttpClient(System.Action<System.Net.Http.HttpClient!>? configureClient, System.Action<Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!>? clientBuilder) -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.AddRequestMutator(SsePulse.Client.IRequestMutator! mutator) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.AddRequestMutator(System.Func<System.IServiceProvider!, SsePulse.Client.IRequestMutator!>! mutatorFactory) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.AddRequestMutator<TRequestMutator>() -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.BindEventsManager(SsePulse.Client.ISseEventsManager! manager) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.BindEventsManager(System.Func<System.IServiceProvider!, SsePulse.Client.ISseEventsManager!>! managerFactory) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.BindEventsManager<TManager>() -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration?
+SsePulse.Client.DependencyInjection.SseSourceBuilder.Name.get -> string!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.RegisterHandlers(System.Action<System.IServiceProvider!, SsePulse.Client.SseSource!>! registerHandlers) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+SsePulse.Client.DependencyInjection.SseSourceBuilder.SseSourceBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration? configuration = null) -> void
+SsePulse.Client.DependencyInjection.SseSourceBuilder.SseSourceBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<SsePulse.Client.SseSourceOptions!>! configureOptions) -> void
+SsePulse.Client.DependencyInjection.SseSourceBuilder.SseSourceBuilder(string! name, Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration? configuration = null) -> void
+SsePulse.Client.DependencyInjection.SseSourceBuilder.SseSourceBuilder(string! name, Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<SsePulse.Client.SseSourceOptions!>! configureOptions) -> void
+SsePulse.Client.DependencyInjection.SseSourceBuilder.UseHttpClient(string! clientName) -> SsePulse.Client.DependencyInjection.SseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.AddScopedSseSourceFactory(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.AddSseSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.AddSseSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.AddSseSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, Microsoft.Extensions.Configuration.IConfiguration? configuration = null) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.AddSseSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<SsePulse.Client.SseSourceOptions!>! configureOptions) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.AddSseSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<SsePulse.Client.SseSourceOptions!>! configureOptions) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceProviderExtensions.GetScopedSseSourceFactory(this System.IServiceProvider! serviceProvider) -> SsePulse.Client.ISseSourceFactory!
+static SsePulse.Client.DependencyInjection.Extensions.ServiceScopeExtensions.GetScopedSseSourceFactory(this Microsoft.Extensions.DependencyInjection.IServiceScope! scope) -> SsePulse.Client.ISseSourceFactory!
+static SsePulse.Client.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddFileLastEventIdStore(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder, System.Action<SsePulse.Client.FileLastEventIdStoreOptions!>! configureOptions) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddLastEventId(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddLastEventId<TEventIdStore>(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddLastEventId<TEventIdStore>(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder, System.Func<System.IServiceProvider!, TEventIdStore!>! factory) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.DependencyInjection.Extensions.SseSourceBuilderExtensions.WithSerializerOptions(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder, System.Text.Json.JsonSerializerOptions! options) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!

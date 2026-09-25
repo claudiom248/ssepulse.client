@@ -1,0 +1,10 @@
+#nullable enable
+override SsePulse.Client.Hosting.SseSourceHostedService.ExecuteAsync(System.Threading.CancellationToken stoppingToken) -> System.Threading.Tasks.Task!
+SsePulse.Client.Hosting.DependencyInjection.Extensions.ServiceCollectionExtensions
+SsePulse.Client.Hosting.DependencyInjection.Extensions.SseSourceBuilderExtensions
+SsePulse.Client.Hosting.SseSourceHostedService
+SsePulse.Client.Hosting.SseSourceHostedService.SseSourceHostedService(SsePulse.Client.ISseSourceControl! sseSourceControl, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.Hosting.SseSourceHostedService!>? logger = null) -> void
+static SsePulse.Client.Hosting.DependencyInjection.Extensions.ServiceCollectionExtensions.AddSseSourcesHostedServices(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static SsePulse.Client.Hosting.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddHostedService(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.Hosting.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddHostedService<THostedService>(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!
+static SsePulse.Client.Hosting.DependencyInjection.Extensions.SseSourceBuilderExtensions.AddHostedService<THostedService>(this SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder! builder, System.Func<System.IServiceProvider!, THostedService!>! factory) -> SsePulse.Client.DependencyInjection.Abstractions.ISseSourceBuilder!

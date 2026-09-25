@@ -80,3 +80,11 @@ Assert.Equal("2", server.Requests[1].LastEventId);
 ### Store contract tests
 
 Every `ILastEventIdStore` implementation has a test class that inherits `LastEventIdStoreContract` (in-memory behaviour) or `DurableLastEventIdStoreContract` (persistence and failure isolation). To add a store, inherit the contract and implement the factory methods. Integration variants run against Testcontainers and carry the `IntegrationTests` trait.
+
+## Public API
+
+The public API of every library is listed in `PublicAPI.Shipped.txt` (released) and `PublicAPI.Unshipped.txt` (changes since the last release) next to each project. The build fails with `RS0016` when a public type or member is added without being listed, so API changes always show up in the pull request diff.
+
+- After adding or changing public API, let the IDE apply the "Add to public API" fix, or run `dotnet format analyzers <project> --diagnostics RS0016 --severity info`.
+- After a stable release, run `pwsh .scripts/ship-public-api.ps1` in a pull request to move the unshipped entries to the shipped file. Entries prefixed with `*REMOVED*` delete the matching shipped entry.
+- `dotnet pack` runs package validation. Once 2.0.0 is released, set `PackageValidationBaselineVersion` in `src/Directory.Build.props` so that breaking changes against the released package are reported.
