@@ -27,6 +27,8 @@ Integration tests use Testcontainers and need Docker. Package versions are pinne
 
 Versions are calculated from git tags by [MinVer](https://github.com/adamralph/minver). Commits on `master` produce preview versions (`2.0.0-preview.0.<height>`), which are pushed to GitHub Packages.
 
+The GitHub Packages feed keeps only the 10 newest previews of each package plus the newest stable version (even when it is older than the previews). The `prune-packages` workflow applies this after every successful CI run on `master` and can be started manually as a dry run from the Actions tab.
+
 To release, push a tag:
 
 ```bash
