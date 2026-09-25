@@ -214,6 +214,9 @@ public partial class SseSource
     /// Binds all <c>On*</c> handler methods of the supplied <paramref name="manager"/> instance
     /// to their corresponding SSE event names. Use <see cref="MapEventNameAttribute"/> on a method
     /// to override the automatically derived event name.
+    /// A handler method takes the event data and, optionally, a <see cref="System.Threading.CancellationToken"/>,
+    /// and returns <see cref="void"/>, <see cref="System.Threading.Tasks.Task"/> or <see cref="System.Threading.Tasks.ValueTask"/>.
+    /// An <c>async void</c> method is rejected because its completion cannot be observed.
     /// </summary>
     /// <typeparam name="TManager">An <see cref="ISseEventsManager"/> implementation.</typeparam>
     /// <param name="manager">The pre-created manager instance whose handlers will be registered.</param>
@@ -226,55 +229,24 @@ public partial class SseSource
         AssertNotDisposed();
         AssertNotStarted();
         
-        MethodInfo addDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
-        MethodInfo addStronglyTypedDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddStronglyTypedDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
-
         MethodInfo[] methods = manager.GetType()
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(m => IsHandlerName(m.Name))
+            .Where(m => EventsManagerBinder.IsHandlerName(m.Name))
             .ToArray();
 
         foreach (MethodInfo method in methods)
         {
-            int parameterCount = method.GetParameters().Length;
-            if (parameterCount != 1)
-            {
-                throw new InvalidOperationException(
-                    $"'{manager.GetType().Name}.{method.Name}' looks like an event handler because its name starts with 'On', " +
-                    $"but it has {parameterCount} parameters. Event handlers must take exactly one parameter.");
-            }
+            EventsManagerBinder.Validate(manager.GetType(), method);
         }
 
         foreach (MethodInfo method in methods)
         {
-            string eventName = NormalizeEventName(method);
-            Type eventDataType = method.GetParameters()[0].ParameterType;
-
-            if (eventDataType == typeof(string))
-            {
-                Type actionType = typeof(Action<>).MakeGenericType(typeof(string));
-                Delegate actionDelegate = method.CreateDelegate(actionType, manager);
-                addDataHandlerMethod.Invoke(_handlers, [eventName, actionDelegate]);
-            }
-            else
-            {
-                Type actionType = typeof(Action<>).MakeGenericType(eventDataType);
-                Delegate actionDelegate = method.CreateDelegate(actionType, manager);
-                MethodInfo genericMethod = addStronglyTypedDataHandlerMethod.MakeGenericMethod(eventDataType);
-                genericMethod.Invoke(_handlers, [eventName, actionDelegate]);
-            }
+            EventsManagerBinder.Register(_handlers, NormalizeEventName(method), method, manager);
         }
 
         return this;
     }
     
-    private static bool IsHandlerName(string methodName)
-    {
-        return methodName.Length > 2
-               && methodName.StartsWith("On", StringComparison.Ordinal)
-               && char.IsUpper(methodName[2]);
-    }
-
     private string NormalizeEventName(string eventName)
     {
         return eventName.ApplyNamingCasePolicy(_options.DefaultEventNameCasePolicy);
