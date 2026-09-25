@@ -2,6 +2,8 @@
   href: introduction-to-sse.md
 - name: Getting Started
   href: getting-started.md
+- name: Asynchronous Handlers
+  href: async-handlers.md
 - name: Architecture & Implementation
   href: architecture.md
 - name: Dependency Injection
@@ -28,4 +30,6 @@
   href: configuration.md
 - name: Platform Availability
   href: platform-availability.md
+- name: Migrating to 2.0
+  href: migration-guide.md
 

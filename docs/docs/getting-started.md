@@ -76,6 +76,17 @@ source.OnItem<OrderCreated>((SseItem<OrderCreated> item) =>
 });
 ```
 
+**Asynchronous handlers**
+
+```csharp
+source.On<OrderCreated>(async (order, cancellationToken) =>
+{
+    await repository.SaveAsync(order, cancellationToken);
+});
+```
+
+Handlers are awaited and receive a token that is cancelled when the source stops. See [Asynchronous Handlers](async-handlers.md).
+
 **Bind an events manager class**
 
 ```csharp
@@ -88,8 +99,8 @@ public class MyEventsManager : ISseEventsManager
 source.Bind<MyEventsManager>();
 ```
 
-`Bind<T>()` scans all public methods named `On*` with a single parameter and registers them
-automatically. Use `[MapEventName(EventName = "custom-name")]` on a method to override the
+`Bind<T>()` scans all public methods named `On*` and registers them automatically. A method takes the
+event data and an optional `CancellationToken`, and returns `void`, `Task` or `ValueTask`. Use `[MapEventName(EventName = "custom-name")]` on a method to override the
 derived event name.
 
 ### 3. Start consuming
@@ -122,3 +133,6 @@ source.OnError = ex => Console.Error.WriteLine($"Handler error: {ex}");
 source.OnConnectionEstablished = () => Console.WriteLine("Connected");
 source.OnConnectionLost = ex => Console.WriteLine($"Connection lost: {ex.Message}");
 ```
+
+Asynchronous callbacks are registered with `UseOnError`, `UseOnConnectionEstablished`, `UseOnConnectionClosed` and `UseOnConnectionLost`.
+Exceptions thrown by a callback are logged and never stop the consumption loop.
