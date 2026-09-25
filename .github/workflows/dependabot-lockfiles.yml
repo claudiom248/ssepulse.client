@@ -1,0 +1,60 @@
+name: dependabot-lockfiles
+
+on:
+  pull_request_target:
+    branches: [ master ]
+    paths:
+      - 'Directory.Packages.props'
+      - '**/*.csproj'
+      - '**/packages.lock.json'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: dependabot-lockfiles-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout the Dependabot branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          lfs: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.x
+            10.x
+
+      - name: Regenerate the lock files
+        run: dotnet restore SsePulse.Client.slnx --force-evaluate
+
+      - name: Commit the lock files
+        id: commit
+        run: |
+          git add -- '*packages.lock.json'
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(dependencies): regenerate the lock files"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run the CI on the new commit
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "${{ github.event.pull_request.head.ref }}"
