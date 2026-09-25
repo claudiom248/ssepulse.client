@@ -1,6 +1,6 @@
-using SsePulse.Client.Core.Configurations;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Tests.SseSource;
+namespace SsePulse.Client.Tests.Source;
 
 public class SseSourceTests : SseSourceTestBase
 {
@@ -12,7 +12,7 @@ public class SseSourceTests : SseSourceTestBase
         using HttpClient client = new();
 
         // ACT
-        using Core.SseSource source = new(client, options);
+        using SseSource source = new(client, options);
 
         // ASSERT
         Assert.False(source.IsConnected);

@@ -1,6 +1,6 @@
 using SsePulse.Client.Tests.Mocks;
 
-namespace SsePulse.Client.Tests.SseSource;
+namespace SsePulse.Client.Tests.Source;
 
 public partial class SseSourceLifecycleTests : SseSourceTestBase
 {
@@ -8,7 +8,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void IsConnected_Initially_ReturnsFalse()
     {
         // ARRANGE & ACT
-        using Core.SseSource source = CreateSource();
+        using SseSource source = CreateSource();
 
         // ASSERT
         Assert.False(source.IsConnected);
@@ -18,7 +18,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Completion_Initially_ReturnsNotCompletedTask()
     {
         // ARRANGE & ACT
-        using Core.SseSource source = CreateSource();
+        using SseSource source = CreateSource();
 
         // ASSERT
         Assert.NotNull(source.Completion);
@@ -31,7 +31,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT & ASSERT
         Task consumption = source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -43,7 +43,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Reset_WhileRunning_ThrowsInvalidOperationException()
     {
         // ARRANGE & ACT & ASSERT
-        using Core.SseSource source = CreateSource();
+        using SseSource source = CreateSource();
         Assert.Throws<InvalidOperationException>(() => source.Reset());
     }
 
@@ -53,7 +53,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
 
         // ACT
@@ -67,7 +67,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Stop_NotStarted_ThrowsInvalidOperationException()
     {
         // ARRANGE
-        using Core.SseSource source = CreateSource();
+        using SseSource source = CreateSource();
 
         // ACT & ASSERT
         Assert.Throws<InvalidOperationException>(() => source.Stop());
@@ -77,7 +77,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Stop_AfterDispose_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         source.Dispose();
 
         // ACT & ASSERT
@@ -89,7 +89,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_MultipleTimes_IsIdempotent()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
 
         // ACT
         Exception? exception = Record.Exception(() =>
@@ -106,7 +106,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_AfterDispose_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         source.Dispose();
 
         // ACT & ASSERT
@@ -117,7 +117,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_GenericOn_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         source.Dispose();
 
         // ACT & ASSERT
@@ -128,7 +128,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_Reset_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         source.Dispose();
 
         // ACT & ASSERT
@@ -139,7 +139,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_Setter_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         source.Dispose();
 
         // ACT & ASSERT
@@ -150,7 +150,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public async Task Dispose_Start_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         source.Dispose();
 
         // ACT & ASSERT
@@ -161,7 +161,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_NewInstance_CompletesSuccessfully()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
 
         // ACT
         source.Dispose();
@@ -174,7 +174,7 @@ public partial class SseSourceLifecycleTests : SseSourceTestBase
     public void Dispose_CancelsTcs()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
 
         // ACT
         source.Dispose();

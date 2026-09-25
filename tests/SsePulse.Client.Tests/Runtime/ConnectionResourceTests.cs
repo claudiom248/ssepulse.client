@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Configurations;
+using SsePulse.Client;
 
 namespace SsePulse.Client.Tests.Runtime;
 
@@ -13,7 +12,7 @@ public class ConnectionResourceTests
     {
         TrackingHandler handler = new(HttpStatusCode.Unauthorized, string.Empty);
         using HttpClient client = new(handler) { BaseAddress = new Uri("http://localhost") };
-        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/events" });
+        await using SseSource source = new(client, new SseSourceOptions { Path = "/events" });
 
         await Assert.ThrowsAsync<HttpRequestException>(() => source.StartConsumeAsync(CancellationToken.None));
 
@@ -25,7 +24,7 @@ public class ConnectionResourceTests
     {
         TrackingHandler handler = new(HttpStatusCode.OK, "event: order\ndata: 1\n\n");
         using HttpClient client = new(handler) { BaseAddress = new Uri("http://localhost") };
-        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/events" });
+        await using SseSource source = new(client, new SseSourceOptions { Path = "/events" });
         source.On("order", _ => { });
 
         await source.StartConsumeAsync(CancellationToken.None);

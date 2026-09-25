@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Driver;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 
 namespace SsePulse.Client.Extensions.Stores.Mongo;
 

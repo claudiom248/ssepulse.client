@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SsePulse.Client.Abstractions;
-using SsePulse.Client.Core;
+using SsePulse.Client;
 using SsePulse.Client.DependencyInjection;
 using SseSourceRegistrationService =
     SsePulse.Client.DependencyInjection.Extensions.ServiceCollectionExtensions.SseSourceRegistrationService;

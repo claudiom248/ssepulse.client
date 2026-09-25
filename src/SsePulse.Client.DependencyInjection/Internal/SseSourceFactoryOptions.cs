@@ -1,5 +1,4 @@
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 
 namespace SsePulse.Client.DependencyInjection.Internal;
 

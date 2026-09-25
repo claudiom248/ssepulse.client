@@ -1,5 +1,5 @@
-using SsePulse.Client.Common.Models;
-using SsePulse.Client.Utils;
+using SsePulse.Client;
+using SsePulse.Client.Internal;
 
 namespace SsePulse.Client.Tests;
 

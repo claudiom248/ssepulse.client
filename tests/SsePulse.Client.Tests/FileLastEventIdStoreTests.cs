@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Configurations;
+using SsePulse.Client;
 
 namespace SsePulse.Client.Tests;
 

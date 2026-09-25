@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Tests.SseSource;
+namespace SsePulse.Client.Tests.Source;
 
 public partial class SseSourceLifecycleTests
 {
@@ -6,7 +6,7 @@ public partial class SseSourceLifecycleTests
     public async Task StopAsync_NotStarted_ThrowsInvalidOperationException()
     {
         // ARRANGE
-        await using Core.SseSource source = CreateSource();
+        await using SseSource source = CreateSource();
 
         // ACT & ASSERT
         await Assert.ThrowsAsync<InvalidOperationException>(source.StopAsync);
@@ -16,7 +16,7 @@ public partial class SseSourceLifecycleTests
     public async Task StopAsync_AfterDisposeAsync_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         await source.DisposeAsync();
 
         // ACT & ASSERT
@@ -27,7 +27,7 @@ public partial class SseSourceLifecycleTests
     public async Task DisposeAsync_Start_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         await source.DisposeAsync();
 
         // ACT & ASSERT
@@ -38,7 +38,7 @@ public partial class SseSourceLifecycleTests
     public async Task DisposeAsync_NewInstance_CompletesSuccessfully()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
 
         // ACT
         await source.DisposeAsync();
@@ -51,7 +51,7 @@ public partial class SseSourceLifecycleTests
     public async Task DisposeAsync_MultipleTimes_IsIdempotent()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
 
         // ACT
         Exception? exception = await Record.ExceptionAsync(async () =>
@@ -68,7 +68,7 @@ public partial class SseSourceLifecycleTests
     public async Task DisposeAsync_AfterDispose_ThrowsObjectDisposedException()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
         await source.DisposeAsync();
 
         // ACT & ASSERT
@@ -79,7 +79,7 @@ public partial class SseSourceLifecycleTests
     public async Task DisposeAsync_CancelsTcs()
     {
         // ARRANGE
-        Core.SseSource source = CreateSource();
+        SseSource source = CreateSource();
 
         // ACT
         await source.DisposeAsync();

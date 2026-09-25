@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using NSubstitute;
-using SsePulse.Client.Core.Internal;
+using SsePulse.Client.Internal;
 using SsePulse.Client.DependencyInjection;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Internal;

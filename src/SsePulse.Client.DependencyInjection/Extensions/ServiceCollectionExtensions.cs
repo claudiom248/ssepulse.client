@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SsePulse.Client.Abstractions;
-using SsePulse.Client.Core.Configurations;
+using SsePulse.Client;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Internal;
 
@@ -79,7 +78,7 @@ public static partial class ServiceCollectionExtensions
     /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
     /// </summary>
     /// <param name="services">The service collection to add the SSE source to.</param>
-    /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
+    /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.ISseSourceFactory"/>.</param>
     /// <param name="configuration">Optional configuration section. When <see langword="null"/>, default option values are used.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
     public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name,

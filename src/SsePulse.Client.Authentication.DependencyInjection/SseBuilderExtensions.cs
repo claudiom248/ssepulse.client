@@ -8,7 +8,7 @@ using SsePulse.Client.Authentication.Providers;
 using SsePulse.Client.Authentication.Providers.Configurations;
 using SsePulse.Client.Authentication.Providers.TokenProviders;
 using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
-using SsePulse.Client.Core;
+using SsePulse.Client;
 using SsePulse.Client.DependencyInjection.Abstractions;
 
 namespace SsePulse.Client.Authentication.DependencyInjection;

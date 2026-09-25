@@ -1,8 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SsePulse.Client.Abstractions;
-using SsePulse.Client.Core;
+using SsePulse.Client;
 using SsePulse.Client.DependencyInjection.Abstractions;
 
 namespace SsePulse.Client.Hosting.DependencyInjection.Extensions;
