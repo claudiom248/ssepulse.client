@@ -1,7 +1,6 @@
-using SsePulse.Client.Common.Models;
-using SsePulse.Client.Common.NamingPolicies;
+using SsePulse.Client.Internal;
 
-namespace SsePulse.Client.Core.Configurations;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Contains the default values used by <see cref="SseSourceOptions"/> when no explicit

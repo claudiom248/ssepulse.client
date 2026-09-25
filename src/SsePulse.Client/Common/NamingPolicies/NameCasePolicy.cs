@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Common.NamingPolicies;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Controls how SSE event names are derived from handler method names (or from type names)

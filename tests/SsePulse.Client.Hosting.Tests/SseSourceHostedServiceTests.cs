@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 using SsePulse.Client.Tests.Common;
 
 namespace SsePulse.Client.Hosting.Tests;

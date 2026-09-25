@@ -1,8 +1,8 @@
-namespace SsePulse.Client.Core;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Thrown when an SSE event is received but no handler is registered for its event type,
-/// and <see cref="SsePulse.Client.Core.Configurations.SseSourceOptions.ThrowWhenNoEventHandlerFound"/> is <see langword="true"/>.
+/// and <see cref="SsePulse.Client.SseSourceOptions.ThrowWhenNoEventHandlerFound"/> is <see langword="true"/>.
 /// </summary>
 public sealed class HandlerNotFoundException : Exception
 {

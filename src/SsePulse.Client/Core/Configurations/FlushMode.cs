@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Core.Configurations;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Controls how often <see cref="FileLastEventIdStore"/> writes the last event ID to disk.

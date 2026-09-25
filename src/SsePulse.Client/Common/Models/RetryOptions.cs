@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Common.Models;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Describes the retry policy applied when an SSE connection attempt fails.

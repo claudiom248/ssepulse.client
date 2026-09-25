@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Common.Extensions;
+namespace SsePulse.Client.Internal;
 
 internal static class ExceptionExtensions
 {

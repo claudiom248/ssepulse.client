@@ -1,4 +1,4 @@
-using SsePulse.Client.Common.Models;
+using SsePulse.Client;
 
 namespace SsePulse.Client.Tests.Runtime;
 

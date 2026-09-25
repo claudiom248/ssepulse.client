@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Core.Internal;
+namespace SsePulse.Client.Internal;
 
 internal partial class SseConnection
 {

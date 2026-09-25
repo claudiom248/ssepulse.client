@@ -1,9 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
 
-namespace SsePulse.Client.Core;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Persists the last event ID to a file so that the SSE connection can be resumed after a

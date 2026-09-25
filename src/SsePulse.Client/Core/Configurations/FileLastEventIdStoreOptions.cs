@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Core.Configurations;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Options for <see cref="FileLastEventIdStore"/>.

@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Common.NamingPolicies;
+namespace SsePulse.Client.Internal;
 
 internal class KebabCasePolicy : INamingCasePolicy
 {

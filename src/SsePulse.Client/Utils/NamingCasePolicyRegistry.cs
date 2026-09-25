@@ -1,6 +1,6 @@
-using SsePulse.Client.Common.NamingPolicies;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Utils;
+namespace SsePulse.Client.Internal;
 
 internal static class NamingCasePolicyRegistry
 {

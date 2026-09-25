@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Caching.Distributed;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 using SsePulse.Client.Tests.Common;
 
 namespace SsePulse.Client.Extensions.Stores.DistributedCache.IntegrationTests;

@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Core.Abstractions;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Interface for mutating outgoing HTTP requests made by the client. 

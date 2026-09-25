@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Abstractions;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Scoped version of <see cref="ISseSourceFactory"/>. Use this interface when you need to create SSE sources

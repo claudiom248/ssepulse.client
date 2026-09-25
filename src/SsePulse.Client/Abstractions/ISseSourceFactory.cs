@@ -1,6 +1,5 @@
-using SsePulse.Client.Core;
 
-namespace SsePulse.Client.Abstractions;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Factory for creating named <see cref="SseSource"/> instances from the dependency-injection container.

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using SsePulse.Client.Core.Configurations;
+using SsePulse.Client;
 using SsePulse.Client.Tests.Common;
 using SsePulse.Client.Tests.Mocks;
 
@@ -10,10 +10,10 @@ public class DefaultErrorHandlingTests
     [Fact]
     public async Task HandlerException_IsLoggedThroughTheLogger_WhenNoOnErrorIsConfigured()
     {
-        MockLogger<Core.SseSource> logger = new();
+        MockLogger<SseSource> logger = new();
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "order", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/events" }, logger);
+        await using SseSource source = new(client, new SseSourceOptions { Path = "/events" }, logger);
         source.On("order", _ => throw new InvalidOperationException("boom"));
 
         await source.StartConsumeAsync(CancellationToken.None);

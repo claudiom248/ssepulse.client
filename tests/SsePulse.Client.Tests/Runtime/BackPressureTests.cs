@@ -1,8 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Configurations;
-using SsePulse.Client.Core.Internal;
+using SsePulse.Client;
+using SsePulse.Client.Internal;
 using SsePulse.Client.Tests.Common;
 
 namespace SsePulse.Client.Tests.Runtime;
@@ -21,7 +20,7 @@ public class BackPressureTests
             release.WaitAsync().GetAwaiter().GetResult();
             handled.Add(data);
         });
-        StreamConsumer consumer = new(handlers, options, NullLogger<Core.SseSource>.Instance, _ => { });
+        StreamConsumer consumer = new(handlers, options, NullLogger<SseSource>.Instance, _ => { });
         await using OneEventPerReadStream stream = new(10);
 
         Task consumption = consumer.ConsumeAsync(stream, CancellationToken.None);

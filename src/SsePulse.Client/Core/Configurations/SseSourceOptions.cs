@@ -1,13 +1,12 @@
 using System.Net;
 using System.Text.Json;
-using SsePulse.Client.Common.Models;
-using SsePulse.Client.Common.NamingPolicies;
+using SsePulse.Client.Internal;
 using SsePulse.Client.Serialization;
 
-namespace SsePulse.Client.Core.Configurations;
+namespace SsePulse.Client;
 
 /// <summary>
-/// Configuration options for a <see cref="SsePulse.Client.Core.SseSource"/> instance.
+/// Configuration options for a <see cref="SsePulse.Client.SseSource"/> instance.
 /// All properties default to the values defined in <see cref="SseSourceOptionsDefaults"/>.
 /// <br/><br/>
 /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/configuration.html"/>
@@ -53,7 +52,7 @@ public class SseSourceOptions
     public RetryOptions? ConnectionRetryOptions { get; set; } = SseSourceOptionsDefaults.DefaultRetryOptions;
 
     /// <summary>
-    /// Gets or sets a value indicating whether a <see cref="SsePulse.Client.Core.HandlerNotFoundException"/>
+    /// Gets or sets a value indicating whether a <see cref="SsePulse.Client.HandlerNotFoundException"/>
     /// is thrown when an SSE event arrives with no registered handler.
     /// Defaults to <see langword="false"/>.
     /// </summary>
@@ -61,7 +60,7 @@ public class SseSourceOptions
 
     /// <summary>
     /// Gets or sets a value indicating whether the connection loop automatically restarts
-    /// after a <see cref="SsePulse.Client.Core.ResponseAbortedException"/>.
+    /// after a <see cref="SsePulse.Client.ResponseAbortedException"/>.
     /// Defaults to <see langword="true"/>.
     /// </summary>
     public bool RestartOnConnectionAbort { get; set; } = SseSourceOptionsDefaults.RestartOnConnectionAbort;

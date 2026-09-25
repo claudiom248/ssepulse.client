@@ -2,13 +2,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
-using SsePulse.Client.Common.Extensions;
-using SsePulse.Client.Common.Models;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
-using SsePulse.Client.Utils;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Core.Internal;
+namespace SsePulse.Client.Internal;
 
 internal partial class SseConnection
 {

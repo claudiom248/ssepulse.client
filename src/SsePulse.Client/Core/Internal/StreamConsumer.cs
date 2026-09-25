@@ -2,12 +2,9 @@ using System.Net.ServerSentEvents;
 using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
-using SsePulse.Client.Common.Extensions;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
-using SsePulse.Client.EventHandlers;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Core.Internal;
+namespace SsePulse.Client.Internal;
 
 internal class StreamConsumer
 {

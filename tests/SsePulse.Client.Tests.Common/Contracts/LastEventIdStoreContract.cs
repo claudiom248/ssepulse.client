@@ -1,4 +1,4 @@
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 
 namespace SsePulse.Client.Tests.Common;
 

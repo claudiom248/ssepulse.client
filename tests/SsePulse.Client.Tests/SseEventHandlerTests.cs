@@ -1,5 +1,5 @@
 using System.Net.ServerSentEvents;
-using SsePulse.Client.EventHandlers;
+using SsePulse.Client.Internal;
 using SsePulse.Client.Serialization;
 
 namespace SsePulse.Client.Tests;

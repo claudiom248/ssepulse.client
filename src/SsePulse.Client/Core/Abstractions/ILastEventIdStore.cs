@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Core.Abstractions;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Represents a store for the last event ID associated with a Server-Sent Events (SSE) source.

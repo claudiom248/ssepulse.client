@@ -1,7 +1,6 @@
-using SsePulse.Client.Common.NamingPolicies;
-using SsePulse.Client.Utils;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Common.Extensions;
+namespace SsePulse.Client.Internal;
 
 internal static class StringExtensions
 {

@@ -1,9 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SsePulse.Client.Abstractions;
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
+using SsePulse.Client;
 
 namespace SsePulse.Client.DependencyInjection.Internal;
 

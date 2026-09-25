@@ -1,6 +1,5 @@
-using SsePulse.Client.Core.Abstractions;
 
-namespace SsePulse.Client.Core;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Stores the last event ID received from the server.

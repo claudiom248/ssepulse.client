@@ -1,7 +1,7 @@
 using System.Net.ServerSentEvents;
 using System.Text.Json;
 
-namespace SsePulse.Client.EventHandlers;
+namespace SsePulse.Client.Internal;
 
 internal class SseEventHandler : ISseEventHandler
 {

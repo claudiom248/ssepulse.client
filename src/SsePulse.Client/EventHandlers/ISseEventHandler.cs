@@ -1,6 +1,6 @@
 using System.Net.ServerSentEvents;
 
-namespace SsePulse.Client.EventHandlers;
+namespace SsePulse.Client.Internal;
 
 internal interface ISseEventHandler
 {

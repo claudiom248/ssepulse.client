@@ -1,12 +1,8 @@
 using System.Net.ServerSentEvents;
 using System.Reflection;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Attributes;
-using SsePulse.Client.Core.Internal;
-using SsePulse.Client.Utils;
-using SsePulse.Client.Common.Extensions;
+using SsePulse.Client.Internal;
 
-namespace SsePulse.Client.Core;
+namespace SsePulse.Client;
 
 public partial class SseSource
 {
@@ -97,7 +93,7 @@ public partial class SseSource
     /// <summary>
     /// Registers a handler for typed <see cref="System.Net.ServerSentEvents.SseItem{T}"/> events.
     /// The event name is derived from <typeparamref name="TEventData"/>'s type name using
-    /// <see cref="SsePulse.Client.Core.Configurations.SseSourceOptions.DefaultEventNameCasePolicy"/>.
+    /// <see cref="SsePulse.Client.SseSourceOptions.DefaultEventNameCasePolicy"/>.
     /// The event data is deserialized from JSON into <typeparamref name="TEventData"/>.
     /// </summary>
     /// <typeparam name="TEventData">The type to deserialize the event data into.</typeparam>
@@ -143,7 +139,7 @@ public partial class SseSource
     /// <summary>
     /// Registers a handler for the deserialized data of events whose name is derived from
     /// <typeparamref name="TEventData"/>'s type name using
-    /// <see cref="SsePulse.Client.Core.Configurations.SseSourceOptions.DefaultEventNameCasePolicy"/>.
+    /// <see cref="SsePulse.Client.SseSourceOptions.DefaultEventNameCasePolicy"/>.
     /// </summary>
     /// <typeparam name="TEventData">The type to deserialize the event data into.</typeparam>
     /// <param name="handler">Callback receiving the deserialized event data.</param>

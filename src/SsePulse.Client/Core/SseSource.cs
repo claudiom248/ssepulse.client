@@ -1,11 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
-using SsePulse.Client.Core.Internal;
+using SsePulse.Client.Internal;
 
-namespace SsePulse.Client.Core;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Connects to a Server-Sent Events (SSE) endpoint, streams events, and dispatches them

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 
 namespace SsePulse.Client.DependencyInjection.Internal;
 

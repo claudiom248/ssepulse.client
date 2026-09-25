@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Core.Internal;
+namespace SsePulse.Client.Internal;
 
 internal class LastEventIdRequestMutator : IRequestMutator
 {

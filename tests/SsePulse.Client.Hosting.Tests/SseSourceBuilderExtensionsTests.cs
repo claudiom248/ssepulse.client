@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SsePulse.Client.Core;
+using SsePulse.Client;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Extensions;
 using SsePulse.Client.Hosting.DependencyInjection.Extensions;

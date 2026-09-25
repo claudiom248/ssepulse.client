@@ -1,6 +1,6 @@
-using SsePulse.Client.Common.Models;
+using SsePulse.Client;
 
-namespace SsePulse.Client.Utils;
+namespace SsePulse.Client.Internal;
 
 /// <summary>
 /// Provides static helpers for executing asynchronous operations with exception suppression

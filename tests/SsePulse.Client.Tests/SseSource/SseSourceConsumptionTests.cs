@@ -1,14 +1,10 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
-using SsePulse.Client.Common.NamingPolicies;
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Attributes;
-using SsePulse.Client.Core.Configurations;
-using SsePulse.Client.Core.Internal;
+using SsePulse.Client;
+using SsePulse.Client.Internal;
 using SsePulse.Client.Tests.Mocks;
 
-namespace SsePulse.Client.Tests.SseSource;
+namespace SsePulse.Client.Tests.Source;
 
 public class SseSourceConsumptionTests : SseSourceTestBase
 {
@@ -18,7 +14,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         string? received = null;
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "test", Data = "hello" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.On("test", d => received = d);
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -32,7 +28,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         string sse = MockSseHelpers.BuildSseStream(new SseEvent
             { EventType = "TestEventData", Data = "{\"Message\":\"ok\"}" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.On<TestEventData>(d => received = d);
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -46,7 +42,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         string sse = MockSseHelpers.BuildSseStream(new SseEvent
             { EventType = "custom", Data = "{\"Message\":\"ok\"}" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.On<TestEventData>("custom", d => received = d);
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -61,7 +57,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             new SseEvent { EventType = "e", Data = "1" },
             new SseEvent { EventType = "e", Data = "2" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.On("e", _ => count++);
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -73,7 +69,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
     {
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "unknown", Data = "ignore" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         Exception? ex = await Record.ExceptionAsync(() =>
             source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
         Assert.Null(ex);
@@ -87,7 +83,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         string sse = MockSseHelpers.BuildSseStream(
             new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         
         // ACT
         source.On("e", _ => handler1Called = true);
@@ -105,7 +101,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         Exception? error = null;
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.On("e", _ => throw new Exception("fail"));
         source.OnError = ex => error = ex;
 
@@ -123,7 +119,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         {
             BaseAddress = new Uri("https://example.com")
         };
-        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" });
+        await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" });
 
         source.On("message", data => firstMessage = data);
         source.OnConnectionLost = ex => capturedError = ex;
@@ -140,7 +136,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
     {
         using HttpClient client = new(new SseCrashHandler(failImmediately: true));
         client.BaseAddress = new Uri("https://example.com");
-        await using Core.SseSource source = new(client, new SseSourceOptions { Path = "/sse" });
+        await using SseSource source = new(client, new SseSourceOptions { Path = "/sse" });
 
         _ = Task.Run(async () => await source.StartConsumeAsync(
             new CancellationTokenSource(DefaultCancellationTokenDelay).Token));
@@ -154,7 +150,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         bool called = false;
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.OnConnectionEstablished = () => called = true;
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -167,7 +163,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         bool? connected = null;
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.On("e", _ => connected = source.IsConnected);
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -180,7 +176,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         bool called = false;
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
         source.OnConnectionClosed = () => called = true;
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -192,7 +188,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
     {
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" });
+        await using SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" });
         source.On("e", _ => { });
 
         Exception? ex = await Record.ExceptionAsync(() =>
@@ -213,7 +209,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
 
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" }, [mutator]);
+        await using SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" }, [mutator]);
         source.On("e", _ => { });
 
         await source.StartConsumeAsync(new CancellationTokenSource(DefaultCancellationTokenDelay).Token);
@@ -243,7 +239,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
 
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
+        await using SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
             [mutator1, mutator2, mutator3]);
         source.On("e", _ => { });
 
@@ -259,7 +255,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
 
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
+        await using SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
             [failingMutator1, failingMutator2]);
         source.On("e", _ => { });
 
@@ -278,8 +274,8 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         using HttpClient client = MockSseHelpers.CreateHttpClientWithHandler(handler);
 
         InMemoryLastEventIdStore inMemoryLastEventIdStore = new();
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
-            [new LastEventIdRequestMutator(inMemoryLastEventIdStore, NullLogger<Core.SseSource>.Instance)],
+        await using SseSource source = CreateSource(client, new SseSourceOptions { Path = "/sse" },
+            [new LastEventIdRequestMutator(inMemoryLastEventIdStore, NullLogger<SseSource>.Instance)],
             inMemoryLastEventIdStore);
         source.On("e", _ => { });
 
@@ -304,7 +300,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             Data = "alert from factory"
         });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT
         source.Bind(() => handler);
@@ -329,7 +325,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             Data = JsonSerializer.Serialize(stock)
         });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        await using SseSource source = CreateSource(client, new SseSourceOptions
         {
             DefaultEventNameCasePolicy = policy
         });
@@ -356,7 +352,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         });
 
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT
         source.Bind(handler);
@@ -378,7 +374,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             Data = "dispatched via interface"
         });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT
         source.Bind(manager);
@@ -396,7 +392,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         // HandlerNotFoundException is thrown and ex will not be null.
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "SimpleAlert", Data = "test" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client, new SseSourceOptions
+        await using SseSource source = CreateSource(client, new SseSourceOptions
         {
             Path = "/sse",
             MaxDegreeOfParallelism = 1,
@@ -423,7 +419,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             Data = "custom alert"
         });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT
         source.Bind(handler);
@@ -444,7 +440,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
             new SseEvent { EventType = "SimpleAlert", Data = "critical" },
             new SseEvent { EventType = "StockUpdated", Data = JsonSerializer.Serialize(stock) });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT
         source.Bind(alertHandler);
@@ -464,7 +460,7 @@ public class SseSourceConsumptionTests : SseSourceTestBase
         // ARRANGE
         string sse = MockSseHelpers.BuildSseStream(new SseEvent { EventType = "e", Data = "1" });
         using HttpClient client = MockSseHelpers.CreateHttpClientWithSseStream(sse);
-        await using Core.SseSource source = CreateSource(client);
+        await using SseSource source = CreateSource(client);
 
         // ACT
         source.Bind(new EmptyManager());

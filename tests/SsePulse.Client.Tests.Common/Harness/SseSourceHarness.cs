@@ -1,9 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
-using SsePulse.Client.Core;
-using SsePulse.Client.Core.Abstractions;
-using SsePulse.Client.Core.Configurations;
-using SsePulse.Client.Core.Internal;
+using SsePulse.Client;
+using SsePulse.Client.Internal;
 
 namespace SsePulse.Client.Tests.Common;
 

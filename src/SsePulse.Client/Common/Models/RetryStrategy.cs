@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Common.Models;
+namespace SsePulse.Client;
 
 /// <summary>Specifies the algorithm used to compute the delay between connection retry attempts.</summary>
 public enum RetryStrategy

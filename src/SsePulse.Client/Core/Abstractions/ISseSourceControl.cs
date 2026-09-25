@@ -1,4 +1,4 @@
-namespace SsePulse.Client.Core.Abstractions;
+namespace SsePulse.Client;
 
 /// <summary>
 /// Interface defining control operations for an <see cref="SseSource"/>, such as starting/stopping consumption and resetting state.

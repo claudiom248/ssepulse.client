@@ -45,4 +45,4 @@ await source.StartConsumeAsync(CancellationToken.None);
 - [Request Mutators](docs/request-mutators.md)
 - [Configuration](docs/configuration.md)
 - [Platform Availability](docs/platform-availability.md)
-- [API Reference](https://claudiom248.github.io/ssepulse.client/api/SsePulse.Client.Abstractions.html)
+- [API Reference](https://claudiom248.github.io/ssepulse.client/api/SsePulse.Client.html)

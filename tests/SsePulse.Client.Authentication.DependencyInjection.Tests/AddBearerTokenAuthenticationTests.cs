@@ -5,7 +5,7 @@ using NSubstitute;
 using SsePulse.Client.Authentication.Internal;
 using SsePulse.Client.Authentication.Providers;
 using SsePulse.Client.Authentication.Providers.TokenProviders.Configurations;
-using SsePulse.Client.Core.Abstractions;
+using SsePulse.Client;
 using SsePulse.Client.DependencyInjection;
 using SsePulse.Client.DependencyInjection.Abstractions;
 using SsePulse.Client.DependencyInjection.Internal;
