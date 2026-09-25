@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Core.Abstractions;
@@ -175,7 +174,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertStarted()
     {
         if (_started == 0)
@@ -184,7 +182,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         }
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertNotStarted()
     {
         if (_started == 1)
@@ -193,7 +190,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertNotDisposed()
     {
         if (_disposed)

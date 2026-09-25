@@ -1,6 +1,5 @@
 using System.Net.ServerSentEvents;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Attributes;
 using SsePulse.Client.Core.Internal;
@@ -254,7 +253,6 @@ public partial class SseSource
         return this;
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Action WrapDefaultHandler(Action value)
     {
         return () => _ = Execute.WithIgnoreExceptionAsync(_ =>
@@ -264,7 +262,6 @@ public partial class SseSource
         });
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Action<Exception> WrapDefaultHandler(Action<Exception> value)
     {
         return ex => _ = Execute.WithIgnoreExceptionAsync(_ =>
@@ -281,7 +278,6 @@ public partial class SseSource
                && char.IsUpper(methodName[2]);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private string NormalizeEventName(string eventName)
     {
         return eventName.ApplyNamingCasePolicy(_options.DefaultEventNameCasePolicy);
