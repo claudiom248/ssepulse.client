@@ -130,7 +130,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         {
             try
             {
-#if NET8_0_OR_GREATER
                 Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token).ConfigureAwait(false);
                 await using (sseStream.ConfigureAwait(false))
                 {
@@ -138,11 +137,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
                     StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
                     await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token).ConfigureAwait(false);
                 }
-#else
-                using Stream sseStream = await _connection.EstablishAsync(linkedCancellationTokenSource.Token);
-                StreamConsumer consumer = new(_handlers, _options, _logger, OnError, _lastEventIdStore);
-                await consumer.ConsumeAsync(sseStream, linkedCancellationTokenSource.Token);
-#endif
                 _tcs.TrySetResult(true);
                 _connection.SetDisconnected();
                 return;
@@ -230,11 +224,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         AssertNotDisposed();
         AssertStarted();
         _logger.LogInformation("Stopping SSE consumption");
-#if !NETSTANDARD2_0
         await _cts.CancelAsync().ConfigureAwait(false);
-#else
-        _cts.Cancel();
-#endif
     }
 
     /// <summary>
@@ -292,11 +282,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         _disposed = true;
         if (_started == 1 && !Completion.IsCompleted)
         {
-#if !NETSTANDARD2_0
             await _cts.CancelAsync().ConfigureAwait(false);
-#else
-            _cts.Cancel();   
-#endif            
             _cts.Dispose();
             await Completion.ConfigureAwait(false);
         }

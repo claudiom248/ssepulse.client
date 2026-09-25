@@ -56,7 +56,7 @@ public class AddApiKeyAuthenticationTests
         // ASSERT
         ServiceProvider provider = services.BuildServiceProvider();
         SseSourceFactoryOptions options = GetOptions(provider, "MySource");
-        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider, new SseSourceCreationContext(null)));
+        Assert.IsType<AuthenticationRequestMutator>(options.RequestMutatorsFactories[0](provider));
     }
 
     [Fact]

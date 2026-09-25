@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <PackageId>SsePulse.Client.Extensions.Stores.Mongo</PackageId>
+        <Description>MongoDB-backed last-event-ID store for SsePulse.Client, enabling durable SSE stream resumption by persisting the last received event ID to a MongoDB collection.</Description>
+        <PackageTags>mongo;mongodb;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SsePulse.Client\SsePulse.Client.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MongoDB.Driver" />
+    </ItemGroup>
+
+</Project>

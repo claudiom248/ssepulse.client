@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <PackageId>SsePulse.Client.DependencyInjection</PackageId>
         <Description>Extension methods for registering SsePulse.Client services and dependencies using Microsoft.Extensions.DependencyInjection.</Description>
         <PackageTags>dependency-injection;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
@@ -21,7 +21,10 @@
         <ProjectReference Include="..\SsePulse.Client\SsePulse.Client.csproj"/>
         <InternalsVisibleTo Include="SsePulse.Client.DependencyInjection.Tests"/>
         <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection.Tests"/>
+        <InternalsVisibleTo Include="SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection.Tests"/>
+        <InternalsVisibleTo Include="SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection.Tests"/>
         <InternalsVisibleTo Include="SsePulse.Client.Hosting"/>
+        <InternalsVisibleTo Include="SsePulse.Client.Tests.Common"/>
     </ItemGroup>
 
 </Project>

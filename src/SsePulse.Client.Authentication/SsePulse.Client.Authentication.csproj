@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <PackageId>SsePulse.Client.Authentication</PackageId>
         <Description>Provides authentication handlers for SsePulse.Client, enabling support for various authentication mechanisms such as Bearer Token and API Key when consuming Server-Sent Events (SSE) streams.</Description>
         <PackageTags>authentication;bearer-token;api-key;security;oauth;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
@@ -21,11 +21,5 @@
         <InternalsVisibleTo Include="SsePulse.Client.Authentication.DependencyInjection.Tests"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="icon-128x128.png">
-        <Pack>true</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
-    </ItemGroup>
 
 </Project>

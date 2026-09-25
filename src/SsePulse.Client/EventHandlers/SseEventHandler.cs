@@ -1,6 +1,5 @@
 using System.Net.ServerSentEvents;
 using System.Text.Json;
-using SsePulse.Client.Serialization;
 
 namespace SsePulse.Client.EventHandlers;
 

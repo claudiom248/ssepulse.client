@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net9.0;net8.0;net462</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   
@@ -18,17 +18,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" Condition="'$(TargetFramework)' != 'net462'" />
-    <PackageReference Include="xunit.runner.visualstudio" VersionOverride="2.8.2" Condition="'$(TargetFramework)' == 'net462'" />
-    <PackageReference Include="xunit.extensibility.core" Condition="'$(TargetFramework)' == 'net462'" />
-    <PackageReference Include="xunit.abstractions" Condition="'$(TargetFramework)' == 'net462'" />
+    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
 
 </Project>

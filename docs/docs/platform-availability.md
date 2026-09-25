@@ -1,22 +1,11 @@
 # Platform Availability
 
-The API reference is generated from the `net10.0` target, which exposes the full surface area of the library. However, the library is designed to be highly compatible across various .NET versions.
+SsePulse.Client targets **`net8.0`**. Applications running on .NET 8, .NET 9, .NET 10 or later use the same assembly, and the full API surface is available on all of them.
 
-A small number of members are conditionally available or exhibit slightly different behaviors depending on the target framework you are using.
+| Runtime | Supported |
+| :--- | :---: |
+| .NET 10 | ✅ |
+| .NET 9 | ✅ |
+| .NET 8 | ✅ |
 
-## Support Matrix
-
-| Member | `net10.0` | `net9.0` | `net8.0` | `netstandard2.0` |
-| :--- | :---: | :---: | :---: | :---: |
-| **`SseSource.DisposeAsync()`** (`IAsyncDisposable`) | ✔ | ✔ | ✔ | ⚠️ **Sync cancellation** |
-| **`SseSource.StopAsync()`** | ✔ (Async cancel) | ✔ (Async cancel) | ✔ (Async cancel) | ⚠️ **Sync fallback** |
-
----
-
-## Target-Specific Notes
-
-### `netstandard2.0` Synchronous Fallback
-
-When targeting `netstandard2.0`, both `StopAsync()` and `DisposeAsync()` fall back to **synchronous** cancellation.
-
-* **Reasoning:** Both methods cancel the internal `CancellationTokenSource` to signal the consumption loop to stop. On `netstandard2.0` this is done via the synchronous `CancellationTokenSource.Cancel()` call because the native `CancellationTokenSource.CancelAsync()` method is not available on that specific target framework.
+.NET 8 is the minimum supported runtime. A newer target framework will be added only when a newer platform API is actually needed, and the minimum runtime may be raised in a future major version.

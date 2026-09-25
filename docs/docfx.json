@@ -12,7 +12,7 @@
       ],
       "dest": "api",
       "properties": {
-        "TargetFramework": "net10.0"
+        "TargetFramework": "net8.0"
       }
     }
   ],
@@ -24,7 +24,6 @@
         ],
         "exclude": [
           "**/AGENTS.md",
-          "**/GitVersion.yml",
           "./_site/**"
         ]
       }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
+
+    <PropertyGroup>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+        <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
+        <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MinVer" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

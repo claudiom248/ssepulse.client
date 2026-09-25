@@ -6,6 +6,7 @@
         <RepositoryUrl>https://github.com/claudiom248/SsePulse.Client</RepositoryUrl>
         <PackageProjectUrl>https://github.com/claudiom248/SsePulse.Client</PackageProjectUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>icon-128x128.png</PackageIcon>

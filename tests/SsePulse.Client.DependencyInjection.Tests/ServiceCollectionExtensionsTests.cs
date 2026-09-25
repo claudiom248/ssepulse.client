@@ -255,4 +255,101 @@ public class ServiceCollectionExtensionsTests
         Assert.Equal(2, allSources.Count);
         allSources.ForEach(s => s.Dispose());
     }
+
+    [Fact]
+    public void AddScopedSseSourceFactory_RegistersISseSourceFactory_AsScoped()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+
+        // ACT
+        services.AddScopedSseSourceFactory();
+
+        // ASSERT
+        ServiceDescriptor descriptor = Assert.Single(services, d => d.ServiceType == typeof(ISseSourceFactory));
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddScopedSseSourceFactory_RegistersDefaultSseSourceFactory_AsScoped()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+
+        // ACT
+        services.AddScopedSseSourceFactory();
+
+        // ASSERT
+        ServiceDescriptor descriptor = Assert.Single(services, d => d.ServiceType == typeof(ISseSourceFactory));
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddScopedSseSourceFactory_WhenCalledWithAddSseSource_BothFactoriesAreRegistered()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+
+        // ACT
+        services.AddScopedSseSourceFactory();
+        services.AddSseSource();
+
+        // ASSERT
+        ServiceDescriptor[] descriptors = services
+            .Where(d => d.ServiceType == typeof(ISseSourceFactory))
+            .ToArray();
+
+        Assert.Single(descriptors,
+            d => d.ServiceKey is null &&
+                 d.Lifetime == ServiceLifetime.Singleton);
+        Assert.Single(descriptors,
+            d => d.ServiceKey?.ToString() == "ScopedSseSourceFactory" &&
+                 d.Lifetime == ServiceLifetime.Scoped);
+    }
+
+    [Fact]
+    public void AddScopedSseSourceFactory_WhenResolvedWithinScope_ReturnsSameInstancePerScope()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        services.AddScopedSseSourceFactory();
+        services.AddSseSource();
+        using ServiceProvider rootProvider = services.BuildServiceProvider();
+
+        // ACT
+        using IServiceScope scope = rootProvider.CreateScope();
+        ISseSourceFactory factory1 = scope.ServiceProvider.GetRequiredService<ISseSourceFactory>();
+        ISseSourceFactory factory2 = scope.ServiceProvider.GetRequiredService<ISseSourceFactory>();
+
+        // ASSERT
+        Assert.Same(factory1, factory2);
+    }
+
+    [Fact]
+    public void AddScopedSseSourceFactory_WhenResolvedFromTwoScopes_ReturnsDifferentInstances()
+    {
+        // ARRANGE
+        ServiceCollection services = new();
+        services.AddHttpClient();
+        services.AddScopedSseSourceFactory();
+        services.AddSseSource();
+        using ServiceProvider rootProvider = services.BuildServiceProvider();
+
+        // ACT
+        ISseSourceFactory factoryFromScope1;
+        ISseSourceFactory factoryFromScope2;
+        using (IServiceScope scope1 = rootProvider.CreateScope())
+        {
+            factoryFromScope1 = scope1.GetScopedSseSourceFactory();
+        }
+
+        using (IServiceScope scope2 = rootProvider.CreateScope())
+        {
+            factoryFromScope2 = scope2.GetScopedSseSourceFactory();
+        }
+
+        // ASSERT
+        Assert.NotSame(factoryFromScope1, factoryFromScope2);
+    }
 }

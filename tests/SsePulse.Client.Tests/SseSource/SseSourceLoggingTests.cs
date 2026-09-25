@@ -211,11 +211,7 @@ public class SseSourceLoggingTests
         // ACT
         Task consumeTask = source.StartConsumeAsync(CancellationToken.None);
         await Task.Delay(100);
-#if NET8_0_OR_GREATER
         await source.StopAsync();
-#else
-        source.Stop();
-#endif        
         await consumeTask;
 
         // ASSERT

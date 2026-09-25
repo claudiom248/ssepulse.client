@@ -35,8 +35,8 @@ public static class SseSourceBuilderExtensions
         });
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.RequestMutatorsFactories.Add((sp, ctx) =>
-                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, ctx.LastEventIdStore!));
+            options.RequestMutatorsFactories.Add((sp) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, sp.GetRequiredService<ILastEventIdStore>()));
         });
         return builder;
     }
@@ -56,6 +56,31 @@ public static class SseSourceBuilderExtensions
     {
         return AddLastEventIdCore<TEventIdStore>(builder, fromKeyed: false);
     }
+    
+    /// <summary>
+    /// Enables last-event-ID tracking for this SSE source using a custom <see cref="ILastEventIdStore"/>
+    /// implementation resolved via a factory delegate.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/last-event-id.html"/>
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="factory"></param>
+    /// <typeparam name="TEventIdStore"></typeparam>
+    /// <returns></returns>
+    public static ISseSourceBuilder AddLastEventId<TEventIdStore>(this ISseSourceBuilder builder, Func<IServiceProvider, TEventIdStore> factory)
+        where TEventIdStore : class, ILastEventIdStore
+    {
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
+        {
+            options.LastEventIdStoreFactory = factory;
+        });
+        builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
+        {
+            options.RequestMutatorsFactories.Add((sp) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, factory(sp)));
+        });
+        return builder;
+    }
 
     /// <summary>
     /// Enables last-event-ID tracking for this SSE source using <see cref="FileLastEventIdStore"/>,
@@ -66,8 +91,7 @@ public static class SseSourceBuilderExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The store is registered as a keyed singleton scoped to this source's name. Use
-    /// <paramref name="configureOptions"/> to set the file path and choose a flush strategy:
+    /// Use <paramref name="configureOptions"/> to set the file path and choose a flush strategy:
     /// </para>
     /// <para>
     /// <b>Resolving multiple instances of the same <see cref="SseSource"/> with this store will share the same file.
@@ -83,7 +107,7 @@ public static class SseSourceBuilderExtensions
         Action<FileLastEventIdStoreOptions> configureOptions)
     {
         builder.Services.Configure(builder.Name, configureOptions);
-        builder.Services.TryAddKeyedSingleton<FileLastEventIdStore>(
+        builder.Services.TryAddKeyedTransient<FileLastEventIdStore>(
             builder.Name,
             (sp, _) => ActivatorUtilities.CreateInstance<FileLastEventIdStore>(
                 sp,
@@ -110,16 +134,17 @@ public static class SseSourceBuilderExtensions
     private static ISseSourceBuilder AddLastEventIdCore<TEventIdStore>(ISseSourceBuilder builder, bool fromKeyed = false)
         where TEventIdStore : class, ILastEventIdStore
     {
+        Func<IServiceProvider, ILastEventIdStore>? getStore = fromKeyed
+            ? sp => sp.GetRequiredKeyedService<TEventIdStore>(builder.Name)
+            : sp => sp.GetRequiredService<TEventIdStore>();
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.LastEventIdStoreFactory = fromKeyed
-                ? sp => sp.GetRequiredKeyedService<TEventIdStore>(builder.Name)
-                : sp => sp.GetRequiredService<TEventIdStore>();
+            options.LastEventIdStoreFactory = getStore;
         });
         builder.Services.Configure<SseSourceFactoryOptions>(builder.Name, options =>
         {
-            options.RequestMutatorsFactories.Add((sp, ctx) =>
-                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, ctx.LastEventIdStore!));
+            options.RequestMutatorsFactories.Add((sp) =>
+                ActivatorUtilities.CreateInstance<LastEventIdRequestMutator>(sp, getStore(sp)));
         });
         return builder;
     }

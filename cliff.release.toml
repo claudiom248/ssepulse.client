@@ -60,7 +60,6 @@ commit_parsers = [
 	{ message = "^doc", group = "<!-- 4 -->📚 Documentation" },
 	{ message = "^chore", group = "<!-- 5 -->🔧 Maintenance" },
 	{ message = "^Merge tag", skip = true },
-    { message = "^Merge tag", skip = true },
     { message = "^Merge pull request", skip = true },
     { message = ".*", skip = true },
 ]

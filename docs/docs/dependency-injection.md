@@ -282,7 +282,9 @@ For a full reference on all store options see [Last-Event-ID Resumption](last-ev
 
 ---
 
-## Resolving a default source
+## Resolving from the container
+
+### Resolving a default source
 
 When only one source is registered, inject `SseSource` directly.
 
@@ -297,7 +299,23 @@ public class MyWorker(SseSource source)
 }
 ```
 
-## Resolving named sources
+### Resolving named sources
+
+When multiple sources are registered, use the attribute `[FromKeyedServices("name")]` to specify which one to inject.
+This is a simple option when you only need one source and don't require explicit control over its lifetime.
+
+```csharp
+public class MyWorker([FromKeyed("orders")] SseSource source)
+{
+    public async Task RunAsync(CancellationToken ct)
+    {
+        source.On<OrderCreated>(e => Console.WriteLine(e.Id));
+        await source.StartConsumeAsync(ct);
+    }
+}
+```
+
+### Resolving named sources with a factory
 
 Use `ISseSourceFactory` when you registered more than one source, or when you want explicit
 control over the source lifetime.
@@ -307,8 +325,8 @@ public class MyWorker(ISseSourceFactory factory)
 {
     public async Task RunAsync(CancellationToken ct)
     {
-        await using SseSource orders = factory.Create("orders");
-        await using SseSource notifications = factory.Create("notifications");
+        await using SseSource orders = factory.CreateSseSource("orders");
+        await using SseSource notifications = factory.CreateSseSource("notifications");
 
         orders.On<OrderCreated>(e => Console.WriteLine(e.Id));
         notifications.On<Notification>(n => Console.WriteLine(n.Message));
@@ -320,3 +338,132 @@ public class MyWorker(ISseSourceFactory factory)
     }
 }
 ```
+
+> [!NOTE]
+> `SseSource` instances created by the factory are **not** tracked by the root scope. Always
+> dispose each source explicitly with `await using` or by calling `DisposeAsync()` directly.
+
+---
+
+## Scoped factory
+
+By default, `ISseSourceFactory` is registered as a **singleton**. This is the right choice for
+most long-running workloads where the factory and its dependencies live for the entire
+application lifetime.
+
+When you need the factory and its scoped dependencies to be tied to a shorter-lived DI scope —
+for example, to run an isolated batch job where store resources must be released as soon as the
+job is done — register the scoped factory alongside the regular registration:
+
+```csharp
+services.AddScopedSseSourceFactory();
+
+services
+    .AddSseSource("orders", options => options.Path = "/orders/events")
+    .AddHttpClient(client => client.BaseAddress = new Uri("https://orders.example"));
+```
+
+`AddScopedSseSourceFactory` registers an additional, independent `ISseSourceFactory` as a
+**keyed scoped** service. It does not replace the singleton factory; injecting
+`ISseSourceFactory` into a constructor still resolves the singleton.
+
+### Resolving from the keyed ISseSourceFactory
+
+A scoped factory is registered as a keyed service. To inject into a constructor, use the attribute
+`[FromKeyedServices("ScopedSseSourceFactory")]` to specify the scoped factory by name.
+
+```csharp
+public class MyWorker([FromKeyedServices("ScopedSseSourceFactory")] ISseSourceFactory factory)
+{
+    public async Task RunAsync(CancellationToken ct)
+    {
+        await using SseSource source = factory.CreateSseSource("orders");
+        source.On<OrderCreated>(e => Console.WriteLine(e.Id));
+        await source.StartConsumeAsync(ct);
+    }
+}
+```
+
+
+### Resolving from IScopedSseSourceFactory
+
+If you don't want to resolve the scoped factory in the way mentioned above, you can inject the service
+`IScopedSseSourceFactory`. Internally, it gets the keyed ISseSourceFactory.
+
+```csharp
+public class MyWorker(IScopedSseSourceFactory scopedFactory)
+{
+    public async Task RunAsync(CancellationToken ct)
+    {
+        await using SseSource source = scopedFactory.CreateSseSource("orders");
+        source.On<OrderCreated>(e => Console.WriteLine(e.Id));
+        await source.StartConsumeAsync(ct);
+    }
+}
+```
+
+### Resolving from a scope
+
+If you already have a scope and need to create a source. Use the dedicated extension methods instead.
+
+**Via `IServiceScope`** — the most common pattern when managing a scope manually:
+
+```csharp
+using IServiceScope scope = serviceProvider.CreateScope();
+ISseSourceFactory factory = scope.GetScopedSseSourceFactory();
+
+await using SseSource source = factory.CreateSseSource("orders");
+source.On<OrderCreated>(e => Console.WriteLine(e.Id));
+await source.StartConsumeAsync(ct);
+```
+
+When `scope` is disposed at the end of the `using` block, any scoped services the factory
+resolved during the call are disposed together with the scope.
+
+**Via `IServiceProvider` within a scoped context** — useful inside scoped services or
+middleware where the current scope's provider is already injected:
+
+```csharp
+public class OrdersService(IServiceProvider serviceProvider)
+{
+    public async Task RunAsync(CancellationToken ct)
+    {
+        ISseSourceFactory factory = serviceProvider.GetScopedSseSourceFactory();
+
+        await using SseSource source = factory.CreateSseSource("orders");
+        source.On<OrderCreated>(e => Console.WriteLine(e.Id));
+        await source.StartConsumeAsync(ct);
+    }
+}
+```
+
+> [!NOTE]
+> `SseSource` instances created by the factory are **not** tracked by the DI scope. Always
+> dispose each source explicitly with `await using` or by calling `DisposeAsync()` directly.
+
+### Scoped dependencies
+
+The key benefit of the scoped factory is **lifetime alignment for dependencies**. When a
+dependency such as a custom `ILastEventIdStore` implementation is registered as a scoped service,
+it is resolved once per scope and disposed automatically when the scope ends.
+
+```csharp
+// Register the store as scoped so it is disposed with the scope.
+services.AddScoped<MyRedisLastEventIdStore>();
+
+services.AddScopedSseSourceFactory();
+
+services
+    .AddSseSource("orders", options => options.Path = "/orders/events")
+    .AddHttpClient(client => client.BaseAddress = new Uri("https://orders.example"))
+    .AddLastEventId<MyRedisLastEventIdStore>();
+```
+
+Each scope receives its own `MyRedisLastEventIdStore`. When the scope is disposed, the store
+is disposed too — no manual cleanup required.
+
+> [!IMPORTANT]
+> Always pass the **scope's** service provider (not the root provider) to
+> `GetScopedSseSourceFactory`. Passing the root provider defeats the purpose of scoped
+> lifetime and can cause scoped services to be resolved from the wrong container.
+

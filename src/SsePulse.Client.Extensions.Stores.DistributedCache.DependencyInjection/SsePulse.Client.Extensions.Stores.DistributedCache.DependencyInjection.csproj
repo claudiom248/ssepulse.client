@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <PackageId>SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection</PackageId>
+        <Description>Extension methods for registering the IDistributedCache last-event-ID store for SsePulse.Client using Microsoft.Extensions.DependencyInjection.</Description>
+        <PackageTags>dependency-injection;distributed-cache;cache;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <NoWarn>NU5123</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SsePulse.Client.DependencyInjection\SsePulse.Client.DependencyInjection.csproj" />
+      <ProjectReference Include="..\SsePulse.Client.Extensions.Stores.DistributedCache\SsePulse.Client.Extensions.Stores.DistributedCache.csproj" />
+    </ItemGroup>
+
+
+</Project>

@@ -16,6 +16,37 @@ namespace SsePulse.Client.DependencyInjection.Extensions;
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Registers an additional <see cref="ISseSourceFactory"/> as a <b>keyed scoped</b> service,
+    /// independent of the default singleton factory registered by <see cref="AddSseSource(IServiceCollection)"/>.
+    /// <br/><br/>
+    /// Use this method when you need the factory and its scoped dependencies to be tied to a DI
+    /// scope lifetime rather than to the application lifetime. A new factory instance is created
+    /// per scope and disposed when the scope is disposed.
+    /// <br/><br/>
+    /// Because the factory is registered as a keyed service it is not visible to standard
+    /// constructor injection. Resolve it with
+    /// <see cref="ServiceScopeExtensions.GetScopedSseSourceFactory"/> or
+    /// <see cref="ServiceProviderExtensions.GetScopedSseSourceFactory"/>.
+    /// <br/><br/>
+    /// This registration does not replace the singleton factory; calling
+    /// <see cref="AddSseSource(IServiceCollection)"/> after this method still registers a
+    /// singleton factory as usual.
+    /// <br/><br/>
+    /// <b>DOCS:</b> <see href="https://claudiom248.github.io/ssepulse.client/docs/dependency-injection.html"/>
+    /// </summary>
+    /// <param name="services">The service collection to add the scoped factory to.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
+    public static IServiceCollection AddScopedSseSourceFactory(this IServiceCollection services)
+    {
+        services.TryAddKeyedScoped<DefaultSseSourceFactory>(Constants.ScopedSseSourceFactoryServiceKey);
+        services.TryAddKeyedScoped<ISseSourceFactory>(Constants.ScopedSseSourceFactoryServiceKey, (sp, _) =>
+            sp.GetRequiredKeyedService<DefaultSseSourceFactory>(Constants.ScopedSseSourceFactoryServiceKey));
+        services.TryAddScoped<IScopedSseSourceFactory>(sp =>
+            sp.GetRequiredKeyedService<DefaultSseSourceFactory>(Constants.ScopedSseSourceFactoryServiceKey));
+        return services;
+    }
+
+    /// <summary>
     /// Registers a default-named SSE source with no initial configuration.
     /// Call methods on the returned <see cref="ISseSourceBuilder"/> to configure the HTTP client,
     /// event handlers, and other components.
@@ -51,7 +82,8 @@ public static partial class ServiceCollectionExtensions
     /// <param name="name">Unique name for this SSE source. Use this name when resolving the source via <see cref="SsePulse.Client.Abstractions.ISseSourceFactory"/>.</param>
     /// <param name="configuration">Optional configuration section. When <see langword="null"/>, default option values are used.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name, IConfiguration? configuration = null)
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name,
+        IConfiguration? configuration = null)
     {
         return services.AddSseSourceCore(name, configuration);
     }
@@ -64,7 +96,8 @@ public static partial class ServiceCollectionExtensions
     /// <param name="services">The service collection to add the SSE source to.</param>
     /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, Action<SseSourceOptions> configureOptions)
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services,
+        Action<SseSourceOptions> configureOptions)
     {
         return services.AddSseSource(Constants.DefaultSourceName, configureOptions);
     }
@@ -78,12 +111,13 @@ public static partial class ServiceCollectionExtensions
     /// <param name="name">Unique name for this SSE source.</param>
     /// <param name="configureOptions">Delegate to configure <see cref="SseSourceOptions"/>.</param>
     /// <returns>An <see cref="ISseSourceBuilder"/> for further configuration.</returns>
-    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name, Action<SseSourceOptions> configureOptions)
+    public static ISseSourceBuilder AddSseSource(this IServiceCollection services, string name,
+        Action<SseSourceOptions> configureOptions)
     {
         return services.AddSseSourceCore(name, configureOptions: configureOptions);
     }
 
-    private static SseSourceBuilder AddSseSourceCore(this IServiceCollection services, 
+    private static SseSourceBuilder AddSseSourceCore(this IServiceCollection services,
         string name,
         IConfiguration? configuration = null,
         Action<SseSourceOptions>? configureOptions = null)
@@ -96,6 +130,7 @@ public static partial class ServiceCollectionExtensions
         {
             return registrationService.SourceBuildersCache[name];
         }
+
         SseSourceBuilder sourceBuilder = configureOptions is not null
             ? new SseSourceBuilder(name, services, configureOptions)
             : new SseSourceBuilder(name, services, configuration);
@@ -112,6 +147,7 @@ public static partial class ServiceCollectionExtensions
         {
             return registrationService;
         }
+
         registrationService = new SseSourceRegistrationService(services);
         services.AddSingleton(registrationService);
         return registrationService;
