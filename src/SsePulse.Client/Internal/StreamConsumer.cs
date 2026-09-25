@@ -91,7 +91,7 @@ internal class StreamConsumer
             {
                 await foreach (DispatchItem item in channel.Reader.ReadAllAsync(faultSource.Token).ConfigureAwait(false))
                 {
-                    Dispatch(item);
+                    await DispatchAsync(item, faultSource.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -122,7 +122,7 @@ internal class StreamConsumer
                 return false;
         } }
 
-    private void Dispatch(DispatchItem item)
+    private async Task DispatchAsync(DispatchItem item, CancellationToken cancellationToken)
     {
         SseItem<string> @event = item.Event;
         string eventType = @event.EventType;
@@ -143,8 +143,12 @@ internal class StreamConsumer
         {
             foreach (ISseEventHandler eventHandler in eventHandlers)
             {
-                eventHandler.Invoke(@event);
+                await eventHandler.InvokeAsync(@event, cancellationToken).ConfigureAwait(false);
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return;
         }
         catch (Exception ex)
         {

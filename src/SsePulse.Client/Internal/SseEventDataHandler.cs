@@ -6,45 +6,47 @@ namespace SsePulse.Client.Internal;
 
 internal class SseEventDataHandler : ISseEventHandler
 {
-    private readonly Action<string> _handler;
+    private readonly Func<string, CancellationToken, ValueTask> _handler;
 
-    public SseEventDataHandler(Action<string> handler)
+    public SseEventDataHandler(Func<string, CancellationToken, ValueTask> handler)
     {
         _handler = handler;
     }
 
-    public void Invoke(SseItem<string> item)
+    public SseEventDataHandler(Action<string> handler)
+        : this(HandlerAdapter.ToAsync(handler))
     {
-        _handler.Invoke(item.Data);
     }
 
-    public Task InvokeAsync(SseItem<string> item, CancellationToken cancellationToken = default)
+    public ValueTask InvokeAsync(SseItem<string> item, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return _handler.Invoke(item.Data, cancellationToken);
     }
 }
 
 internal class SseEventDataHandler<TEventData> : ISseEventHandler
 {
-    private readonly Action<TEventData> _handler;
+    private readonly Func<TEventData, CancellationToken, ValueTask> _handler;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
     private JsonTypeInfo<TEventData>? _typeInfo;
 
-    public SseEventDataHandler(Action<TEventData> handler, JsonSerializerOptions jsonSerializerOptions)
+    public SseEventDataHandler(
+        Func<TEventData, CancellationToken, ValueTask> handler,
+        JsonSerializerOptions jsonSerializerOptions)
     {
         _handler = handler;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
 
-    public void Invoke(SseItem<string> item)
+    public SseEventDataHandler(Action<TEventData> handler, JsonSerializerOptions jsonSerializerOptions)
+        : this(HandlerAdapter.ToAsync(handler), jsonSerializerOptions)
+    {
+    }
+
+    public ValueTask InvokeAsync(SseItem<string> item, CancellationToken cancellationToken)
     {
         JsonTypeInfo<TEventData> typeInfo = _typeInfo ??= JsonTypeInfoProvider.Get<TEventData>(_jsonSerializerOptions);
         TEventData message = JsonSerializer.Deserialize(item.Data, typeInfo)!;
-        _handler.Invoke(message);
-    }
-
-    public Task InvokeAsync(SseItem<string> item, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
+        return _handler.Invoke(message, cancellationToken);
     }
 }

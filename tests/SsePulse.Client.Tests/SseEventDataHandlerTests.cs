@@ -7,7 +7,7 @@ namespace SsePulse.Client.Tests;
 public class SseEventDataHandlerTests
 {
     [Fact]
-    public void Invoke_WithCamelCaseJsonProperties_DeserializesToPascalCaseProperties()
+    public async Task InvokeAsync_WithCamelCaseJsonProperties_DeserializesToPascalCaseProperties()
     {
         // ARRANGE
         TestMessage? receivedData = null;
@@ -16,7 +16,7 @@ public class SseEventDataHandlerTests
         SseItem<string> jsonItem = new("{\"userName\":\"Jane\",\"messageId\":456}", "test-event");
 
         // ACT
-        handler.Invoke(jsonItem);
+        await handler.InvokeAsync(jsonItem, CancellationToken.None);
 
         // ASSERT
         Assert.NotNull(receivedData);

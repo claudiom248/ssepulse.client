@@ -124,3 +124,15 @@ static SsePulse.Client.RetryOptions.Default.get -> SsePulse.Client.RetryOptions
 static SsePulse.Client.RetryOptions.Exponential(int maxRetries, int delayInMilliseconds, int maxDelayInMilliseconds) -> SsePulse.Client.RetryOptions
 static SsePulse.Client.RetryOptions.Fixed(int maxRetries, int delayInMilliseconds) -> SsePulse.Client.RetryOptions
 static SsePulse.Client.RetryOptions.None.get -> SsePulse.Client.RetryOptions
+SsePulse.Client.SseSource.On(string! eventName, System.Func<string!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On(string! eventName, System.Func<string!, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On<TEventData>(System.Func<TEventData, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On<TEventData>(System.Func<TEventData, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On<TEventData>(string! eventName, System.Func<TEventData, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.On<TEventData>(string! eventName, System.Func<TEventData, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem(string! eventName, System.Func<System.Net.ServerSentEvents.SseItem<string!>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem(string! eventName, System.Func<System.Net.ServerSentEvents.SseItem<string!>, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem<TEventData>(System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem<TEventData>(System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem<TEventData>(string! eventName, System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
+SsePulse.Client.SseSource.OnItem<TEventData>(string! eventName, System.Func<System.Net.ServerSentEvents.SseItem<TEventData>, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!

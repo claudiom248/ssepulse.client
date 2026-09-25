@@ -13,7 +13,7 @@ public class TestMessage
 public class SseEventHandlerTests
 {
     [Fact]
-    public void Invoke_WithCamelCaseJsonProperties_DeserializesToPascalCaseProperties()
+    public async Task InvokeAsync_WithCamelCaseJsonProperties_DeserializesToPascalCaseProperties()
     {
         // ARRANGE
         SseItem<TestMessage>? receivedItem = null;
@@ -21,7 +21,7 @@ public class SseEventHandlerTests
         SseItem<string> jsonItem = new("{\"userName\":\"John\",\"messageId\":123}", "test-event");
 
         // ACT
-        handler.Invoke(jsonItem);
+        await handler.InvokeAsync(jsonItem, CancellationToken.None);
 
         // ARRANGE
         Assert.NotNull(receivedItem);
@@ -30,7 +30,7 @@ public class SseEventHandlerTests
     }
 
     [Fact]
-    public void Invoke_PreservesEventType()
+    public async Task InvokeAsync_PreservesEventType()
     {
         // ARRANGE
         SseItem<TestMessage>? receivedItem = null;
@@ -38,7 +38,7 @@ public class SseEventHandlerTests
         SseItem<string> jsonItem = new("{\"userName\":\"John\",\"messageId\":123}", "user-message");
 
         // Act
-        handler.Invoke(jsonItem);
+        await handler.InvokeAsync(jsonItem, CancellationToken.None);
 
         // ASSERT
         Assert.NotNull(receivedItem);

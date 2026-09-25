@@ -16,8 +16,20 @@ internal class SseHandlersDictionary : Dictionary<string, List<ISseEventHandler>
     {
         AddHandlerCore(eventName, new SseEventHandler(handler));
     }
+
+    public void AddAsyncHandler(string eventName, Func<SseItem<string>, CancellationToken, ValueTask> handler)
+    {
+        AddHandlerCore(eventName, new SseEventHandler(handler));
+    }
     
     public void AddStronglyTypedHandler<TEventData>(string eventName, Action<SseItem<TEventData>> handler)
+    {
+        AddHandlerCore(eventName, new SseEventHandler<TEventData>(handler, _jsonSerializerOptions));
+    }
+
+    public void AddAsyncStronglyTypedHandler<TEventData>(
+        string eventName,
+        Func<SseItem<TEventData>, CancellationToken, ValueTask> handler)
     {
         AddHandlerCore(eventName, new SseEventHandler<TEventData>(handler, _jsonSerializerOptions));
     }
@@ -27,7 +39,19 @@ internal class SseHandlersDictionary : Dictionary<string, List<ISseEventHandler>
         AddHandlerCore(eventName, new SseEventDataHandler(handler));
     }
 
+    public void AddAsyncDataHandler(string eventName, Func<string, CancellationToken, ValueTask> handler)
+    {
+        AddHandlerCore(eventName, new SseEventDataHandler(handler));
+    }
+
     public void AddStronglyTypedDataHandler<TEventData>(string eventName, Action<TEventData> handler)
+    {
+        AddHandlerCore(eventName, new SseEventDataHandler<TEventData>(handler, _jsonSerializerOptions));
+    }
+
+    public void AddAsyncStronglyTypedDataHandler<TEventData>(
+        string eventName,
+        Func<TEventData, CancellationToken, ValueTask> handler)
     {
         AddHandlerCore(eventName, new SseEventDataHandler<TEventData>(handler, _jsonSerializerOptions));
     }
