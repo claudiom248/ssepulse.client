@@ -60,6 +60,12 @@ public class SseSourceOptions
     public bool ThrowWhenNoEventHandlerFound { get; set; } = SseSourceOptionsDefaults.ThrowWhenEventHandlerNotFound;
 
     /// <summary>
+    /// Gets or sets what the source does when an event handler throws.
+    /// Defaults to <see cref="SsePulse.Client.HandlerFailureBehavior.SkipAndAdvance"/>.
+    /// </summary>
+    public HandlerFailureBehavior HandlerFailureBehavior { get; set; } = SseSourceOptionsDefaults.DefaultHandlerFailureBehavior;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the connection loop automatically restarts
     /// after a <see cref="SsePulse.Client.ResponseAbortedException"/>.
     /// Defaults to <see langword="true"/>.
