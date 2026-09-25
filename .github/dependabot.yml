@@ -3,16 +3,22 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     commit-message:
       prefix: "chore(ci)"
 
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    open-pull-requests-limit: 3
     commit-message:
       prefix: "chore(dependencies)"
+    ignore:
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "System.*"
+        update-types: [ "version-update:semver-major" ]
     groups:
       microsoft-extensions:
         patterns:
