@@ -54,7 +54,7 @@ internal partial class SseConnection
                         };
                     }
 
-                    SetConnected();
+                    await SetConnectedAsync().ConfigureAwait(false);
                     try
                     {
                         Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -98,7 +98,7 @@ internal partial class SseConnection
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error while establishing a connection with the SSE endpoint. Exception message: {Message}", ex.Message);
-            SetDisconnected(ex);
+            await SetDisconnectedAsync(ex).ConfigureAwait(false);
             throw;
         }
 
@@ -150,27 +150,39 @@ internal partial class SseConnection
     }
 
 
-    private void SetConnected()
+    private async ValueTask SetConnectedAsync()
     {
         int wasConnected = Interlocked.CompareExchange(ref _connected, 1, 0);
         if (wasConnected != 0) return;
         _logger.LogInformation("SSE connection established");
-        _handlers.OnConnectionEstablished.Invoke();
+        await InvokeCallbackAsync(_handlers.OnConnectionEstablished, nameof(ConnectionHandlers.OnConnectionEstablished)).ConfigureAwait(false);
     }
 
-    public void SetDisconnected(Exception? exception = null)
+    public async ValueTask SetDisconnectedAsync(Exception? exception = null)
     {
         int wasConnected = Interlocked.CompareExchange(ref _connected, 0, 1);
         if (wasConnected != 1) return;
         if (exception is null)
         {
             _logger.LogInformation("SSE connection closed gracefully");
-            _handlers.OnConnectionClosed.Invoke();
+            await InvokeCallbackAsync(_handlers.OnConnectionClosed, nameof(ConnectionHandlers.OnConnectionClosed)).ConfigureAwait(false);
         }
         else
         {
             _logger.LogError(exception, "SSE connection lost due to exception");
-            _handlers.OnConnectionLost.Invoke(exception);
+            await InvokeCallbackAsync(() => _handlers.OnConnectionLost.Invoke(exception), nameof(ConnectionHandlers.OnConnectionLost)).ConfigureAwait(false);
+        }
+    }
+
+    private async ValueTask InvokeCallbackAsync(Func<ValueTask> callback, string callbackName)
+    {
+        try
+        {
+            await callback.Invoke().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "The {Callback} callback threw an exception", callbackName);
         }
     }
 }

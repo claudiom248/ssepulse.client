@@ -49,7 +49,7 @@ internal partial class SseConnection
             }
             catch (Exception ex)
             {
-                _connection.SetDisconnected(ex);
+                _ = _connection.SetDisconnectedAsync(ex).AsTask();
                 throw;
             }
         }
@@ -63,7 +63,7 @@ internal partial class SseConnection
             }
             catch (Exception ex)
             {
-                _connection.SetDisconnected(ex);
+                await _connection.SetDisconnectedAsync(ex).ConfigureAwait(false);
                 throw;
             }
         }
@@ -76,7 +76,7 @@ internal partial class SseConnection
             }
             catch (Exception ex)
             {
-                _connection.SetDisconnected(ex);
+                _ = _connection.SetDisconnectedAsync(ex).AsTask();
                 throw;
             }
         }

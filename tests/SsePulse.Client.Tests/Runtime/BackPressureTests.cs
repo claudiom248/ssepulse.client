@@ -22,7 +22,7 @@ public class BackPressureTests
             release.WaitAsync().GetAwaiter().GetResult();
             handled.Add(data);
         });
-        StreamConsumer consumer = new(handlers, options, NullLogger<SseSource>.Instance, _ => { });
+        StreamConsumer consumer = new(handlers, options, NullLogger<SseSource>.Instance, _ => ValueTask.CompletedTask);
         await using OneEventPerReadStream stream = new(10);
 
         Task consumption = consumer.ConsumeAsync(stream, CancellationToken.None);
