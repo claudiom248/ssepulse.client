@@ -61,7 +61,7 @@ source.On("ping", (string data) => Console.WriteLine($"Ping: {data}"));
 **Strongly-typed JSON deserialization**
 
 ```csharp
-source.On<OrderCreated>((OrderCreated e) => Console.WriteLine($"Order {e.Id} created"));
+source.On<OrderCreated>(e => Console.WriteLine($"Order {e.Id} created"));
 ```
 
 The event name defaults to the type name transformed by the configured `DefaultEventNameCasePolicy`
@@ -118,8 +118,7 @@ services
 ## Error handling
 
 ```csharp
-source
-    .OnError(ex => Console.Error.WriteLine($"Handler error: {ex}"))
-    .OnConnectionEstablished(() => Console.WriteLine("Connected"))
-    .OnConnectionLost(ex => Console.WriteLine($"Connection lost: {ex?.Message}"));
+source.OnError = ex => Console.Error.WriteLine($"Handler error: {ex}");
+source.OnConnectionEstablished = () => Console.WriteLine("Connected");
+source.OnConnectionLost = ex => Console.WriteLine($"Connection lost: {ex.Message}");
 ```

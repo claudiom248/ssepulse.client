@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-informational)](https://claudiom248.github.io/ssepulse.client/)
 
-**SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate.It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
+**SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate. It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
 
 ## Highlights
 
@@ -33,7 +33,7 @@ SsePulse handles all of the above through a single, composable API surface, so y
 | Connection lifetime event handlers                     |                       ✍️ manual                       | ✅ built-in (ex: `OnConnectionClosed` )  |
 | `Last-Event-ID` replay on reconnect                    |              ✍️ manual header management              |          ✅ `AddLastEventId()`           |
 | Authentication (token refresh, API key, Basic)         |                 ✍️ manual management                  | ✅ `ISseAuthenticationProvider` pipeline |
-| `Microsoft.Extensions.DependencyInjection` integration |       ✍️ manual factory and lifetime management       | ✅ extdensions for `IServiceCollection`  |
+| `Microsoft.Extensions.DependencyInjection` integration |       ✍️ manual factory and lifetime management       | ✅ extensions for `IServiceCollection`  |
 
 ---
 
@@ -55,11 +55,12 @@ SsePulse handles all of the above through a single, composable API surface, so y
 var httpClient = new HttpClient { BaseAddress = new Uri("https://my-server.example") };
 await using var source = new SseSource(httpClient, new SseSourceOptions { Path = "/events" });
 
+source.OnError = ex => Console.Error.WriteLine(ex);
+source.OnConnectionLost = ex => Console.WriteLine($"Connection lost: {ex.Message}");
+
 source
     .On<OrderCreated>(e => Console.WriteLine($"Order {e.Id} created"))
-    .On<OrderShipped>(e => Console.WriteLine($"Order {e.Id} shipped"))
-    .OnError(ex => Console.Error.WriteLine(ex))
-    .OnConnectionLost(ex => Console.WriteLine($"Connection lost: {ex?.Message}"));
+    .On<OrderShipped>(e => Console.WriteLine($"Order {e.Id} shipped"));
 
 await source.StartConsumeAsync(CancellationToken.None);
 ```
@@ -156,7 +157,7 @@ See the [Dependency Injection guide](docs/docs/dependency-injection.md) for the 
 
 ## [Authentication](docs/docs/authentication.md)
 
-Four authentication providers ship out of the box, all implementing `ISseAuthenticationProvider` and plugging into the request-mutator pipeline.
+Three authentication providers ship out of the box, all implementing `ISseAuthenticationProvider` and plugging into the request-mutator pipeline.
 
 | Provider | Scheme |
 |:---|:---|
@@ -170,7 +171,7 @@ Four authentication providers ship out of the box, all implementing `ISseAuthent
 var source = new SseSource(httpClient, options, requestMutators:
 [
     new AuthenticationRequestMutator(
-        new BearerTokenAuthenticationProvider(new StaticTokenProvider("my-jwt-token")))
+        new BearerTokenAuthenticationProvider(new DelegatingTokenProvider(_ => ValueTask.FromResult("my-jwt-token"))))
 ]);
 ```
 
@@ -227,7 +228,7 @@ public class CorrelationIdMutator : IRequestMutator
 }
 
 // Standalone
-var source = new SseSource(httpClient, options, mutators: [new CorrelationIdMutator()]);
+var source = new SseSource(httpClient, options, requestMutators: [new CorrelationIdMutator()]);
 
 // DI — all three overloads (instance, generic, factory) are supported
 services
@@ -252,7 +253,7 @@ Basic behaviour of `SseSource` is controlled through `SseSourceOptions`.
 | `ConnectionRetryOptions`       |                            `RetryOptions.None`                             | Retry policy for connection failures — set to `null` to disable |
 | `ThrowWhenNoEventHandlerFound` |                                  `false`                                   | Throws `HandlerNotFoundException` for unregistered events when `true`; logs a warning and skips when `false` |
 | `RestartOnConnectionAbort`     |                                   `true`                                   | Automatically restarts the connection loop after a `ResponseAbortedException` |
-| `JsonSerializerOptions`        | A default `JsonSerializerOptions` instance that ignores property name case | Allow to set the options used by the JSON serializer when deserializaing event data.                                      |
+| `JsonSerializerOptions`        | A default `JsonSerializerOptions` instance that ignores property name case | Allow to set the options used by the JSON serializer when deserializing event data.                                      |
 
 See the [Configuration guide](docs/docs/configuration.md) for the full reference including naming case policies and retry strategies.
 

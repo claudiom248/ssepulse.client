@@ -31,7 +31,7 @@ Choose the `ITokenProvider` implementation that matches your scenario.
 **Static token** — a fixed, never-expiring token:
 
 ```csharp
-var provider = new BearerTokenAuthenticationProvider(new StaticTokenProvider("my-jwt-token"));
+var provider = new BearerTokenAuthenticationProvider(new DelegatingTokenProvider(_ => ValueTask.FromResult("my-jwt-token")));
 ```
 
 **Environment variable** — reads the token from a named environment variable at runtime:
@@ -126,7 +126,7 @@ Pass a pre-built `ITokenProvider` instance:
 services
     .AddSseSource(options => options.Path = "/events")
     .AddHttpClient(client => client.BaseAddress = new Uri("https://my-server.example"))
-    .AddBearerTokenAuthentication(new StaticTokenProvider("my-jwt-token"));
+    .AddBearerTokenAuthentication(new DelegatingTokenProvider(_ => ValueTask.FromResult("my-jwt-token")));
 ```
 
 Resolve the token provider from DI at runtime:
