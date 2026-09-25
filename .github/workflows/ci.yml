@@ -44,7 +44,7 @@ jobs:
         shell: pwsh
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         if: (success() || failure())
         with:
           name: .NET Tests - ${{ matrix.os }} - ${{ matrix.tfm }}
