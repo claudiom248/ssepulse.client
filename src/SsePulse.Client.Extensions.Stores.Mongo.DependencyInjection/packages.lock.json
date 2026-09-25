@@ -142,7 +142,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[8.0.3, )",
-          "System.Net.ServerSentEvents": "[10.0.7, )",
+          "System.Net.ServerSentEvents": "[10.0.12, )",
           "System.Text.Json": "[8.0.6, )"
         }
       },
@@ -253,9 +253,9 @@
       },
       "System.Net.ServerSentEvents": {
         "type": "CentralTransitive",
-        "requested": "[10.0.7, )",
-        "resolved": "10.0.7",
-        "contentHash": "e06Z0ebrVhLOPZjqkJ3FkhGEobJu7T7WEIZPNtZW2Vr8eULbxwZg64i4SYeCVcaCdHLST/G4DOGnYp9QcIzzKA=="
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "72010m/U1v06btqPUDgSatcYvHMPSKBbwYsTMBzaONx1ksCG2mz0CCnzaikCrQggjz5l7V7mzpD8yiCoKqNV2A=="
       },
       "System.Text.Json": {
         "type": "CentralTransitive",
