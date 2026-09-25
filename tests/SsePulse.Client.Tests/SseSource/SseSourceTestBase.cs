@@ -17,7 +17,8 @@ public abstract class SseSourceTestBase
     {
         Path = "/sse",
         MaxDegreeOfParallelism = 1,
-        ThrowWhenNoEventHandlerFound = false
+        ThrowWhenNoEventHandlerFound = false,
+        ConnectionRetryOptions = RetryOptions.None
     };
 
     internal static SseSource CreateSource(

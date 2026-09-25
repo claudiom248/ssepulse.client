@@ -80,7 +80,7 @@ internal partial class SseConnection
                     }
                     if (hre.Data.Contains("HttpStatusCode"))
                     {
-                        return !_options.NonTransientStatusCodes.Contains((HttpStatusCode)hre.Data["HttpStatusCode"]!);
+                        return _options.TransientStatusCodes.Contains((HttpStatusCode)hre.Data["HttpStatusCode"]!);
                     }
                     SocketException? socketException = hre.FindInner<SocketException>();
                     if (socketException is not null)

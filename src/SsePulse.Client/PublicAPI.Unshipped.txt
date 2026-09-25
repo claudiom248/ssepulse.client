@@ -101,8 +101,6 @@ SsePulse.Client.SseSourceOptions.MaxDegreeOfParallelism.get -> int
 SsePulse.Client.SseSourceOptions.MaxDegreeOfParallelism.set -> void
 SsePulse.Client.SseSourceOptions.Name.get -> string!
 SsePulse.Client.SseSourceOptions.Name.set -> void
-SsePulse.Client.SseSourceOptions.NonTransientStatusCodes.get -> System.Collections.Generic.ICollection<System.Net.HttpStatusCode>!
-SsePulse.Client.SseSourceOptions.NonTransientStatusCodes.set -> void
 SsePulse.Client.SseSourceOptions.Path.get -> string!
 SsePulse.Client.SseSourceOptions.Path.set -> void
 SsePulse.Client.SseSourceOptions.RestartOnConnectionAbort.get -> bool
@@ -152,3 +150,6 @@ SsePulse.Client.RetryJitter.None = 0 -> SsePulse.Client.RetryJitter
 SsePulse.Client.RetryOptions.Jitter.get -> SsePulse.Client.RetryJitter
 static SsePulse.Client.RetryOptions.Exponential(int maxRetries, int delayInMilliseconds, int maxDelayInMilliseconds, SsePulse.Client.RetryJitter jitter = SsePulse.Client.RetryJitter.Full) -> SsePulse.Client.RetryOptions
 static SsePulse.Client.RetryOptions.Fixed(int maxRetries, int delayInMilliseconds, SsePulse.Client.RetryJitter jitter = SsePulse.Client.RetryJitter.None) -> SsePulse.Client.RetryOptions
+SsePulse.Client.SseSourceOptions.TransientStatusCodes.get -> System.Collections.Generic.ICollection<System.Net.HttpStatusCode>!
+SsePulse.Client.SseSourceOptions.TransientStatusCodes.set -> void
+static SsePulse.Client.SseSourceOptionsDefaults.DefaultTransientStatusCodes() -> System.Collections.Generic.ICollection<System.Net.HttpStatusCode>!
