@@ -6,25 +6,25 @@
   <ItemGroup>
     <!-- Core Dependencies -->
     <PackageVersion Include="coverlet.msbuild" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12" />
     <PackageVersion Include="MinVer" Version="8.0.0" />
     <PackageVersion Include="MongoDB.Driver" Version="3.12.0" />
-    <PackageVersion Include="System.Net.ServerSentEvents" Version="10.0.7" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.6" />
-    <PackageVersion Include="System.Threading.Tasks.DataFlow" Version="8.0.1" />
+    <PackageVersion Include="System.Net.ServerSentEvents" Version="10.0.12" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.12" />
+    <PackageVersion Include="System.Threading.Tasks.DataFlow" Version="10.0.12" />
     <!-- Configuration Dependencies -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.12" />
     <!-- Test Dependencies -->
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.31" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.12" />
     <PackageVersion Include="Testcontainers.MongoDb" Version="4.15.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.15.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
