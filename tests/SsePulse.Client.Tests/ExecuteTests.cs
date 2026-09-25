@@ -201,10 +201,11 @@ public class ExecuteTests
         RetryOptions options = RetryOptions.Default;
 
         // ASSERT
-        Assert.Equal(RetryStrategy.Fixed, options.Strategy);
-        Assert.Equal(3, options.MaxRetries);
-        Assert.Equal(2000, options.DelayInMilliseconds);
-        Assert.Equal(10000, options.MaxDelayInMilliseconds);
+        Assert.Equal(RetryStrategy.Exponential, options.Strategy);
+        Assert.Equal(5, options.MaxRetries);
+        Assert.Equal(1000, options.DelayInMilliseconds);
+        Assert.Equal(30000, options.MaxDelayInMilliseconds);
+        Assert.Equal(RetryJitter.Full, options.Jitter);
     }
 
     [Fact]

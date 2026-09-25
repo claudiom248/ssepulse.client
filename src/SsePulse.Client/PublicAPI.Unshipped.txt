@@ -115,8 +115,6 @@ SsePulse.Client.SseSourceOptions.TimeProvider.set -> void
 SsePulse.Client.SseSourceOptionsDefaults
 static readonly SsePulse.Client.SseSourceOptionsDefaults.DefaultRetryOptions -> SsePulse.Client.RetryOptions
 static SsePulse.Client.RetryOptions.Default.get -> SsePulse.Client.RetryOptions
-static SsePulse.Client.RetryOptions.Exponential(int maxRetries, int delayInMilliseconds, int maxDelayInMilliseconds) -> SsePulse.Client.RetryOptions
-static SsePulse.Client.RetryOptions.Fixed(int maxRetries, int delayInMilliseconds) -> SsePulse.Client.RetryOptions
 static SsePulse.Client.RetryOptions.None.get -> SsePulse.Client.RetryOptions
 SsePulse.Client.SseSource.On(string! eventName, System.Func<string!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
 SsePulse.Client.SseSource.On(string! eventName, System.Func<string!, System.Threading.Tasks.ValueTask>! handler) -> SsePulse.Client.SseSource!
@@ -147,3 +145,10 @@ SsePulse.Client.HandlerFailureBehavior.SkipAndAdvance = 0 -> SsePulse.Client.Han
 SsePulse.Client.HandlerFailureBehavior.StopSource = 1 -> SsePulse.Client.HandlerFailureBehavior
 SsePulse.Client.SseSourceOptions.HandlerFailureBehavior.get -> SsePulse.Client.HandlerFailureBehavior
 SsePulse.Client.SseSourceOptions.HandlerFailureBehavior.set -> void
+const SsePulse.Client.RetryOptions.UnlimitedRetries = 2147483647 -> int
+SsePulse.Client.RetryJitter
+SsePulse.Client.RetryJitter.Full = 1 -> SsePulse.Client.RetryJitter
+SsePulse.Client.RetryJitter.None = 0 -> SsePulse.Client.RetryJitter
+SsePulse.Client.RetryOptions.Jitter.get -> SsePulse.Client.RetryJitter
+static SsePulse.Client.RetryOptions.Exponential(int maxRetries, int delayInMilliseconds, int maxDelayInMilliseconds, SsePulse.Client.RetryJitter jitter = SsePulse.Client.RetryJitter.Full) -> SsePulse.Client.RetryOptions
+static SsePulse.Client.RetryOptions.Fixed(int maxRetries, int delayInMilliseconds, SsePulse.Client.RetryJitter jitter = SsePulse.Client.RetryJitter.None) -> SsePulse.Client.RetryOptions
