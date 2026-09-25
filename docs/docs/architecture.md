@@ -42,21 +42,23 @@ flowchart TD
 
 #### Diagram 2 — Event Dispatch Pipeline
 
-What happens inside `StreamConsumer` for every received event. The parser feeds events into a parallel `ActionBlock`;
-each event is routed to its registered handlers.
+What happens inside `StreamConsumer` for every received event. The parser feeds events into a bounded queue; a pool of
+worker tasks (sized by `MaxDegreeOfParallelism`) takes events from it and routes each one to its registered handlers.
+The event ID is stored only after the handlers of that event have completed.
 
 ```mermaid
 flowchart LR
     Stream[Response Stream] --> Parser[SseParser]
-    Parser -->|next SseItem| EventId[Store EventId<br/>if configured]
-    EventId --> Block["ActionBlock<br/>parallel dispatch"]
-    Block --> Found{Handler found?}
+    Parser -->|next SseItem| Queue["Bounded queue<br/>MaxBufferedEvents"]
+    Queue --> Worker["Worker tasks<br/>MaxDegreeOfParallelism"]
+    Worker --> Found{Handler found?}
     Found -->|Yes| Invoke[Invoke handlers<br/>deserialize if typed]
-    Found -->|No, warn-only| Parser
+    Found -->|No, warn-only| Commit[Store EventId<br/>if configured]
     Found -->|No, throw| Fault([HandlerNotFoundException])
-    Invoke -->|Success| Parser
+    Invoke -->|Success| Commit
     Invoke -->|Exception| OnError[OnError callback]
-    OnError --> Parser
+    OnError --> Commit
+    Commit --> Parser
     Parser -->|Stream ends| Done([Done])
     Parser -->|Cancelled| Done
     Parser -->|IO exception| Abort([ResponseAbortedException])
@@ -66,7 +68,7 @@ flowchart LR
 
 #### 1. **SseSource** (Main Facade)
 
-**File**: `Core/SseSource.cs` + `Core/SseSource.Handlers.cs`
+**File**: `SseSource.cs` + `SseSource.Handlers.cs`
 
 - **State Management**
     - `IsConnected`: Boolean indicating active connection
@@ -96,7 +98,7 @@ flowchart LR
 
 #### 2. **SseConnection** (Connection Management)
 
-**File**: `Core/Internal/SseConnection.cs`
+**File**: `Internal/SseConnection.cs`
 
 - **Request Preparation** (`EstablishAsync`)
     - Creates an HTTP GET request to the configured endpoint
@@ -117,15 +119,15 @@ flowchart LR
 
 #### 3. **StreamConsumer** (Event Processing)
 
-**File**: `Core/Internal/StreamConsumer.cs`
+**File**: `Internal/StreamConsumer.cs`
 
 - **Stream Parsing** (`ConsumeAsync`)
     - Creates an `SseParser<string>` from the response stream
     - Iterates asynchronously over each incoming `SseItem`
-    - Automatically stores the `EventId` in the optional `ILastEventIdStore` for resumption
+    - Registers each event and stores its `EventId` in the optional `ILastEventIdStore` once its handlers completed
 
 - **Event Dispatcher**
-    - Uses TPL Dataflow `ActionBlock` with configurable `MaxDegreeOfParallelism` (default: `1`, sequential)
+    - Uses a bounded `System.Threading.Channels` queue (`MaxBufferedEvents`) read by `MaxDegreeOfParallelism` worker tasks (default: `1`, sequential)
     - Ensures ordered intake but allows parallel handler invocation
     - Respects the `CancellationToken` passed from `StartConsumeAsync`
 
@@ -167,16 +169,16 @@ See [Request Mutators](request-mutators.md) for implementation details.
 
 ### Parallelism
 
-- **Handler Invocation**: Parallel via TPL Dataflow `ActionBlock` with configurable degree
+- **Handler Invocation**: Parallel via worker tasks reading a bounded channel, with configurable degree
 - **Deserialization**: Happens inline during handler dispatch
 - **I/O Operations**: All async/await, no blocking calls
 
-### No Back-Pressure
+### Back-Pressure
 
-The `ActionBlock` is created with no `BoundedCapacity`, so its input buffer is unbounded. The parser feeds events into
-it as fast as the SSE stream produces them, regardless of how quickly handlers consume them. If handlers are slow,
-the buffer grows without limit. This design prioritizes simplicity and throughput but may lead to increased memory usage
-under high load or slow handlers. Users should monitor and configure `MaxDegreeOfParallelism` appropriately.
+The queue between the parser and the handlers is bounded by `MaxBufferedEvents` (default: `1024`). When it is full the
+parser stops reading the stream until a handler completes, so a slow handler slows the reader down instead of growing
+memory, and the server sees the slowdown through TCP flow control. Events currently being handled are not counted in the
+queue, so at most `MaxBufferedEvents` plus `MaxDegreeOfParallelism` events are held at any time.
 
 ---
 
@@ -243,7 +245,8 @@ source.Dispose();  // Synchronous: cancels the loop but does not wait
 
 If an `ILastEventIdStore` is provided:
 
-1. The `StreamConsumer` stores each incoming event's `EventId` (if present)
+1. The `StreamConsumer` stores each event's `EventId` (if present) after the handlers of that event completed; with
+   parallel handlers the stored ID never moves past an event that is still being handled
 2. On reconnection, the `LastEventIdRequestMutator` reads the stored ID
 3. The `Last-Event-ID` header is added to the reconnection request
 4. The server can use this to resume from the last event

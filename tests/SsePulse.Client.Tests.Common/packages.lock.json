@@ -66,16 +66,7 @@
         }
       },
       "ssepulse.client": {
-        "type": "Project",
-        "dependencies": {
-          "System.Threading.Tasks.DataFlow": "[8.0.1, )"
-        }
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "4pjq2vIPNZkKA9asAXzf5IRBb7K+b0+UQZZbpv6g029sAPZgnKdg/NNOC/DbJL8SWqYcFMVjb/T/YEmb0PHUYg=="
+        "type": "Project"
       }
     },
     "net8.0": {
@@ -145,8 +136,7 @@
       "ssepulse.client": {
         "type": "Project",
         "dependencies": {
-          "System.Net.ServerSentEvents": "[10.0.7, )",
-          "System.Threading.Tasks.DataFlow": "[8.0.1, )"
+          "System.Net.ServerSentEvents": "[10.0.7, )"
         }
       },
       "System.Net.ServerSentEvents": {
@@ -154,12 +144,6 @@
         "requested": "[10.0.7, )",
         "resolved": "10.0.7",
         "contentHash": "e06Z0ebrVhLOPZjqkJ3FkhGEobJu7T7WEIZPNtZW2Vr8eULbxwZg64i4SYeCVcaCdHLST/G4DOGnYp9QcIzzKA=="
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "4pjq2vIPNZkKA9asAXzf5IRBb7K+b0+UQZZbpv6g029sAPZgnKdg/NNOC/DbJL8SWqYcFMVjb/T/YEmb0PHUYg=="
       }
     }
   }

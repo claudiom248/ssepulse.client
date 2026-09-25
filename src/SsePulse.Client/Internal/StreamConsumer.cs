@@ -1,6 +1,7 @@
 using System.Net.ServerSentEvents;
 using System.Net.Sockets;
-using System.Threading.Tasks.Dataflow;
+using System.Runtime.ExceptionServices;
+using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SsePulse.Client;
 
@@ -34,24 +35,29 @@ internal class StreamConsumer
 
     public async Task ConsumeAsync(Stream stream, CancellationToken cancellationToken)
     {
-        ActionBlock<DispatchItem> dispatcherBlock = CreateDispatcherBlock();
+        using CancellationTokenSource faultSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        Channel<DispatchItem> channel = Channel.CreateBounded<DispatchItem>(
+            new BoundedChannelOptions(_options.MaxBufferedEvents)
+            {
+                FullMode = BoundedChannelFullMode.Wait,
+                SingleWriter = true,
+                SingleReader = _options.MaxDegreeOfParallelism == 1
+            });
+        ExceptionDispatchInfo? fault = null;
+        Task[] workers = Enumerable
+            .Range(0, _options.MaxDegreeOfParallelism)
+            .Select(_ => Task.Run(RunWorkerAsync, CancellationToken.None))
+            .ToArray();
         SseParser<string> parser = SseParser.Create(stream);
         try
         {
-            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (SseItem<string> sseItem in parser.EnumerateAsync(faultSource.Token).ConfigureAwait(false))
             {
                 using IDisposable? _ = _logger.BeginScope("EventType: {EventType}", sseItem.EventType);
                 _logger.LogDebug("Received event of type '{EventType}' and Data {Data}", sseItem.EventType,
                     sseItem.Data);
-                if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
-                {
-                    _logger.LogTrace(
-                        "Dispatcher block is in a faulted state. Throwing exception to stop processing incoming events.");
-                    throw dispatcherBlock.Completion.Exception;
-                }
-
                 long sequence = _commitTracker.Register(sseItem.EventId);
-                await dispatcherBlock.SendAsync(new DispatchItem(sequence, sseItem), cancellationToken)
+                await channel.Writer.WriteAsync(new DispatchItem(sequence, sseItem), faultSource.Token)
                     .ConfigureAwait(false);
             }
         }
@@ -72,25 +78,33 @@ internal class StreamConsumer
         }
         finally
         {
-            dispatcherBlock.Complete();
-            await dispatcherBlock.Completion.ConfigureAwait(false);
+            channel.Writer.TryComplete();
+            await Task.WhenAll(workers).ConfigureAwait(false);
+            fault?.Throw();
         }
 
         return;
 
-        ActionBlock<DispatchItem> CreateDispatcherBlock()
+        async Task RunWorkerAsync()
         {
-            return new ActionBlock<DispatchItem>(
-                Dispatch,
-                new ExecutionDataflowBlockOptions
+            try
+            {
+                await foreach (DispatchItem item in channel.Reader.ReadAllAsync(faultSource.Token).ConfigureAwait(false))
                 {
-                    MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism,
-                    BoundedCapacity = _options.MaxBufferedEvents,
-                    CancellationToken = cancellationToken
-                });
+                    Dispatch(item);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace("A handler failed. Stopping the processing of incoming events.");
+                Interlocked.CompareExchange(ref fault, ExceptionDispatchInfo.Capture(ex), null);
+                faultSource.Cancel();
+            }
         }
-    }
-    
+    }    
     private bool IsResponseAborted(Exception ex)
     {
         if (_options.IsResponseAborted?.Invoke(ex) == true)
