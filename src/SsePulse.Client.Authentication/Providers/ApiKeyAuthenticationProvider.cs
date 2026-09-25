@@ -28,10 +28,6 @@ public class ApiKeyAuthenticationProvider : ISseAuthenticationProvider
     public ValueTask ApplyAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         request.Headers.Add(_configuration.Header, _configuration.Key);
-#if NET8_0_OR_GREATER
         return ValueTask.CompletedTask;
-#else
-        return new ValueTask();    
-#endif
     }
 }

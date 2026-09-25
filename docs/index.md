@@ -13,7 +13,7 @@ _layout: landing
 - **Resilient by default** — built-in retry policies, automatic reconnection on stream abort, and seamless last-event-replay.
 - **Scales with your app** — works standalone with a plain `HttpClient`, integrates cleanly with `Microsoft.Extensions.DependencyInjection`, and supports multiple named sources side by side.
 - **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
-- **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
+- **Modern .NET** — targets `net8.0` and runs on .NET 8, 9, 10 and later.
 
 ## Quick start
 

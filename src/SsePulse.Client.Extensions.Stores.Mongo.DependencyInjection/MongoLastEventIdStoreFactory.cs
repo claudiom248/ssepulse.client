@@ -42,12 +42,7 @@ internal class MongoLastEventIdStoreFactory : IDisposable
     {
         foreach(IMongoClient client in _ownedClients.Values)
         {
-#if NET8_0_OR_GREATER
             client.Dispose();
-// #else
-//             
-//             (client as MongoClient)?.Dispose();
-#endif
         }
     }
 }

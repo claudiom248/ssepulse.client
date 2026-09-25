@@ -71,17 +71,8 @@ else {
 if ($sourceProjectsToBuild.Count -gt 0) {
     Write-Host "--- Build ---" -ForegroundColor Cyan
 
-    $buildFramework = $Framework
-    if ($Framework -eq "net462") {
-        $buildFramework = "netstandard2.0"
-    }
-
     foreach ($sourceProject in $sourceProjectsToBuild) {
         $buildArgs = @("build", $sourceProject, "-c", $Configuration, "--no-restore", "--maxcpucount", "--binaryLogger")
-        if ($buildFramework) {
-            $buildArgs += "--framework"
-            $buildArgs += $buildFramework
-        }
 
         dotnet @buildArgs
 

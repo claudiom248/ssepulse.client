@@ -163,17 +163,7 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
             string temp = _filePath + ".tmp";
             File.WriteAllText(temp, eventId);
 
-#if NETSTANDARD2_0
-            if (File.Exists(_filePath))
-            {
-                File.Delete(_filePath);
-            }
-#endif
-            File.Move(temp, _filePath
-#if !NETSTANDARD2_0
-                , overwrite: true
-#endif
-            );
+            File.Move(temp, _filePath, overwrite: true);
         }
     }
 

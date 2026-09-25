@@ -1,4 +1,3 @@
-#if NET10_0
 namespace SsePulse.Client.Tests.SseSource;
 
 public partial class SseSourceLifecycleTests
@@ -89,5 +88,4 @@ public partial class SseSourceLifecycleTests
         Assert.True(source.Completion.IsCompleted);
     }
 }
-#endif
 

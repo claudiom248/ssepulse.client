@@ -9,7 +9,7 @@
 - **Pluggable authentication** — API key, Bearer token (with refresh), Basic Auth, or roll your own `ISseAuthenticationProvider`.
 - **Last-event-id resumption** — automatically replays the last received `id` on reconnect.
 - **Automatic reconnection** — configurable retry policy and restart-on-abort support.
-- **Multi-framework** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
+- **Modern .NET** — targets `net8.0` and runs on .NET 8, 9, 10 and later.
 
 ## This Package
 

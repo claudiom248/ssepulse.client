@@ -13,7 +13,7 @@
 - **Resilient by default** — built-in retry policies, automatic reconnection on stream abort, and seamless last-event-replay.
 - **Scales with your app** — works standalone with a plain `HttpClient`, integrates cleanly with `Microsoft.Extensions.DependencyInjection`, and supports multiple named sources side by side.
 - **Pluggable authentication** — API key, Bearer token, Basic Auth, or a fully custom provider — wired in with small frictions.
-- **Broad framework support** — targets `net10.0`, `net9.0`, `net8.0`, and `netstandard2.0`.
+- **Modern .NET** — targets `net8.0` and runs on .NET 8, 9, 10 and later.
 
 ---
 
@@ -260,16 +260,9 @@ See the [Configuration guide](docs/docs/configuration.md) for the full reference
 
 ## Supported platforms
 
-The library targets four frameworks. The full API surface is available on all of them; the only difference is a minor fallback on `netstandard2.0`.
+The library targets `net8.0` and runs on .NET 8, .NET 9, .NET 10 and later with the full API surface.
 
-| Framework | Supported | Notes |
-|:---|:---:|:---|
-| `net10.0` | ✅ | Full feature set |
-| `net9.0` | ✅ | Full feature set |
-| `net8.0` | ✅ | Full feature set |
-| `netstandard2.0` | ✅ | `StopAsync()` and `DisposeAsync()` both fall back to synchronous cancellation (`CancellationTokenSource.CancelAsync` is unavailable on this target) |
-
-See [Platform Availability](docs/docs/platform-availability.md) for the full support matrix.
+See [Platform Availability](docs/docs/platform-availability.md) for details.
 
 ---
 
