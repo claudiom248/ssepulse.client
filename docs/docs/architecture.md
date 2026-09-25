@@ -77,19 +77,20 @@ flowchart LR
 
 - **Handler Registry**
     - Stores event handlers by event name (internal `SseHandlersDictionary`)
-    - Supports three registration patterns:
+    - Supports four registration patterns, each with synchronous and asynchronous (`Func<..., ValueTask>`, optional `CancellationToken`) overloads:
         - Raw strings: `.On("eventName", (string data) => ...)`
         - Strongly-typed: `.On<T>((T data) => ...)` with optional custom event name
         - Full metadata: `.OnItem<T>((SseItem<T> item) => ...)`
-        - Reflection-based: `.Bind<TManager>()` (scans public `On*` methods)
+        - Reflection-based: `.Bind<TManager>()` (scans public `On*` methods returning `void`, `Task` or `ValueTask`)
+    - Every handler is adapted to a single asynchronous invocation path
 
 - **Lifecycle Callbacks**
-  All four are settable properties (not fluent methods):
-    - `OnConnectionEstablished` — Invoked after the HTTP response is received and the connection is active
-    - `OnConnectionClosed` — Invoked when the server ends the stream cleanly (no error)
-    - `OnConnectionLost` — Invoked when the connection drops unexpectedly due to an error
-    - `OnError` — Invoked when an exception is thrown inside an event handler
-      Exceptions thrown by any of these callbacks are swallowed to protect the consumption loop.
+  All four are settable properties with synchronous delegates; the `Use*` fluent methods register asynchronous ones:
+    - `OnConnectionEstablished` / `UseOnConnectionEstablished` — Invoked after the HTTP response is received and the connection is active, before the stream is read
+    - `OnConnectionClosed` / `UseOnConnectionClosed` — Invoked when the server ends the stream cleanly (no error)
+    - `OnConnectionLost` / `UseOnConnectionLost` — Invoked when the connection drops unexpectedly due to an error
+    - `OnError` / `UseOnError` — Invoked when an exception is thrown inside an event handler
+      Callbacks are awaited. Exceptions thrown by any of them are logged through the `ILogger` and never stop the consumption loop.
 
 - **Consumption Loop** (`StartConsumeAsync`)
     - Coordinates a retry loop that establishes connections and consumes streams
@@ -131,9 +132,10 @@ flowchart LR
     - Ensures ordered intake but allows parallel handler invocation
     - Respects the `CancellationToken` passed from `StartConsumeAsync`
 
-- **Handler Dispatch** (`Dispatch`)
+- **Handler Dispatch** (`DispatchAsync`)
     - Looks up handlers by event type (`EventType` property of `SseItem`)
-    - Invokes all registered handlers for that event type
+    - Awaits all registered handlers for that event type, passing them a token cancelled on stop or fault
+    - A handler cancelled by that token is not reported to `OnError` and its event id is not stored
     - Missing handler behavior:
         - Throw `HandlerNotFoundException` if `ThrowWhenNoEventHandlerFound` is `true`
         - Log a warning and skip otherwise

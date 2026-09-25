@@ -92,7 +92,14 @@ source.OnItem<OrderCreated>(item =>
     Console.WriteLine($"id={item.EventId}, data={item.Data.Id}"));
 ```
 
-**Convention-based manager class** — scan all public `On*` methods automatically:
+**Asynchronous handlers** — awaited, with a token cancelled when the source stops (see [Asynchronous Handlers](docs/docs/async-handlers.md)):
+
+```csharp
+source.On<OrderCreated>(async (order, cancellationToken) =>
+    await repository.SaveAsync(order, cancellationToken));
+```
+
+**Convention-based manager class** — scan all public `On*` methods automatically, returning `void`, `Task` or `ValueTask`:
 
 ```csharp
 public class MyEventsManager : ISseEventsManager
