@@ -248,8 +248,10 @@ source.Dispose();  // Synchronous: cancels the loop but does not wait
 If an `ILastEventIdStore` is provided:
 
 1. The `StreamConsumer` stores each event's `EventId` (if present) after the handlers of that event completed; with
-   parallel handlers the stored ID never moves past an event that is still being handled
-2. On reconnection, the `LastEventIdRequestMutator` reads the stored ID
+   parallel handlers the stored ID never moves past an event that is still being handled. The writes are awaited one
+   at a time and an older ID is never written after a newer one
+2. On reconnection, the `LastEventIdRequestMutator` reads the stored ID with `GetLastEventIdAsync`; the store loads
+   its persisted value lazily at that point
 3. The `Last-Event-ID` header is added to the reconnection request
 4. The server can use this to resume from the last event
 
@@ -266,7 +268,8 @@ See [Last-Event-ID Resumption](last-event-id.md) for details.
 | **Connection fails (transient)**            | Auto-retry per `ConnectionRetryOptions`                                                                 |
 | **Connection fails (permanent, e.g., 404)** | Exception thrown, consumption loop exits                                                                |
 | **Stream aborts unexpectedly**              | Re-raise as `ResponseAbortedException`; if `RestartOnConnectionAbort` is true, retry the loop           |
-| **Handler throws exception**                | Log error; invoke `OnError` callback; continue processing other events                                  |
+| **Handler throws exception**                | Log error; invoke `OnError` callback; then, per `HandlerFailureBehavior`, store the event id and continue (`SkipAndAdvance`) or fault the source without storing it (`StopSource`) |
+| **Store fails**                             | Log error and continue; the in-memory value stays authoritative and the next write persists the newest id |
 | **Unknown event type**                      | Log warning and skip; throw `HandlerNotFoundException` only if `ThrowWhenNoEventHandlerFound` is `true` |
 | **Cancellation requested**                  | Gracefully shut down, propagate to `Completion` task                                                    |
 
