@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <PackageId>SsePulse.Client</PackageId>
+        <IsAotCompatible>true</IsAotCompatible>
+        <NoWarn>$(NoWarn);AD0001</NoWarn>
         <Description>SsePulse.Client is a .NET library for consuming Server-Sent Events (SSE) streams, providing a simple and efficient way to handle real-time data updates from servers.</Description>
         <PackageTags>server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
     </PropertyGroup>

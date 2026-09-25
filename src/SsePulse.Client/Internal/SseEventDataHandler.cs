@@ -1,5 +1,6 @@
 using System.Net.ServerSentEvents;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace SsePulse.Client.Internal;
 
@@ -27,6 +28,7 @@ internal class SseEventDataHandler<TEventData> : ISseEventHandler
 {
     private readonly Action<TEventData> _handler;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
+    private JsonTypeInfo<TEventData>? _typeInfo;
 
     public SseEventDataHandler(Action<TEventData> handler, JsonSerializerOptions jsonSerializerOptions)
     {
@@ -36,9 +38,8 @@ internal class SseEventDataHandler<TEventData> : ISseEventHandler
 
     public void Invoke(SseItem<string> item)
     {
-        TEventData message = JsonSerializer.Deserialize<TEventData>(
-            item.Data, 
-            _jsonSerializerOptions)!;
+        JsonTypeInfo<TEventData> typeInfo = _typeInfo ??= JsonTypeInfoProvider.Get<TEventData>(_jsonSerializerOptions);
+        TEventData message = JsonSerializer.Deserialize(item.Data, typeInfo)!;
         _handler.Invoke(message);
     }
 
