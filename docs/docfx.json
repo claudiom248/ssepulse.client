@@ -24,7 +24,6 @@
         ],
         "exclude": [
           "**/AGENTS.md",
-          "**/GitVersion.yml",
           "./_site/**"
         ]
       }

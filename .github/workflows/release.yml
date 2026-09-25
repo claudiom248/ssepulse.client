@@ -1,83 +1,105 @@
 name: release
 
 on:
-  release:
-    types: [ published ]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to publish (e.g. v1.2.3 or v1.2.3-rc.1)'
-        required: true
-        type: string
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: read
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      packages: write
+
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
+    needs: [ci]
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
     concurrency:
-      group: release-${{ github.event.release.tag_name || inputs.tag }}
+      group: release-${{ github.ref_name }}
       cancel-in-progress: false
 
     steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: packages
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.x
 
-      - name: Resolve tag
-        id: tag
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push packages to nuget.org
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            TAG="${{ github.event.release.tag_name }}"
-          else
-            TAG="${{ inputs.tag }}"
-          fi
-
-          if [ -z "$TAG" ]; then
-            echo "Tag is required."
-            exit 1
-          fi
-
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Using tag: $TAG"
-        shell: bash
-
-      - name: Download release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p .artifacts/release-assets
-          gh release download "${{ steps.tag.outputs.tag }}" \
-            --repo "${{ github.repository }}" \
-            --dir .artifacts/release-assets \
-            --pattern "*.nupkg"
-        shell: bash
-
-      - name: Verify release assets
-        run: |
-          if ! find .artifacts/release-assets -maxdepth 1 -type f \( -name '*.nupkg' -o -name '*.snupkg' \) | grep -q .; then
-            echo "No NuGet packages found in the release assets for tag ${{ steps.tag.outputs.tag }}"
-            exit 1
-          fi
-        shell: bash
-
-      - name: Publish .nupkg to NuGet
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          find .artifacts/release-assets -maxdepth 1 -type f -name '*.nupkg' ! -name '*.symbols.nupkg' -print0 |
-          while IFS= read -r -d '' package; do
+          for package in packages/*.nupkg; do
             dotnet nuget push "$package" \
               --source "https://api.nuget.org/v3/index.json" \
-              --api-key "$NUGET_API_KEY" \
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
               --skip-duplicate
           done
         shell: bash
 
+  github-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [publish]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: packages
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Generate release notes
+        run: |
+          mkdir -p .artifacts
+          git cliff --config cliff.release.toml --latest --strip all --output .artifacts/release-notes.md
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: SsePulse.Client ${{ github.ref_name }}
+          body_path: .artifacts/release-notes.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: packages/*.nupkg
+
   docs-build:
+    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [publish]
@@ -88,7 +110,6 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -125,4 +146,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to this project are documented below.
+Releases after 1.2.0 are documented in the notes of each [GitHub release](https://github.com/claudiom248/ssepulse.client/releases). Earlier releases are listed below.
 ## [1.2.0](https://github.com/claudiom248/ssepulse.client/compare/v1.1.0..v1.2.0) - 2026-05-04
 
 ### 🚀 Features

@@ -40,16 +40,12 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$srcPath = Join-Path (Split-Path -Path $PSScriptRoot -Parent) 'src'
 $packages = @(
-    'SsePulse.Client'
-    'SsePulse.Client.Authentication'
-    'SsePulse.Client.Authentication.DependencyInjection'
-    'SsePulse.Client.DependencyInjection'
-    'SsePulse.Client.Hosting'
-    'SsePulse.Client.Extensions.Stores.Mongo'
-    'SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection'
-    'SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection'
-    'SsePulse.Client.Extensions.Stores.DistributedCache.DependencyInjection'
+    Get-ChildItem -Path $srcPath -Recurse -Filter '*.csproj' |
+        Where-Object { $_.Directory.Name -notin 'obj', 'bin' } |
+        ForEach-Object { $_.BaseName } |
+        Sort-Object -Unique
 )
 
 function Get-PackageVersions([string] $PackageName) {

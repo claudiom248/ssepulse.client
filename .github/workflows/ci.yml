@@ -2,16 +2,16 @@ name: ci
 
 on:
   pull_request:
-    branches: [ master, develop, feature/*, hotfix/*, release/* ]
+    branches: [ master ]
   push:
-    branches: [ master, develop, feature/*, hotfix/*, release/* ]
+    branches: [ master ]
+  workflow_call:
   workflow_dispatch:
-  
+
 permissions:
   contents: read
   checks: write
   pull-requests: write
-  packages: write
 
 jobs:
   build:
@@ -57,7 +57,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: logs-${{ matrix.os }}-${{ matrix.tfm }}
-          path: | 
+          path: |
             msbuild.binlog
             .artifacts/test-results/${{ matrix.os }}/${{ matrix.tfm }}/**/*.trx
 
@@ -65,7 +65,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build]
-    if: ${{ !cancelled() }}
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
@@ -81,38 +83,25 @@ jobs:
           cache: true
           cache-dependency-path: '**/packages.lock.json'
 
-      - name: Restore tools
-        run: dotnet tool restore
-        shell: pwsh
-
-      - name: Calculate package version
-        id: gitversion
-        run: |
-          $version = dotnet tool run dotnet-gitversion /output json /showvariable NuGetVersion
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Host "Using package version $version"
-        shell: pwsh
-
       - name: Pack
-        run: ./.scripts/pack.ps1 -Configuration Release -Version "${{ steps.gitversion.outputs.version }}"
+        run: ./.scripts/pack.ps1 -Configuration Release
         shell: pwsh
 
-      - name: Push packages to GitHub Packages
-        if: github.event_name == 'push'
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: .artifacts/nuget/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Push preview packages to GitHub Packages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_OWNER: ${{ github.repository_owner }}
-          PACKAGE_VERSION: ${{ steps.gitversion.outputs.version }}
         run: |
           $feed = "https://nuget.pkg.github.com/$env:GITHUB_OWNER/index.json"
-          $packageDirectory = Join-Path $env:GITHUB_WORKSPACE ".artifacts/nuget/Release/$env:PACKAGE_VERSION"
-
-          $packages = Get-ChildItem -Path $packageDirectory -Filter "*.nupkg" |
-              Where-Object { $_.Name -notlike "*.symbols.nupkg" }
-
-          foreach ($package in $packages) {
+          foreach ($package in Get-ChildItem -Path ".artifacts/nuget/Release" -Filter "*.nupkg") {
               dotnet nuget push $package.FullName --source $feed --api-key $env:GITHUB_TOKEN --skip-duplicate
           }
         shell: pwsh
-
