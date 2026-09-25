@@ -1,32 +1,19 @@
 param(
     [string] $Configuration = "Release",
-    [string] $Projects = "",
-    [string] $Version = ""
+    [string] $Projects = ""
 )
+
+$ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Path $PSScriptRoot -Parent
 $srcPath = Join-Path $repoRoot "src"
-
-$repositoryUrl = "https://github.com/claudiom248/SsePulse.Client"
-
-if ([string]::IsNullOrWhiteSpace($Version)) {
-    $gvJson = dotnet tool run dotnet-gitversion /output json | ConvertFrom-Json
-    $version = $gvJson.FullSemVer
-    $preRelease = $gvJson.PreReleaseLabel
-}
-else {
-    $version = $Version.Trim()
-    $preRelease = ""
-}
-
-$outputPath = Join-Path $repoRoot ".artifacts\nuget\$Configuration\$version"
+$outputPath = Join-Path $repoRoot ".artifacts\nuget\$Configuration"
 
 Write-Host "--- Package Preparation ---" -ForegroundColor Cyan
 Write-Host "Configuration: $Configuration" -ForegroundColor Gray
-Write-Host "Detected version: $version"
-if ($preRelease) {
-    Write-Host "Pre-release: $preRelease" -ForegroundColor Yellow
-}
+
+dotnet restore (Join-Path $repoRoot "SsePulse.Client.slnx") --locked-mode
+if ($LASTEXITCODE -ne 0) { exit 1 }
 
 $csprojFiles = Get-ChildItem -Path $srcPath -Recurse -Filter "*.csproj" |
         Where-Object { $_.Directory.Name -ne "obj" -and $_.Directory.Name -ne "bin" }
@@ -38,6 +25,10 @@ if ($Projects -ne "") {
     }
 }
 
+if (Test-Path $outputPath) {
+    Remove-Item -Path $outputPath -Recurse -Force
+}
+
 Write-Host "Found $($csprojFiles.Count) projects to pack" -ForegroundColor Cyan
 Write-Host ""
 
@@ -45,29 +36,15 @@ foreach ($csproj in $csprojFiles) {
     $projectName = $csproj.Directory.Name
     Write-Host "[$projectName] Packaging..." -ForegroundColor Yellow
 
-    $packArgs = @(
-        "pack", $csproj.FullName,
-        "--configuration", $Configuration,
-        "-p:IncludeSymbols=true",
-        "-p:SymbolPackageFormat=snupkg",
-        "-p:Version=$version",
-        "--output", $outputPath
-    )
-    if ($repositoryUrl) {
-        $packArgs += "-p:RepositoryUrl=$repositoryUrl"
-        $packArgs += "-p:RepositoryType=git"
-    }
-
-    dotnet @packArgs
+    dotnet pack $csproj.FullName --configuration $Configuration --no-restore --output $outputPath
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[$projectName] Pack failed" -ForegroundColor Red
         exit 1
     }
-
-    Write-Host "[$projectName] v$version" -ForegroundColor Green
 }
 
 Write-Host ""
 Write-Host "--- Completed! ---" -ForegroundColor Green
+Get-ChildItem -Path $outputPath -Filter "*.nupkg" | ForEach-Object { Write-Host $_.Name -ForegroundColor Gray }
 Write-Host "Output: $outputPath" -ForegroundColor Gray
