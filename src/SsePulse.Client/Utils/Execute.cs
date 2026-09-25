@@ -6,7 +6,7 @@ namespace SsePulse.Client.Utils;
 /// Provides static helpers for executing asynchronous operations with exception suppression
 /// or automatic retry logic.
 /// </summary>
-public static class Execute
+internal static class Execute
 {
     /// <summary>
     /// Executes <paramref name="function"/> and swallows any exception it throws.
