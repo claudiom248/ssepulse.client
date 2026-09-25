@@ -8,9 +8,7 @@ SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.LastEventIdDocument(
 SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.UpdatedAt.get -> System.DateTime
 SsePulse.Client.Extensions.Stores.Mongo.LastEventIdDocument.UpdatedAt.set -> void
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore
-SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.LastEventId.get -> string?
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.MongoLastEventIdStore(SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions! options, MongoDB.Driver.IMongoClient! mongoClient, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore!>? logger = null) -> void
-SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.Set(string! eventId) -> void
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.CollectionName.get -> string!
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.CollectionName.set -> void
@@ -19,3 +17,5 @@ SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DatabaseNam
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DocumentKey.get -> string?
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.DocumentKey.set -> void
 SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStoreOptions.MongoLastEventIdStoreOptions() -> void
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.GetLastEventIdAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<string?>
+SsePulse.Client.Extensions.Stores.Mongo.MongoLastEventIdStore.SetLastEventIdAsync(string! eventId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask

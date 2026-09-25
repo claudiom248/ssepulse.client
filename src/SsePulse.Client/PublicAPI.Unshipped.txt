@@ -8,8 +8,6 @@ const SsePulse.Client.SseSourceOptionsDefaults.ThrowWhenEventHandlerNotFound = f
 SsePulse.Client.FileLastEventIdStore
 SsePulse.Client.FileLastEventIdStore.Dispose() -> void
 SsePulse.Client.FileLastEventIdStore.FileLastEventIdStore(SsePulse.Client.FileLastEventIdStoreOptions! options, Microsoft.Extensions.Logging.ILogger<SsePulse.Client.FileLastEventIdStore!>? logger = null, System.TimeProvider? timeProvider = null) -> void
-SsePulse.Client.FileLastEventIdStore.LastEventId.get -> string?
-SsePulse.Client.FileLastEventIdStore.Set(string! eventId) -> void
 SsePulse.Client.FileLastEventIdStoreOptions
 SsePulse.Client.FileLastEventIdStoreOptions.FileLastEventIdStoreOptions() -> void
 SsePulse.Client.FileLastEventIdStoreOptions.FilePath.get -> string!
@@ -26,12 +24,8 @@ SsePulse.Client.FlushMode.AfterInterval = 2 -> SsePulse.Client.FlushMode
 SsePulse.Client.FlushMode.EverySet = 0 -> SsePulse.Client.FlushMode
 SsePulse.Client.HandlerNotFoundException
 SsePulse.Client.ILastEventIdStore
-SsePulse.Client.ILastEventIdStore.LastEventId.get -> string?
-SsePulse.Client.ILastEventIdStore.Set(string! eventId) -> void
 SsePulse.Client.InMemoryLastEventIdStore
 SsePulse.Client.InMemoryLastEventIdStore.InMemoryLastEventIdStore() -> void
-SsePulse.Client.InMemoryLastEventIdStore.LastEventId.get -> string?
-SsePulse.Client.InMemoryLastEventIdStore.Set(string! eventId) -> void
 SsePulse.Client.IRequestMutator
 SsePulse.Client.IRequestMutator.ApplyAsync(System.Net.Http.HttpRequestMessage! message, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 SsePulse.Client.IScopedSseSourceFactory
@@ -140,3 +134,10 @@ SsePulse.Client.SseSource.UseOnConnectionClosed(System.Func<System.Threading.Tas
 SsePulse.Client.SseSource.UseOnConnectionEstablished(System.Func<System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!
 SsePulse.Client.SseSource.UseOnConnectionLost(System.Func<System.Exception!, System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!
 SsePulse.Client.SseSource.UseOnError(System.Func<System.Exception!, System.Threading.Tasks.ValueTask>! callback) -> SsePulse.Client.SseSource!
+SsePulse.Client.FileLastEventIdStore.DisposeAsync() -> System.Threading.Tasks.ValueTask
+SsePulse.Client.FileLastEventIdStore.GetLastEventIdAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<string?>
+SsePulse.Client.FileLastEventIdStore.SetLastEventIdAsync(string! eventId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.ILastEventIdStore.GetLastEventIdAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<string?>
+SsePulse.Client.ILastEventIdStore.SetLastEventIdAsync(string! eventId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+SsePulse.Client.InMemoryLastEventIdStore.GetLastEventIdAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<string?>
+SsePulse.Client.InMemoryLastEventIdStore.SetLastEventIdAsync(string! eventId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask

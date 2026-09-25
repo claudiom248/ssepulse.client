@@ -15,17 +15,15 @@ internal class LastEventIdRequestMutator : IRequestMutator
         _logger = logger ?? NullLogger<SseSource>.Instance;
     }
 
-    public ValueTask ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken)
+    public async ValueTask ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Checking for Last-Event-ID to resume SSE stream...");
-        string? lastEventId = _lastEventIdStore.LastEventId;
+        string? lastEventId = await _lastEventIdStore.GetLastEventIdAsync(cancellationToken).ConfigureAwait(false);
         if (!string.IsNullOrEmpty(lastEventId))
         {
             _logger.LogDebug("Resuming SSE stream from Last-Event-ID: {LastEventId}", lastEventId);
             message.Headers.TryAddWithoutValidation("Last-Event-ID", lastEventId);
         }
-
-        return default;
     }
 }
 

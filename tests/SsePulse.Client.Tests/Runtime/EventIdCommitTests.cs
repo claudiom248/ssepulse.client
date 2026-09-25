@@ -1,3 +1,4 @@
+using System.Net.ServerSentEvents;
 using SsePulse.Client;
 using SsePulse.Client.Internal;
 using SsePulse.Client.Tests.Common;
@@ -29,13 +30,13 @@ public class EventIdCommitTests
         harness.Start();
 
         await started.WaitForCountAsync(2);
-        string? storedWhileSecondHandlerRuns = store.LastEventId;
+        string? storedWhileSecondHandlerRuns = await store.GetLastEventIdAsync();
         release.Open();
-        await TestWait.UntilAsync(() => Task.FromResult(store.LastEventId == "2"));
+        await TestWait.UntilAsync(async () => await store.GetLastEventIdAsync() == "2");
         await harness.StopAsync();
 
         Assert.Equal("1", storedWhileSecondHandlerRuns);
-        Assert.Equal("2", store.LastEventId);
+        Assert.Equal("2", await store.GetLastEventIdAsync());
     }
 
     [Fact]
@@ -62,13 +63,13 @@ public class EventIdCommitTests
         harness.Start();
 
         await started.WaitForCountAsync(3);
-        string? storedWhileFirstHandlerRuns = store.LastEventId;
+        string? storedWhileFirstHandlerRuns = await store.GetLastEventIdAsync();
         release.Open();
-        await TestWait.UntilAsync(() => Task.FromResult(store.LastEventId == "3"));
+        await TestWait.UntilAsync(async () => await store.GetLastEventIdAsync() == "3");
         await harness.StopAsync();
 
         Assert.Null(storedWhileFirstHandlerRuns);
-        Assert.Equal("3", store.LastEventId);
+        Assert.Equal("3", await store.GetLastEventIdAsync());
     }
     [Fact]
     public async Task EventId_IsStoredEvenWhenTheHandlerThrows()
@@ -82,7 +83,7 @@ public class EventIdCommitTests
 
         await harness.Consumption;
 
-        Assert.Equal("7", store.LastEventId);
+        Assert.Equal("7", await store.GetLastEventIdAsync());
         Assert.Single(harness.Errors.Items);
     }
 
@@ -97,7 +98,55 @@ public class EventIdCommitTests
 
         await harness.Consumption;
 
-        Assert.Equal("9", store.LastEventId);
+        Assert.Equal("9", await store.GetLastEventIdAsync());
+    }
+
+    [Fact]
+    public async Task EventCancelledMidHandler_IsRedeliveredAfterResume()
+    {
+        await using SseTestServer server = await SseTestServer.StartAsync(s => s
+            .OnConnection(c => c.Send("order", "1", id: "1").Send("order", "2", id: "2").KeepOpen())
+            .OnConnection(c => c.Send("order", "2", id: "2").Close()));
+        InMemoryLastEventIdStore store = new();
+        Recorder<string> started = new();
+        await using (SseSourceHarness first = new(server, lastEventIdStore: store))
+        {
+            first.Source.OnItem("order", async (SseItem<string> item, CancellationToken token) =>
+            {
+                started.Add(item.Data);
+                if (item.Data == "2")
+                {
+                    await TestWait.ForeverAsync(token);
+                }
+            });
+            first.Start();
+            await started.WaitForCountAsync(2);
+            await first.StopAsync();
+        }
+
+        Recorder<string> redelivered = new();
+        await using SseSourceHarness second = new(server, lastEventIdStore: store);
+        second.Source.On("order", data => redelivered.Add(data));
+        second.Start();
+        await second.Consumption;
+
+        Assert.Equal("1", server.Requests[1].LastEventId);
+        Assert.Equal(["2"], redelivered.Items);
+    }
+
+    [Fact]
+    public async Task StoreFailure_IsLoggedAndDoesNotStopTheConsumption()
+    {
+        await using SseTestServer server = await SseTestServer.StartAsync(s => s
+            .OnConnection(c => c.Send("order", "1", id: "1").Send("order", "2", id: "2").Close()));
+        ThrowingStore store = new();
+        await using SseSourceHarness harness = new(server, lastEventIdStore: store);
+        harness.Listen("order").Start();
+
+        await harness.Consumption;
+
+        Assert.Equal(["1", "2"], harness.Events.Items.Select(e => e.Data));
+        Assert.Equal(2, store.SetCalls);
     }
 
     [Fact]
@@ -109,10 +158,29 @@ public class EventIdCommitTests
         long third = tracker.Register("c");
         List<string> committed = [];
 
-        tracker.Complete(third, committed.Add);
-        tracker.Complete(first, committed.Add);
-        tracker.Complete(second, committed.Add);
+        foreach (long sequence in new[] { third, first, second })
+        {
+            EventIdAdvance? advance = tracker.Complete(sequence);
+            if (advance is { } value)
+            {
+                committed.Add(value.EventId);
+            }
+        }
 
         Assert.Equal(["a", "c"], committed);
     }
-}
+
+    private sealed class ThrowingStore : ILastEventIdStore
+    {
+        private int _setCalls;
+
+        public int SetCalls => Volatile.Read(ref _setCalls);
+
+        public ValueTask<string?> GetLastEventIdAsync(CancellationToken cancellationToken = default) => new((string?)null);
+
+        public ValueTask SetLastEventIdAsync(string eventId, CancellationToken cancellationToken = default)
+        {
+            Interlocked.Increment(ref _setCalls);
+            throw new InvalidOperationException("The store is unavailable.");
+        }
+    }}

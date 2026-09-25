@@ -10,7 +10,7 @@ public class LastEventIdRequestMutatorTests
     {
         // ARRANGE
         InMemoryLastEventIdStore store = new();
-        store.Set("event-123");
+        await store.SetLastEventIdAsync("event-123");
         LastEventIdRequestMutator mutator = new(store);
         HttpRequestMessage request = new();
 
