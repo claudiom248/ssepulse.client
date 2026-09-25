@@ -40,7 +40,11 @@ internal class SseEventHandler<TEventData> : ISseEventHandler
         TEventData message = JsonSerializer.Deserialize<TEventData>(
             item.Data, 
             _jsonSerializerOptions)!;
-        SseItem<TEventData> adaptedItem = new(message, item.EventType);
+        SseItem<TEventData> adaptedItem = new(message, item.EventType)
+        {
+            EventId = item.EventId,
+            ReconnectionInterval = item.ReconnectionInterval
+        };
         _handler.Invoke(adaptedItem);
     }
 
