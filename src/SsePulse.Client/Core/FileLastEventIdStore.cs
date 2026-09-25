@@ -35,7 +35,7 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     private volatile bool _pendingFlush;
     private int _count;
     private bool _disposed;
-    private Timer? _flushTimer;
+    private ITimer? _flushTimer;
     
     // ReSharper disable once NotAccessedField.Local
     private readonly ILogger<FileLastEventIdStore> _logger;
@@ -47,13 +47,17 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
     /// </summary>
     /// <param name="options">Options that control the file path and flush behavior.</param>
     /// <param name="logger">Optional logger. Falls back to <see cref="Microsoft.Extensions.Logging.Abstractions.NullLogger{T}"/> when omitted.</param>
+    /// <param name="timeProvider">Time provider used by the interval flush timer. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <see cref="FileLastEventIdStoreOptions.FilePath"/> is null or whitespace,
     /// <see cref="FileLastEventIdStoreOptions.FlushAfterCount"/> is not greater than zero, or
     /// <see cref="FileLastEventIdStoreOptions.FlushInterval"/> is not greater than <see cref="TimeSpan.Zero"/>.
     /// </exception>
-    public FileLastEventIdStore(FileLastEventIdStoreOptions options, ILogger<FileLastEventIdStore>? logger = null)
+    public FileLastEventIdStore(
+        FileLastEventIdStoreOptions options,
+        ILogger<FileLastEventIdStore>? logger = null,
+        TimeProvider? timeProvider = null)
     {
         if (options == null)
         {
@@ -82,7 +86,7 @@ public sealed class FileLastEventIdStore : ILastEventIdStore, IDisposable
 
         if (options.FlushMode == FlushMode.AfterInterval)
         {
-            _flushTimer = new Timer(
+            _flushTimer = (timeProvider ?? TimeProvider.System).CreateTimer(
                 _ => FlushIfPending(),
                 state: null,
                 dueTime: options.FlushInterval,

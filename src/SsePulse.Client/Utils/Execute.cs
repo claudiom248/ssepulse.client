@@ -41,12 +41,14 @@ public static class Execute
     /// <param name="onError">Optional callback invoked on each failure before retrying.</param>
     /// <param name="shouldRetry">Optional predicate; return <see langword="false"/> to stop retrying early.</param>
     /// <param name="cancellationToken">Cancellation token forwarded to <paramref name="func"/> and delays.</param>
+    /// <param name="timeProvider">Time provider used for the delays between attempts. Defaults to <see cref="TimeProvider.System"/>.</param>
     public static async Task WithRetryAsync(
         Func<CancellationToken, Task> func,
         RetryOptions options,
         Action<Exception>? onError = null,
         Func<Exception, bool>? shouldRetry = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        TimeProvider? timeProvider = null)
     {
         await WithRetryAsyncCore<object?>(
             async _ =>
@@ -57,7 +59,8 @@ public static class Execute
             options,
             onError ?? (ex => { }),
             shouldRetry,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            timeProvider ?? TimeProvider.System).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -70,28 +73,32 @@ public static class Execute
     /// <param name="onError">Optional callback invoked on each failure before retrying.</param>
     /// <param name="shouldRetry">Optional predicate; return <see langword="false"/> to stop retrying early.</param>
     /// <param name="cancellationToken">Cancellation token forwarded to <paramref name="func"/> and delays.</param>
+    /// <param name="timeProvider">Time provider used for the delays between attempts. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <returns>The result produced by <paramref name="func"/> on success.</returns>
     public static async Task<TResult> WithRetryAsync<TResult>(
         Func<CancellationToken, Task<TResult>> func,
         RetryOptions options,
         Action<Exception>? onError = null,
         Func<Exception, bool>? shouldRetry = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        TimeProvider? timeProvider = null)
     {
         return await WithRetryAsyncCore(
             func,
             options,
             onError ?? (ex => { }),
             shouldRetry,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            timeProvider ?? TimeProvider.System).ConfigureAwait(false);
     }
 
     private static async Task<TResult> WithRetryAsyncCore<TResult>(
-        Func<CancellationToken, Task<TResult>> func, 
+        Func<CancellationToken, Task<TResult>> func,
         RetryOptions options,
         Action<Exception> onError,
-        Func<Exception, bool>? shouldRetry = null,
-        CancellationToken cancellationToken = default)
+        Func<Exception, bool>? shouldRetry,
+        CancellationToken cancellationToken,
+        TimeProvider timeProvider)
     {
         int attempts = -1;
         while (true)
@@ -112,7 +119,7 @@ public static class Execute
                 }
 
                 TimeSpan delay = CalculateDelay();
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
             }
 
             TimeSpan CalculateDelay()
