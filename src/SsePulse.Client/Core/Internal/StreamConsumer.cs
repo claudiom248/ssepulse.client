@@ -19,6 +19,7 @@ internal class StreamConsumer
     private readonly ILogger<SseSource> _logger;
     private readonly Action<Exception> _onError;
     private readonly ILastEventIdStore? _lastEventIdStore;
+    private readonly EventIdCommitTracker _commitTracker = new();
 
     public StreamConsumer(
         SseHandlersDictionary handlers,
@@ -36,7 +37,7 @@ internal class StreamConsumer
 
     public async Task ConsumeAsync(Stream stream, CancellationToken cancellationToken)
     {
-        ActionBlock<SseItem<string>> dispatcherBlock = CreateDispatcherBlock();
+        ActionBlock<DispatchItem> dispatcherBlock = CreateDispatcherBlock();
         SseParser<string> parser = SseParser.Create(stream);
         try
         {
@@ -45,12 +46,6 @@ internal class StreamConsumer
                 using IDisposable? _ = _logger.BeginScope("EventType: {EventType}", sseItem.EventType);
                 _logger.LogDebug("Received event of type '{EventType}' and Data {Data}", sseItem.EventType,
                     sseItem.Data);
-                if (_lastEventIdStore is not null && !string.IsNullOrWhiteSpace(sseItem.EventId))
-                {
-                    _logger.LogDebug("Set last event ID to '{EventId}'", sseItem.EventId);
-                    _lastEventIdStore.Set(sseItem.EventId!);
-                }
-
                 if (dispatcherBlock.Completion is { IsFaulted: true, Exception: not null })
                 {
                     _logger.LogTrace(
@@ -58,7 +53,9 @@ internal class StreamConsumer
                     throw dispatcherBlock.Completion.Exception;
                 }
 
-                await dispatcherBlock.SendAsync(sseItem, cancellationToken).ConfigureAwait(false);
+                long sequence = _commitTracker.Register(sseItem.EventId);
+                await dispatcherBlock.SendAsync(new DispatchItem(sequence, sseItem), cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
         catch (HttpIOException ioEx) when (ioEx.HttpRequestError == HttpRequestError.ResponseEnded)
@@ -84,13 +81,14 @@ internal class StreamConsumer
 
         return;
 
-        ActionBlock<SseItem<string>> CreateDispatcherBlock()
+        ActionBlock<DispatchItem> CreateDispatcherBlock()
         {
-            return new ActionBlock<SseItem<string>>(
+            return new ActionBlock<DispatchItem>(
                 Dispatch,
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism,
+                    BoundedCapacity = _options.MaxBufferedEvents,
                     CancellationToken = cancellationToken
                 });
         }
@@ -113,8 +111,9 @@ internal class StreamConsumer
                 return false;
         } }
 
-    private void Dispatch(SseItem<string> @event)
+    private void Dispatch(DispatchItem item)
     {
+        SseItem<string> @event = item.Event;
         string eventType = @event.EventType;
         if (!_handlers.TryGetValue(eventType, out List<ISseEventHandler>? eventHandlers))
         {
@@ -125,6 +124,7 @@ internal class StreamConsumer
             }
 
             _logger.LogWarning("No handler found for event type '{EventType}'", eventType);
+            Commit(item.Sequence);
             return;
         }
 
@@ -140,5 +140,23 @@ internal class StreamConsumer
             _logger.LogError(ex, "Error occurred while handling event '{EventType}'", eventType);
             _onError(ex);
         }
+
+        Commit(item.Sequence);
     }
+
+    private void Commit(long sequence)
+    {
+        if (_lastEventIdStore is null)
+        {
+            return;
+        }
+
+        _commitTracker.Complete(sequence, eventId =>
+        {
+            _logger.LogDebug("Set last event ID to '{EventId}'", eventId);
+            _lastEventIdStore.Set(eventId);
+        });
+    }
+
+    private readonly record struct DispatchItem(long Sequence, SseItem<string> Event);
 }

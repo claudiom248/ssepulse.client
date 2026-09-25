@@ -47,18 +47,28 @@ internal partial class SseConnection
                     HttpResponseMessage response = await SendRequestAsync(request).ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)
                     {
-                        throw new HttpRequestException($"HTTP error occurred: {response.StatusCode}")
+                        HttpStatusCode statusCode = response.StatusCode;
+                        response.Dispose();
+                        throw new HttpRequestException($"HTTP error occurred: {statusCode}")
                         {
                             Data =
                             {
-                                ["HttpStatusCode"] = response.StatusCode
+                                ["HttpStatusCode"] = statusCode
                             }
                         };
                     }
 
                     SetConnected();
-                    Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    return SseStream.Wrap(this, responseStream);
+                    try
+                    {
+                        Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                        return SseStream.Wrap(this, responseStream, response);
+                    }
+                    catch
+                    {
+                        response.Dispose();
+                        throw;
+                    }
                 },
                 _options.ConnectionRetryOptions ?? RetryOptions.None,
                 shouldRetry: exception =>

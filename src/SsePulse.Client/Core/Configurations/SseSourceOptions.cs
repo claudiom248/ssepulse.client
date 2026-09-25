@@ -32,6 +32,13 @@ public class SseSourceOptions
     public int MaxDegreeOfParallelism { get; set; } = SseSourceOptionsDefaults.MaxDegreeOfParallelism;
 
     /// <summary>
+    /// Gets or sets the maximum number of received events that may be waiting for, or running in, an event handler.
+    /// When the limit is reached the stream is no longer read until a handler completes, which applies
+    /// back-pressure to the server. Must be greater than zero. Defaults to <c>1024</c>.
+    /// </summary>
+    public int MaxBufferedEvents { get; set; } = SseSourceOptionsDefaults.MaxBufferedEvents;
+
+    /// <summary>
     /// Gets or sets the naming case policy applied when resolving event names from type names
     /// or handler method names. Defaults to <see cref="NameCasePolicy.PascalCase"/>.
     /// </summary>

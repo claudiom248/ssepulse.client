@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SsePulse.Client.Core.Abstractions;
@@ -86,6 +85,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         _options = options;
         _handlers = new SseHandlersDictionary(options.JsonSerializerOptions);
         _logger = logger ?? NullLogger<SseSource>.Instance;
+        OnError = ex => _logger.LogError(ex, "An error occurred while processing an SSE event.");
         _lastEventIdStore = lastEventIdStore;
         _connectionHandlers = new ConnectionHandlers
         {
@@ -174,7 +174,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertStarted()
     {
         if (_started == 0)
@@ -183,7 +182,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         }
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertNotStarted()
     {
         if (_started == 1)
@@ -192,7 +190,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AssertNotDisposed()
     {
         if (_disposed)
@@ -259,14 +256,13 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         if (_started == 1)
         {
             _cts.Cancel();
-            _cts.Dispose();
         }
         else
         {
             _tcs.TrySetResult(true);
         }
 
-        _disposed = true;
+        _cts.Dispose();
         OnDisposed?.Invoke();
         GC.SuppressFinalize(this);
     }
@@ -283,7 +279,6 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
         if (_started == 1 && !Completion.IsCompleted)
         {
             await _cts.CancelAsync().ConfigureAwait(false);
-            _cts.Dispose();
             await Completion.ConfigureAwait(false);
         }
         else
@@ -291,7 +286,7 @@ public partial class SseSource : ISseSourceControl, IDisposable, IAsyncDisposabl
             _tcs.TrySetResult(true);
         }
 
+        _cts.Dispose();
         OnDisposed?.Invoke();
         GC.SuppressFinalize(this);
-    }
-}
+    }}

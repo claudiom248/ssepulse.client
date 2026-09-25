@@ -285,7 +285,7 @@ public class ExecuteTests
         // ACT
         await Execute.WithRetryAsync(
             Action,
-            RetryOptions.Exponential(maxRetries: 5, delayInMilliseconds: 100, maxDelayInMilliseconds: 5000));
+            RetryOptions.Exponential(maxRetries: 5, delayInMilliseconds: 1, maxDelayInMilliseconds: 5000));
 
         // ASSERT
         Assert.Equal(3, attempts);

@@ -6,7 +6,7 @@ namespace SsePulse.Client.Utils;
 /// Provides static helpers for executing asynchronous operations with exception suppression
 /// or automatic retry logic.
 /// </summary>
-public static class Execute
+internal static class Execute
 {
     /// <summary>
     /// Executes <paramref name="function"/> and swallows any exception it throws.
@@ -118,20 +118,7 @@ public static class Execute
                     throw;
                 }
 
-                TimeSpan delay = CalculateDelay();
-                await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
-            }
-
-            TimeSpan CalculateDelay()
-            {
-                return options.Strategy switch
-                {
-                    RetryStrategy.Fixed => TimeSpan.FromMilliseconds(options.DelayInMilliseconds),
-                    RetryStrategy.Exponential => TimeSpan.FromMilliseconds(Math.Min(
-                        Math.Pow(options.DelayInMilliseconds, attempts),
-                        options.MaxDelayInMilliseconds)),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                await Task.Delay(options.GetDelay(attempts), timeProvider, cancellationToken).ConfigureAwait(false);
             }
         }
     }

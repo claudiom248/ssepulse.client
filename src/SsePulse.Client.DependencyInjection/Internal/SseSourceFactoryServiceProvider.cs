@@ -7,6 +7,10 @@ namespace SsePulse.Client.DependencyInjection.Internal;
 internal class SseSourceFactoryServiceProvider : IKeyedServiceProvider
 {
     private readonly IServiceProvider _serviceProvider;
+
+    private IKeyedServiceProvider KeyedServiceProvider =>
+        _serviceProvider as IKeyedServiceProvider
+        ?? throw new InvalidOperationException("The service provider does not support keyed services.");
     private readonly Dictionary<Type, object> _sharedServices = [];
     private readonly Dictionary<(Type, object?), object> _sharedKeyedServices = [];
 
@@ -25,14 +29,14 @@ internal class SseSourceFactoryServiceProvider : IKeyedServiceProvider
     public object? GetKeyedService(Type serviceType, object? serviceKey) =>
         IsSharedService(serviceType, out Type? sharedServiceType)
             ? GetOrAdd(_sharedKeyedServices, (sharedServiceType ?? serviceType, serviceKey), 
-                       () => _serviceProvider.GetKeyedService(serviceType, serviceKey))
-            : _serviceProvider.GetKeyedService(serviceType, serviceKey);
+                       () => KeyedServiceProvider.GetKeyedService(serviceType, serviceKey))
+            : KeyedServiceProvider.GetKeyedService(serviceType, serviceKey);
 
     public object GetRequiredKeyedService(Type serviceType, object? serviceKey) =>
         IsSharedService(serviceType, out Type? sharedServiceType)
             ? GetOrAdd(_sharedKeyedServices, (sharedServiceType ?? serviceType, serviceKey), 
-                       () => _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey))
-            : _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey);
+                       () => KeyedServiceProvider.GetRequiredKeyedService(serviceType, serviceKey))
+            : KeyedServiceProvider.GetRequiredKeyedService(serviceType, serviceKey);
 
     private static bool IsSharedService(
         Type serviceType,     

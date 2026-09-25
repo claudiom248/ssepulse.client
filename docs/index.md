@@ -4,7 +4,7 @@ _layout: landing
 
 # SsePulse.Client
 
-**SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate.It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
+**SsePulse.Client** is a .NET [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) client library for consuming real-time event streams with minimal boilerplate. It offers a fluent handler-registration API, strongly-typed JSON deserialization, pluggable authentication, configurable retry and reconnect logic, and an extensible request-mutator pipeline — everything you need to integrate SSE into any .NET application, from lightweight console tools to full ASP.NET Core services backed by `Microsoft.Extensions.DependencyInjection`.
 
 ## Highlights
 
@@ -23,10 +23,11 @@ var options = new SseSourceOptions { Path = "/events" };
 
 await using var source = new SseSource(client, options);
 
+source.OnError = ex => Console.Error.WriteLine(ex);
+
 source
-    .On<OrderCreated>((OrderCreated e) => Console.WriteLine($"Order {e.Id} created"))
-    .On<OrderShipped>((OrderShipped e) => Console.WriteLine($"Order {e.Id} shipped"))
-    .OnError(ex => Console.Error.WriteLine(ex));
+    .On<OrderCreated>(e => Console.WriteLine($"Order {e.Id} created"))
+    .On<OrderShipped>(e => Console.WriteLine($"Order {e.Id} shipped"));
 
 await source.StartConsumeAsync(CancellationToken.None);
 ```

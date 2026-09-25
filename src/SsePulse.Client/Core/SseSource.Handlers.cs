@@ -1,6 +1,5 @@
 using System.Net.ServerSentEvents;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using SsePulse.Client.Core.Abstractions;
 using SsePulse.Client.Core.Attributes;
 using SsePulse.Client.Core.Internal;
@@ -77,7 +76,7 @@ public partial class SseSource
             AssertNotStarted();
             field = WrapDefaultHandler(value);
         }
-    } = ex => { Console.WriteLine("Error occurred: " + ex.Message + ""); };
+    } = _ => { };
     
     internal Action? OnDisposed { get; set; }
     
@@ -215,8 +214,21 @@ public partial class SseSource
         MethodInfo addDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
         MethodInfo addStronglyTypedDataHandlerMethod = typeof(SseHandlersDictionary).GetMethod(nameof(SseHandlersDictionary.AddStronglyTypedDataHandler), BindingFlags.Public | BindingFlags.Instance)!;
 
-        IEnumerable<MethodInfo> methods = manager.GetType().GetMethods()
-            .Where(m => m.Name.StartsWith("On") && m.GetParameters().Length == 1);
+        MethodInfo[] methods = manager.GetType()
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Where(m => IsHandlerName(m.Name))
+            .ToArray();
+
+        foreach (MethodInfo method in methods)
+        {
+            int parameterCount = method.GetParameters().Length;
+            if (parameterCount != 1)
+            {
+                throw new InvalidOperationException(
+                    $"'{manager.GetType().Name}.{method.Name}' looks like an event handler because its name starts with 'On', " +
+                    $"but it has {parameterCount} parameters. Event handlers must take exactly one parameter.");
+            }
+        }
 
         foreach (MethodInfo method in methods)
         {
@@ -241,7 +253,6 @@ public partial class SseSource
         return this;
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Action WrapDefaultHandler(Action value)
     {
         return () => _ = Execute.WithIgnoreExceptionAsync(_ =>
@@ -251,7 +262,6 @@ public partial class SseSource
         });
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Action<Exception> WrapDefaultHandler(Action<Exception> value)
     {
         return ex => _ = Execute.WithIgnoreExceptionAsync(_ =>
@@ -261,7 +271,13 @@ public partial class SseSource
         });
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsHandlerName(string methodName)
+    {
+        return methodName.Length > 2
+               && methodName.StartsWith("On", StringComparison.Ordinal)
+               && char.IsUpper(methodName[2]);
+    }
+
     private string NormalizeEventName(string eventName)
     {
         return eventName.ApplyNamingCasePolicy(_options.DefaultEventNameCasePolicy);
