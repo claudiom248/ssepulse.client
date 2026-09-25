@@ -217,8 +217,8 @@ public class SseSourceLoggingTests
         Task consumeTask = source.StartConsumeAsync(CancellationToken.None);
         await handlerStarted.Task;
         await source.StopAsync();
-        await consumeTask;
         releaseHandler.TrySetResult();
+        await consumeTask;
 
         // ASSERT
         Assert.True(logger.HasLog(LogLevel.Information, "Stopping SSE consumption"));
