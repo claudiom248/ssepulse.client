@@ -14,7 +14,7 @@ public static class SseSourceOptionsDefaults
     /// <summary>Default maximum degree of parallelism for event handler execution: <c>1</c>.</summary>
     public const int MaxDegreeOfParallelism = 1;
 
-    /// <summary>Default maximum number of received events waiting for a handler: <c>1024</c>.</summary>
+    /// <summary>Default maximum number of received events queued for a handler: <c>1024</c>.</summary>
     public const int MaxBufferedEvents = 1024;
 
     /// <summary>Default event name case policy: <see cref="NameCasePolicy.PascalCase"/>.</summary>

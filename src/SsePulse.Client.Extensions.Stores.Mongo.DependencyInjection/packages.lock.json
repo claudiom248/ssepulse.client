@@ -137,8 +137,7 @@
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[8.0.3, )",
           "System.Net.ServerSentEvents": "[10.0.7, )",
-          "System.Text.Json": "[8.0.6, )",
-          "System.Threading.Tasks.DataFlow": "[8.0.1, )"
+          "System.Text.Json": "[8.0.6, )"
         }
       },
       "ssepulse.client.dependencyinjection": {
@@ -257,12 +256,6 @@
         "requested": "[8.0.6, )",
         "resolved": "8.0.6",
         "contentHash": "BvSpVBsVN9b+Y+wONbvJOHd1HjXQf33+XiC28ZMOwRsYb42mz3Q8YHnpTSwpwJLqYCMqM+0UUVC3V+pi25XfkQ=="
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "4pjq2vIPNZkKA9asAXzf5IRBb7K+b0+UQZZbpv6g029sAPZgnKdg/NNOC/DbJL8SWqYcFMVjb/T/YEmb0PHUYg=="
       }
     }
   }

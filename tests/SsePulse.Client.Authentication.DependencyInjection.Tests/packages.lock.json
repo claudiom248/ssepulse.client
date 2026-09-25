@@ -164,8 +164,7 @@
       "ssepulse.client": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "[8.0.3, )",
-          "System.Threading.Tasks.DataFlow": "[8.0.1, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[8.0.3, )"
         }
       },
       "ssepulse.client.authentication": {
@@ -281,12 +280,6 @@
           "Microsoft.Extensions.Options": "8.0.0",
           "Microsoft.Extensions.Primitives": "8.0.0"
         }
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "4pjq2vIPNZkKA9asAXzf5IRBb7K+b0+UQZZbpv6g029sAPZgnKdg/NNOC/DbJL8SWqYcFMVjb/T/YEmb0PHUYg=="
       }
     },
     "net8.0": {
@@ -453,8 +446,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[8.0.3, )",
-          "System.Net.ServerSentEvents": "[10.0.7, )",
-          "System.Threading.Tasks.DataFlow": "[8.0.1, )"
+          "System.Net.ServerSentEvents": "[10.0.7, )"
         }
       },
       "ssepulse.client.authentication": {
@@ -576,12 +568,6 @@
         "requested": "[10.0.7, )",
         "resolved": "10.0.7",
         "contentHash": "e06Z0ebrVhLOPZjqkJ3FkhGEobJu7T7WEIZPNtZW2Vr8eULbxwZg64i4SYeCVcaCdHLST/G4DOGnYp9QcIzzKA=="
-      },
-      "System.Threading.Tasks.Dataflow": {
-        "type": "CentralTransitive",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "4pjq2vIPNZkKA9asAXzf5IRBb7K+b0+UQZZbpv6g029sAPZgnKdg/NNOC/DbJL8SWqYcFMVjb/T/YEmb0PHUYg=="
       }
     }
   }

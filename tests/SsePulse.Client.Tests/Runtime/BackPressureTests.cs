@@ -8,12 +8,14 @@ namespace SsePulse.Client.Tests.Runtime;
 
 public class BackPressureTests
 {
-    [Fact]
-    public async Task SlowHandler_StopsTheReadLoopOnceTheBufferIsFull()
+    [Theory]
+    [InlineData(1, 4)]
+    [InlineData(2, 5)]
+    public async Task SlowHandlers_StopTheReadLoopOnceTheQueueIsFull(int parallelism, int expectedReads)
     {
         SseGate release = new();
         Recorder<string> handled = new();
-        SseSourceOptions options = new() { MaxBufferedEvents = 2 };
+        SseSourceOptions options = new() { MaxBufferedEvents = 2, MaxDegreeOfParallelism = parallelism };
         SseHandlersDictionary handlers = new(options.JsonSerializerOptions);
         handlers.AddDataHandler("order", data =>
         {
@@ -24,7 +26,7 @@ public class BackPressureTests
         await using OneEventPerReadStream stream = new(10);
 
         Task consumption = consumer.ConsumeAsync(stream, CancellationToken.None);
-        await TestWait.UntilAsync(() => Task.FromResult(stream.ReadCount >= 3));
+        await TestWait.UntilAsync(() => Task.FromResult(stream.ReadCount >= expectedReads));
         for (int i = 0; i < 100; i++)
         {
             await Task.Yield();
@@ -34,10 +36,9 @@ public class BackPressureTests
         release.Open();
         await consumption;
 
-        Assert.Equal(3, readsWhileBlocked);
+        Assert.Equal(expectedReads, readsWhileBlocked);
         Assert.Equal(10, handled.Count);
     }
-
     private sealed class OneEventPerReadStream(int events) : Stream
     {
         private int _reads;
