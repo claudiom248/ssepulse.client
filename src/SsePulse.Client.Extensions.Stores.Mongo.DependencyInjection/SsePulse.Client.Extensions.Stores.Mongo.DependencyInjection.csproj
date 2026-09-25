@@ -5,10 +5,6 @@
         <PackageId>SsePulse.Client.Extensions.Stores.Mongo.DependencyInjection</PackageId>
         <Description>Extension methods for registering the MongoDB last-event-ID store for SsePulse.Client using Microsoft.Extensions.DependencyInjection.</Description>
         <PackageTags>dependency-injection;mongo;mongodb;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>

@@ -2,7 +2,7 @@
 <Project>
     <PropertyGroup>
         <Authors>Claudio Manniti</Authors>
-        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <RepositoryUrl>https://github.com/claudiom248/SsePulse.Client</RepositoryUrl>
         <PackageProjectUrl>https://github.com/claudiom248/SsePulse.Client</PackageProjectUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -15,6 +15,11 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <LangVersion>14</LangVersion>
         <DebugType>embedded</DebugType>
+        <Deterministic>true</Deterministic>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+        <PackageReleaseNotes>https://github.com/claudiom248/SsePulse.Client/releases</PackageReleaseNotes>
+        <Copyright>Copyright (c) Claudio Manniti</Copyright>
     </PropertyGroup>
     
     <PropertyGroup>

@@ -5,10 +5,6 @@
         <PackageId>SsePulse.Client</PackageId>
         <Description>SsePulse.Client is a .NET library for consuming Server-Sent Events (SSE) streams, providing a simple and efficient way to handle real-time data updates from servers.</Description>
         <PackageTags>server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
