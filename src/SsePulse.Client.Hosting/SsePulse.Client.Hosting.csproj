@@ -5,10 +5,6 @@
         <PackageId>SsePulse.Client.Hosting</PackageId>
         <Description>Provides a hosted service for consuming events from SseSource, and extension methods for registering it.</Description>
         <PackageTags>hosting;dependency-injection;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>

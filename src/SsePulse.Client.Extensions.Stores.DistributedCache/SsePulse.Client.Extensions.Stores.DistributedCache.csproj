@@ -5,10 +5,6 @@
         <PackageId>SsePulse.Client.Extensions.Stores.DistributedCache</PackageId>
         <Description>IDistributedCache-backed last-event-ID store for SsePulse.Client, enabling durable SSE stream resumption by persisting the last received event ID to any IDistributedCache implementation.</Description>
         <PackageTags>distributed-cache;cache;server-sent-events;sse;sse-consumer;sse-stream;ssepulse;ssepulse-client;client</PackageTags>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>

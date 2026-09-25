@@ -87,6 +87,15 @@ jobs:
         run: ./.scripts/pack.ps1 -Configuration Release
         shell: pwsh
 
+      - name: Validate packages
+        run: |
+          dotnet tool restore
+          foreach ($package in Get-ChildItem -Path ".artifacts/nuget/Release" -Filter "*.nupkg") {
+              dotnet tool run dotnet-validate package local $package.FullName
+              if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
+        shell: pwsh
+
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
