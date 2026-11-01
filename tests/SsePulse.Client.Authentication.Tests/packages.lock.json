@@ -273,7 +273,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[8.0.3, )",
-          "System.Net.ServerSentEvents": "[10.0.12, )"
+          "System.Net.ServerSentEvents": "[10.0.14, )"
         }
       },
       "ssepulse.client.authentication": {
@@ -299,9 +299,9 @@
       },
       "System.Net.ServerSentEvents": {
         "type": "CentralTransitive",
-        "requested": "[10.0.12, )",
-        "resolved": "10.0.12",
-        "contentHash": "72010m/U1v06btqPUDgSatcYvHMPSKBbwYsTMBzaONx1ksCG2mz0CCnzaikCrQggjz5l7V7mzpD8yiCoKqNV2A=="
+        "requested": "[10.0.14, )",
+        "resolved": "10.0.14",
+        "contentHash": "PXOWnDxC7ZbrVZjRKij/lGi3LB6tlrT1D4Sr2poxONc2f35PiIneqSRCUREyWo+xONJIvdiHMmskKHldmBojgg=="
       }
     }
   }
